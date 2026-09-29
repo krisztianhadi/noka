@@ -212,11 +212,9 @@ const panelClass =
               </dl>
 
               <details class="edit-form mt-3">
-                <summary
-                  class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm text-fg-muted marker:content-none hover:text-fg"
-                >
-                  <Icon name="edit" size={14} /> Edit {contact.name}
-                </summary>
+                {/* One edit affordance, the pencil in the row: this summary exists so
+                    the form stays keyboard-reachable, but it is not a second button. */}
+                <summary class="sr-only">Edit {contact.name}</summary>
                 <div class="mt-3 border-t border-line pt-4">
                   <ContactForm
                     action={`/dashboard/contacts/${contact.id}/edit`}

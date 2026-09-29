@@ -15,15 +15,85 @@ async function owner(page: import('@playwright/test').Page): Promise<{ slug: str
     country: 'TH',
     phone: '812 345 678',
     channels: ['whatsapp', 'signal'],
-    // Cannot speak or hear: the page says so and offers text.
-    textOnly: true,
     spoken: ['th', 'en'],
+  });
+  await addContact(page, {
+    name: 'Ana Hadi',
+    country: 'HU',
+    phone: '30 123 4567',
+    channels: ['telegram'],
+    // Cannot speak or hear: the page says so, and a call is not offered.
+    textOnly: true,
   });
   await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
   return makeCard(page);
 }
 
 test.describe('the responder page', () => {
+  test('every channel is a tappable button, and text-only means no call', async ({ browser, page }) => {
+    const { slug, pin } = await owner(page);
+    const guest = await browser.newContext();
+    const stranger = await guest.newPage();
+    await stranger.goto(`/c/${slug}`);
+    await stranger.fill('input[name="pin"]', pin);
+    await stranger.getByRole('button').first().click();
+    await stranger.waitForLoadState('networkidle');
+
+    // A stylesheet that loses the .actions rules leaves these as bare links — which
+    // pass axe and look broken, so measure them as controls.
+    const buttons = await stranger.evaluate(() =>
+      Array.from(document.querySelectorAll('.actions a')).map((element) => {
+        const style = getComputedStyle(element);
+        return {
+          label: element.textContent.trim(),
+          height: Math.round(element.getBoundingClientRect().height),
+          border: parseFloat(style.borderTopWidth),
+        };
+      }),
+    );
+    expect(buttons.length).toBeGreaterThan(0);
+    for (const button of buttons) {
+      expect(button.height, `${button.label} height`).toBeGreaterThanOrEqual(44);
+      expect(button.border, `${button.label} border`).toBeGreaterThanOrEqual(2);
+    }
+
+    // Maria can speak: she gets a call. Ana cannot: she gets the alert and no call.
+    const maria = stranger.locator('.contact', { hasText: 'Maria Silva' });
+    const ana = stranger.locator('.contact', { hasText: 'Ana Hadi' });
+    await expect(maria.locator('a.call')).toHaveCount(1);
+    await expect(maria.locator('.alert')).toHaveCount(0);
+
+    await expect(ana.locator('.alert')).toContainText('cannot speak or hear');
+    await expect(ana.locator('a.call'), 'a call is useless to her').toHaveCount(0);
+    // Text first, so the responder reaches for the thing that works.
+    await expect(ana.locator('.actions a').first()).toHaveText(/Text message/);
+    await expect(ana.locator('a.sms')).toHaveAttribute('href', 'sms:+36301234567');
+
+    await guest.close();
+  });
+
+  test('both responder pages offer the same language switcher', async ({ browser, page }) => {
+    const { slug, pin } = await owner(page);
+    const guest = await browser.newContext();
+    const stranger = await guest.newPage();
+
+    await stranger.goto(`/c/${slug}`);
+    const locked = await stranger.locator('.langs button').allTextContents();
+
+    await stranger.fill('input[name="pin"]', pin);
+    await stranger.getByRole('button').first().click();
+    await stranger.waitForLoadState('networkidle');
+    const unlocked = await stranger.locator('.langs button').allTextContents();
+
+    // The same plane must not look like two products depending on whether the PIN has
+    // been entered — it did: flags in one place, bare names in the other.
+    expect(locked.length).toBeGreaterThan(1);
+    expect(unlocked).toEqual(locked);
+    for (const label of locked) expect(label, 'flag beside the name').toMatch(/\p{Regional_Indicator}/u);
+
+    await guest.close();
+  });
+
   test('a stranger needs the PIN, then reads the contacts and can hide them', async ({ browser, page }) => {
     const { slug, pin } = await owner(page);
 
@@ -38,6 +108,7 @@ test.describe('the responder page', () => {
     expect(formHtml).not.toMatch(/<script/i);
     expect(formHtml).not.toMatch(/<link[^>]+rel="stylesheet"/i);
     expect(formHtml).not.toContain('Maria');
+    expect(formHtml).not.toContain('Ana');
     expect(formHtml).not.toContain('penicillin');
     await expect(guest.getByRole('heading')).toContainText('Emergency contacts');
 
@@ -51,23 +122,22 @@ test.describe('the responder page', () => {
     await guest.fill('#pin', pin);
     await guest.getByRole('button', { name: 'Open' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
-    await expect(guest.locator('.name')).toHaveText('Maria Silva');
-    await expect(guest.locator('.contact .relation')).toContainText('Spouse');
-    await expect(guest.locator('.speaks')).toContainText('Thai');
-    await expect(guest.locator('a.call')).toHaveAttribute('href', 'tel:+66812345678');
-    await expect(guest.locator('a.whatsapp')).toHaveAttribute('href', 'https://wa.me/66812345678');
-    await expect(guest.locator('a.sms')).toHaveAttribute('href', 'sms:+66812345678');
-    await expect(guest.locator('.text-only')).toContainText('cannot speak or hear');
+    const maria = guest.locator('.contact').first();
+    await expect(maria.locator('.name')).toHaveText('Maria Silva');
+    await expect(maria.locator('.relation')).toContainText('Spouse');
+    await expect(maria.locator('.speaks')).toContainText('Thai');
+    await expect(maria.locator('a.call')).toHaveAttribute('href', 'tel:+66812345678');
+    await expect(maria.locator('a.whatsapp')).toHaveAttribute('href', 'https://wa.me/66812345678');
     // Every channel is a button, and the number itself is on the page.
-    await expect(guest.locator('a.signal')).toContainText('Signal');
-    await expect(guest.locator('.phone')).toHaveText('+66 812 345 678');
+    await expect(maria.locator('a.signal')).toContainText('Signal');
+    await expect(maria.locator('.phone')).toHaveText('+66 812 345 678');
 
     // The unlocked page is the one with brand marks and service links on it, so this
     // is where "the responder page fetches nothing" has to be proven.
     const unlocked = await guest.content();
     expect(externalResources(unlocked), 'unlocked page fetches nothing').toEqual([]);
     expect(unexpectedNavigations(unlocked), 'navigations stay inside the allowlist').toEqual([]);
-    await expect(guest.locator('.phone a')).toHaveAttribute('href', 'tel:+66812345678');
+    await expect(maria.locator('.phone a')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('.notes')).toContainText('Allergic to penicillin.');
 
     // Still zero JavaScript, still one request.

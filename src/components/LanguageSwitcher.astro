@@ -1,0 +1,32 @@
+---
+import type { CardLanguage } from '@/i18n/languages';
+import { LANGUAGE_INFO } from '@/i18n/languages';
+import { flagForLanguage } from '@/lib/flags';
+
+/**
+ * The language switcher, shared by both responder pages.
+ *
+ * It existed twice — the PIN page rendered endonyms, the unlocked page rendered flags
+ * beside them — so the same plane looked like two different products depending on
+ * whether the PIN had been entered yet. One component, one look.
+ */
+interface Props {
+  action: string;
+  languages: readonly CardLanguage[];
+  current: CardLanguage;
+}
+
+const { action, languages, current } = Astro.props;
+---
+
+<div class="langs">
+  <form method="post" action={action}>
+    {
+      languages.map((code) => (
+        <button type="submit" name="lang" value={code} aria-current={code === current}>
+          <span aria-hidden="true">{flagForLanguage(code)}</span> {LANGUAGE_INFO[code].endonym}
+        </button>
+      ))
+    }
+  </form>
+</div>

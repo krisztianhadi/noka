@@ -36,6 +36,9 @@ const {
   defaultCountry = DEFAULT_COUNTRY,
 } = Astro.props;
 
+// A new contact starts as a partner: it is the most common answer and the safest
+// assumption, and choosing costs one click either way.
+const DEFAULT_RELATION = 'partner';
 const selectedChannels = new Set(contact?.channels ?? ['call']);
 const textOnly = contact?.textOnly ?? false;
 const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
@@ -102,7 +105,10 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
         <select id={`relation-${uid}`} class={`${selectClass} w-full`} name="relation" required>
           {
             RELATIONS.map((relation) => (
-              <option value={relation} selected={contact?.relation === relation}>
+              <option
+              value={relation}
+              selected={contact ? contact.relation === relation : relation === DEFAULT_RELATION}
+            >
                 {relationLabel(relation)}
               </option>
             ))

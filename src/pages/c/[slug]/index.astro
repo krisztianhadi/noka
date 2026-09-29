@@ -1,4 +1,5 @@
 ---
+import LanguageSwitcher from '@/components/LanguageSwitcher.astro';
 import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO, DEFAULT_CARD_LANGUAGES } from '@/i18n/languages';
@@ -102,17 +103,5 @@ const languages = card ? cardLanguages(card) : [...DEFAULT_CARD_LANGUAGES];
     <button type="submit">{label('pin.submit')}</button>
   </form>
 
-  {
-    languages.length > 1 && (
-      <div class="langs">
-        <form method="post" action={`/c/${requestedSlug}/lang`}>
-          {languages.map((code) => (
-            <button type="submit" name="lang" value={code} aria-current={code === language}>
-              {LANGUAGE_INFO[code].endonym}
-            </button>
-          ))}
-        </form>
-      </div>
-    )
-  }
+  {languages.length > 1 && <LanguageSwitcher action={`/c/${requestedSlug}/lang`} languages={languages} current={language} />}
 </Responder>

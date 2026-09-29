@@ -3,9 +3,9 @@ import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
 import ChannelIcon from '@/components/ChannelIcon.astro';
+import LanguageSwitcher from '@/components/LanguageSwitcher.astro';
 import type { ContactView } from '@/lib/contacts';
 import { channelHref, type Channel } from '@/lib/channels';
-import { flagForLanguage } from '@/lib/flags';
 import {
   cardLanguages,
   findCardBySlug,
@@ -22,10 +22,18 @@ import { LANG_COOKIE, VIEW_COOKIE, readViewToken } from '@/lib/view-cookie';
  * Without a valid cookie this is not an error — it is the PIN form, exactly as
  * if the URL had been opened for the first time.
  */
-/** The services to offer, plus text when this contact cannot speak or hear. */
+/**
+ * What to offer for this contact.
+ *
+ * Someone who cannot speak or hear is not called: the call button is dropped entirely
+ * (offering an action that cannot work is worse than offering fewer), text is added
+ * first so it is the button the responder reaches for, and the messaging apps follow —
+ * they all open a chat, which is the point.
+ */
 function offeredChannels(contact: ContactView): Channel[] {
-  if (!contact.textOnly || contact.channels.includes('sms')) return contact.channels;
-  return [...contact.channels, 'sms'];
+  if (!contact.textOnly) return contact.channels;
+  const services = contact.channels.filter((channel) => channel !== 'call');
+  return ['sms', ...services];
 }
 
 const requestedSlug = Astro.params.slug ?? '';
@@ -67,9 +75,18 @@ const offered = cardLanguages(card);
           <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
         </div>
         {contact.textOnly && (
-          <div class="text-only">
-            <span aria-hidden="true">💬</span> {label('view.text_only')}
-          </div>
+          <p class="alert" role="note">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <path
+                d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"></path>
+              <path d="M8.5 10.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+            </svg>
+            <span>{label('view.text_only')}</span>
+          </p>
         )}
         <div class="actions">
           {offeredChannels(contact).map((channel) => (
@@ -100,15 +117,7 @@ const offered = cardLanguages(card);
 
   {
     offered.length > 1 && (
-      <div class="langs">
-        <form method="post" action={`/c/${card.slug}/lang`}>
-          {offered.map((code) => (
-            <button type="submit" name="lang" value={code} aria-current={code === language}>
-              <span aria-hidden="true">{flagForLanguage(code)}</span> {LANGUAGE_INFO[code].endonym}
-            </button>
-          ))}
-        </form>
-      </div>
+      <LanguageSwitcher action={`/c/${card.slug}/lang`} languages={offered} current={language} />
     )
   }
 </Responder>

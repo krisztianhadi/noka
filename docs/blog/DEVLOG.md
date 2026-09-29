@@ -532,3 +532,31 @@ which is exactly why I measured `pathLen` instead of trusting my eyes.
 **The habit worth keeping.** Every one of those three was invisible in a diff and obvious in a
 measurement — a computed colour, a bounding box, a path length. Reviewing my own patch is not
 verification; running the thing and reading numbers is.
+
+## 2026-09-29 — "You got really sloppy lately", and he is right
+
+**What he found.** Two edit controls on one contact: a pencil beside the kebab and an "Edit
+<name>" summary underneath, because I added the first and forgot the second existed. A form
+default of spouse where partner is the obvious answer. And the PIN page and the unlocked page had
+drifted apart — flags on one, bare names on the other — so the same plane looked like two products
+depending on whether the PIN had been entered yet.
+
+**And then I made it worse in the same pass.** Editing the responder layout, I replaced a slice of
+CSS from `.text-only` to `.langs`. Between those two rules sat `.actions`, `.actions a`, `.call`
+and `.notes`. Every channel button turned into a bare underlined link, and I had already taken the
+screenshot that showed it — I simply did not look at it before committing. axe was happy: unstyled
+links are still links, still contrasty, still labelled. Only looking at the page could see it.
+
+**What I am changing about how I work, not just what I fixed.** The pattern in all three of today's
+reports is the same: I verify the thing I was thinking about and not the page I am shipping. So:
+after a change that touches markup or CSS, look at *every* affected page — this time all four —
+before committing, and read the screenshot rather than taking it. Where a property is measurable,
+measure it in the suite rather than trusting my eye: the channel buttons now have to be at least
+44px tall with a visible border, which is exactly the check that fails when a stylesheet loses its
+rules.
+
+**The fixes themselves.** One edit control per contact (the pencil; the summary is sr-only so the
+form stays keyboard-reachable). Partner as the default relation. One `LanguageSwitcher` shared by
+both responder pages. The text-only fact is an alert box in the contact's language, and that
+contact is not offered a call at all — text leads, the messaging apps follow, because they all
+open a chat.

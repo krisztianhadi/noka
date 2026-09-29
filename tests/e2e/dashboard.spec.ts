@@ -30,6 +30,30 @@ test.describe('the dashboard', () => {
     ]);
   });
 
+  test('a new contact defaults to partner, and one row has one edit control', async ({ page }) => {
+    await signUp(page);
+
+    // Partner is the most common answer, and it is what the picker shows first.
+    await expect(page.locator('form[action="/dashboard/contacts/new"] select[name="relation"]')).toHaveValue(
+      'partner',
+    );
+
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    const row = page.locator('.contacts > li').first();
+
+    // One visible way into the edit form: the row's pencil. A second visible summary
+    // (there was one) is a duplicate affordance, not a feature.
+    const visibleControls = await row.evaluate((element) =>
+      Array.from(element.querySelectorAll('[data-edit-trigger], details.edit-form > summary')).filter(
+        (candidate) => {
+          const box = candidate.getBoundingClientRect();
+          return box.width > 4 && box.height > 4;
+        },
+      ).length,
+    );
+    expect(visibleControls, 'edit affordances in the row').toBe(1);
+  });
+
   test('cannot make a card before there is a contact', async ({ page }) => {
     await signUp(page);
     await expect(page.getByRole('button', { name: 'Make my card' })).toBeDisabled();

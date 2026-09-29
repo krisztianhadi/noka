@@ -26,7 +26,7 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 13:56Z (c9b83d6c) | 2026-09-29 15:20+07 | 951 | 2,387,976 | 351,756,544 | 810,442 | $1.1112 | $1.3442 | $2.4553 |
+| 2026-09-29 08:20Z → 14:13Z (c9b83d6c) | 2026-09-29 15:20+07 | 978 | 2,400,681 | 368,266,752 | 827,220 | $1.1112 | $1.4057 | $2.5168 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
@@ -44,7 +44,8 @@ the figures below are read rather than remembered:
 | 2026-09-29 13:17Z → 13:17Z (3f5494e6) | 2026-09-29 20:17+07 | 3 | 31,076 | 30,208 | 2,467 | $0.0000 | $0.0062 | $0.0062 |
 | 2026-09-29 13:28Z → 13:28Z (0cb81499) | 2026-09-29 20:28+07 | 3 | 31,625 | 30,976 | 2,476 | $0.0000 | $0.0063 | $0.0063 |
 | 2026-09-29 13:37Z → 13:37Z (f61b59d6) | 2026-09-29 20:37+07 | 3 | 31,897 | 32,000 | 2,852 | $0.0000 | $0.0066 | $0.0066 |
-| **Total** | | **1,000** | **2,833,153** | **352,292,992** | **868,308** | **$1.1426** | **$1.4315** | **$2.5742** |
+| 2026-09-29 13:57Z → 13:57Z (7d0b7e74) | 2026-09-29 20:57+07 | 2 | 15,285 | 13,696 | 979 | $0.0000 | $0.0029 | $0.0029 |
+| **Total** | | **1,029** | **2,861,143** | **368,816,896** | **886,065** | **$1.1426** | **$1.4959** | **$2.6386** |
 
 _Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-29 by `node scripts/usage-report.mjs --write`._
 <!-- usage:end -->
@@ -69,11 +70,11 @@ rates. The error is on the safe side.
 | 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 4% |
 | 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 2% |
 | 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 4% |
-| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 9% |
-| 09:08–13:56Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 686 | 291,098,011 | $1.6329 | 67% |
-| **Total** | | **951** | **354,954,962** | **$2.4553** | |
+| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 8% |
+| 09:08–14:13Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 713 | 307,637,702 | $1.6944 | 67% |
+| **Total** | | **978** | **371,494,653** | **$2.5168** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1188 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1218 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
