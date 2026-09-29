@@ -4,6 +4,27 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — cost per feature, across projects, and what to do with the numbers
+
+- `scripts/usage-report.mjs` now attributes tokens and estimated USD **per work
+  block**, splitting the main session at the goal-round boundaries in the log, and
+  reports **every workspace the harness has logged** with `--all`.
+- The reading of it is in docs/COSTS.md: the card cost **$0.04**, the responder
+  page **$0.21**, and closing the technical spikes **$0.45** — cheap where the
+  problem was mine, expensive where it was someone else's code to read.
+- **Peak/off-peak in local time:** peak is 08:00–11:00 and 13:00–17:00 +07,
+  Mon–Fri; off-peak everywhere else and all weekend, at half price. The day's work
+  ran at 15:20–17:20 local, inside peak, so half the bill was avoidable by
+  starting two hours later. Recorded as the first item under "what I would not do
+  again", with three more.
+- New draft in his post format: `docs/blog/2026-09-29-two-products-three-dollars.md`
+  — the cost story as its own piece, framed as cost per shipped artifact rather
+  than scarcity, with the numbers and the honest negatives.
+- Fixed a bug in my own instrument: the log parser skipped lines without a usage
+  object before looking for round boundaries, so per-block attribution silently
+  collapsed to a single block. Caught because the table disagreed with the six
+  rounds that actually happened.
+
 ### Feature — real money in the cost record, and two standing conventions
 
 - **`docs/COSTS.md` now shows time windows and USD.** Each session is bucketed by

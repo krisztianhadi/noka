@@ -22,11 +22,16 @@ probably padding.
 - Making a PDF byte-identical is harder than it looks.
 - Designing for a stranger who is having the worst day of their week.
 - The licence decision nobody makes until a stranger asks to use the code.
+- Four cents for a card, forty-five for a font: what the cost log says about
+  where the money goes.
+- The cheapest mistake of the week: doing the work inside peak-pricing hours.
 
 **Drafts**
 
 - [2026-09-29-the-post-it-in-my-wallet.md](2026-09-29-the-post-it-in-my-wallet.md)
-  — the opening post, unpublished.
+  — the product story, unpublished.
+- [2026-09-29-two-products-three-dollars.md](2026-09-29-two-products-three-dollars.md)
+  — the cost story, unpublished, and the one the webchat calls the differentiator.
 
 ---
 
@@ -189,3 +194,45 @@ lockfile.
 reachable. The order was in the plan and I followed it, but a reachable endpoint
 with an unthrottled six-digit secret is the one thing I would not want to explain
 if someone asked what state the project is in.
+
+## 2026-09-29 — Putting a price on it
+
+**What happened.** The cost log stopped being a token counter and became a cost
+model: tokens attributed per work block, an estimate in USD split by the
+provider's peak window, and a balance ledger for the only number that is money
+rather than arithmetic.
+
+**What the numbers said.** The whole build is around **$1.27**, of which $1.14
+fell inside peak hours — I ran the day's work at 15:20–17:20 local, which is peak
+in UTC terms, so I paid double for no reason. Off-peak the same tokens would be
+about 63 cents. Per feature it is starker: the card cost **4 cents**, the
+responder page **21**, and closing the Phase 0 spikes cost **45** — because that
+block was a container build, a font pipeline and library archaeology rather than
+my own problem to solve. Cheap where the problem is mine, expensive where it is
+someone else's code.
+
+**Decisions.** Attribute cost by goal-round boundary because it is the only
+attribution signal the harness logs, and hand-maintain the mapping from round to
+feature rather than pretending it can be inferred. Keep the balance ledger
+separate from the estimate and label which rows are which: the baseline starts
+today, so everything before it stays an estimate forever. And read the peak
+window in local time, because "01:00–04:00 and 06:00–10:00 UTC" means nothing when
+you are deciding whether to start a long run at four in the afternoon.
+
+**Also.** Found a real bug in my own instrument: the parser skipped every line
+without `"usage"` before it looked for round boundaries, so the per-block
+attribution silently reported one block instead of seven. The table looked
+plausible, which is exactly why it was worth checking against the six rounds I
+know happened.
+
+**What I got wrong.** I let the cost of the *wrong* thing dominate twice: paying
+peak rates out of impatience, and writing the schema before reading better-auth's
+actual requirements (ADR-004). Neither was expensive in dollars. Both were
+expensive in time, which is the budget that actually runs out.
+
+**Where this is going.** The webchat's read on it: the cost breakdown is the
+differentiator, because the public conversation is either "I made $50k in a
+weekend" or "AI is useless". The middle — cheap inference for grunt work, tokens
+as a real budget line, honest numbers — is the part almost nobody shows. So this
+becomes its own piece, separate from the product story: [Two products, three
+dollars](2026-09-29-two-products-three-dollars.md).

@@ -16,7 +16,7 @@
  * public holidays. Everything else (and weekends entirely) is off-peak, at half
  * the peak rate.
  */
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { zstdDecompressSync } from 'node:zlib';
 import { homedir } from 'node:os';
@@ -25,6 +25,8 @@ import { dirname, join, resolve } from 'node:path';
 const DSH_HOME = process.env.DSH_HOME ?? join(homedir(), '.dsh');
 const COSTS_FILE = resolve('docs/COSTS.md');
 const LEDGER_FILE = resolve('docs/costs/ledger.json');
+const BLOCKS_START = '<!-- blocks:start -->';
+const BLOCKS_END = '<!-- blocks:end -->';
 const USAGE_START = '<!-- usage:start -->';
 const USAGE_END = '<!-- usage:end -->';
 const LEDGER_START = '<!-- ledger:start -->';
@@ -61,16 +63,32 @@ function readLog(file) {
   }
 }
 
-function usageOf(file) {
+/**
+ * One pass over a session log: the usage rows, plus the timestamps where a goal
+ * round started. The harness does not label work, so block boundaries are the
+ * only attribution signal in the file — everything else would be guesswork.
+ */
+function recordsOf(file) {
   const text = readLog(file);
-  if (!text) return [];
+  if (!text) return { rows: [], boundaries: [] };
   const rows = [];
+  const boundaries = [];
   for (const line of text.split('\n')) {
-    if (!line.includes('"usage"')) continue;
+    // Two kinds of line matter: usage records, and the user message that opens a
+    // goal round. Everything else is skipped before parsing, which is what keeps
+    // a multi-megabyte log cheap to walk.
+    if (!line.includes('"usage"') && !line.includes('user/message')) continue;
     let record;
     try {
       record = JSON.parse(line);
     } catch {
+      continue;
+    }
+    if (
+      record?.type === 'user/message' &&
+      JSON.stringify(record.data ?? {}).includes('Continue working toward the objective')
+    ) {
+      boundaries.push(Number(record.time ?? 0));
       continue;
     }
     const usage = record?.data?.usage;
@@ -83,7 +101,7 @@ function usageOf(file) {
       cacheWrite: Number(usage.cacheWriteTokens ?? 0),
     });
   }
-  return rows;
+  return { rows, boundaries: boundaries.sort((a, b) => a - b) };
 }
 
 function costOf(rows) {
@@ -104,15 +122,22 @@ function costOf(rows) {
   return { usd: peakUsd + offPeakUsd, peakUsd, offPeakUsd, buckets };
 }
 
-function sessions() {
-  if (!existsSync(storeDir)) return [];
-  return readdirSync(storeDir)
+function sessionDirs(dir = storeDir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
     .map((name) => ({
-      file: join(storeDir, name, 'session.v4.jsonl.zstd'),
+      file: join(dir, name, 'session.v4.jsonl.zstd'),
       id: name.replace(/^session-/, '').slice(0, 8),
     }))
-    .filter((entry) => existsSync(entry.file))
-    .map((entry) => ({ ...entry, rows: usageOf(entry.file) }))
+    .filter((entry) => existsSync(entry.file));
+}
+
+function sessions(dir = storeDir) {
+  return sessionDirs(dir)
+    .map((entry) => {
+      const { rows, boundaries } = recordsOf(entry.file);
+      return { ...entry, rows, boundaries };
+    })
     .filter((entry) => entry.rows.length > 0)
     .map((entry) => {
       const times = entry.rows.map((row) => row.time);
@@ -122,6 +147,9 @@ function sessions() {
       const cost = costOf(entry.rows);
       return {
         id: entry.id,
+        // kept so --all can aggregate and --by-block can split without re-reading
+        rows: entry.rows,
+        boundaries: entry.boundaries,
         turns: entry.rows.length,
         first,
         last,
@@ -134,6 +162,73 @@ function sessions() {
       };
     })
     .sort((a, b) => a.first - b.first);
+}
+
+/**
+ * What each block of work built. Hand-maintained on purpose: the session log
+ * knows when a round started, never what it was for, and inventing that mapping
+ * automatically would be a guess dressed as a report.
+ */
+const BLOCK_LABELS = [
+  'Contract, docs and the first push (pre-goal)',
+  'Phase 0 spikes (partial) + Phase 1 scaffold',
+  'Phase 2 — owner plane: better-auth, argon2id, dashboard',
+  'Phase 3 — the card: PIN, rotation, activation',
+  'Phase 4 — contacts, notes, spoken languages',
+  'Phase 5 — the responder page',
+  'Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs',
+];
+
+/** Split one session's usage rows at its round boundaries. */
+function blocksOf(session) {
+  const blocks = [];
+  let current = { label: null, rows: [] };
+  const pending = [...session.boundaries];
+
+  for (const row of session.rows) {
+    while (pending.length > 0 && row.time >= pending[0]) {
+      if (current.rows.length > 0) blocks.push(current);
+      current = { label: pending.shift(), rows: [] };
+    }
+    current.rows.push(row);
+  }
+  if (current.rows.length > 0) blocks.push(current);
+
+  return blocks.map((block, index) => {
+    const times = block.rows.map((row) => row.time);
+    const sum = (key) => block.rows.reduce((acc, row) => acc + row[key], 0);
+    const cost = costOf(block.rows);
+    return {
+      index,
+      label: BLOCK_LABELS[index] ?? `Block ${index}`,
+      turns: block.rows.length,
+      first: Math.min(...times),
+      last: Math.max(...times),
+      tokens: sum('cacheMiss') + sum('cacheHit') + sum('cacheWrite') + sum('output'),
+      cacheMiss: sum('cacheMiss'),
+      cacheHit: sum('cacheHit'),
+      output: sum('output'),
+      ...cost,
+    };
+  });
+}
+
+function blocksTable(blocks) {
+  const totalUsd = blocks.reduce((acc, block) => acc + block.usd, 0);
+  const totalTokens = blocks.reduce((acc, block) => acc + block.tokens, 0);
+  const lines = [
+    '| Block | What it built | Turns | Tokens | Est. USD | Share |',
+    '|---|---|---:|---:|---:|---:|',
+  ];
+  for (const block of blocks) {
+    lines.push(
+      `| ${utc(block.first).slice(11, 16)}–${utc(block.last).slice(11, 16)}Z (${local(block.first).slice(11, 16)}+07) | ${block.label} | ${block.turns} | ${fmt(block.tokens)} | ${usd(block.usd)} | ${((block.usd / totalUsd) * 100).toFixed(0)}% |`,
+    );
+  }
+  lines.push(
+    `| **Total** | | **${fmt(blocks.reduce((acc, b) => acc + b.turns, 0))}** | **${fmt(totalTokens)}** | **${usd(totalUsd)}** | |`,
+  );
+  return lines.join('\n');
 }
 
 const fmt = (value) => value.toLocaleString('en-US');
@@ -217,6 +312,37 @@ function replaceBlock(text, start, end, body) {
   return text.replace(pattern, `${start}\n${body}\n${end}`);
 }
 
+/** Every workspace the harness has logged, for the cross-project view. */
+function allWorkspaces() {
+  const root = join(DSH_HOME, 'sessions');
+  if (!existsSync(root)) return [];
+  return readdirSync(root)
+    .filter((name) => name.startsWith('--') && statSyncQuiet(join(root, name)))
+    .map((name) => {
+      const dir = join(root, name);
+      const list = sessions(dir);
+      const rows = list.flatMap((session) => session.rows);
+      const cost = costOf(rows);
+      return {
+        workspace: name.replace(/^--/, '').replace(/--$/, '').replace(/-/g, '/'),
+        sessions: list.length,
+        turns: rows.length,
+        tokens: rows.reduce((acc, row) => acc + row.cacheMiss + row.cacheHit + row.cacheWrite + row.output, 0),
+        ...cost,
+      };
+    })
+    .filter((entry) => entry.turns > 0)
+    .sort((a, b) => b.usd - a.usd);
+}
+
+function statSyncQuiet(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 const list = sessions();
 const { table, totals } = usageTable(list);
 const ledger = readLedger();
@@ -248,14 +374,39 @@ if (process.argv.includes('--write')) {
       ? `\n**Actually spent across ${ledgerView.span}: $${ledgerView.spent.toFixed(2)}** — this is the provider's own arithmetic.`
       : '\n_Only one balance recorded so far, so there is nothing to subtract yet. Run `--balance` again after the next block of work._',
   ].join('\n');
+  const mainSession = [...list].sort((a, b) => b.total - a.total)[0];
+  const blocks = mainSession ? blocksOf(mainSession) : [];
+  const blocksBody = blocks.length
+    ? `${blocksTable(blocks)}\n\n_Attributed by goal-round boundaries in the main session (${mainSession.id}); the short side sessions add ${usd(totals.usd - blocks.reduce((acc, block) => acc + block.usd, 0))} more._`
+    : '_No session large enough to split._';
+
   text = replaceBlock(text, USAGE_START, USAGE_END, usageBody);
+  text = replaceBlock(text, BLOCKS_START, BLOCKS_END, blocksBody);
   text = replaceBlock(text, LEDGER_START, LEDGER_END, ledgerBody);
   writeFileSync(COSTS_FILE, text);
   console.log(`Updated ${COSTS_FILE}`);
+} else if (process.argv.includes('--all')) {
+  const workspaces = allWorkspaces();
+  console.log('| Workspace | Sessions | Turns | Tokens | Est. USD |');
+  console.log('|---|---:|---:|---:|---:|');
+  for (const entry of workspaces) {
+    console.log(
+      `| ${entry.workspace} | ${entry.sessions} | ${fmt(entry.turns)} | ${fmt(entry.tokens)} | ${usd(entry.usd)} |`,
+    );
+  }
+  console.log(
+    `\nAcross ${workspaces.length} workspaces: ${usd(workspaces.reduce((acc, entry) => acc + entry.usd, 0))} estimated.`,
+  );
 } else if (!process.argv.includes('--balance')) {
+  const main = [...list].sort((a, b) => b.total - a.total)[0];
   console.log(`workspace: ${workspace}`);
   console.log(`sessions: ${list.length}\n`);
   console.log(table);
   console.log(`\nEstimated total: ${usd(totals.usd)}`);
   if (ledgerView.spent !== null) console.log(`Actually spent (balance ledger): $${ledgerView.spent.toFixed(2)}`);
+  if (main) {
+    const mainSession = sessions().find((entry) => entry.id === main.id);
+    console.log(`\nBy block (main session ${main.id}):\n`);
+    console.log(blocksTable(blocksOf(mainSession)));
+  }
 }
