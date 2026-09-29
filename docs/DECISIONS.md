@@ -26,6 +26,7 @@ later reversed.
 | 016 | The rate limiter's store, and what its counter counts | locked |
 | 017 | The printed card can be byte-deterministic | locked |
 | 018 | MIT — the licence, with the reasoning written down | locked |
+| 019 | Users are never charged; sponsors or whitelabel; never sold into closed source | locked |
 
 ## Open decisions
 
@@ -305,3 +306,38 @@ trap to a reviewer and buys nothing here.
 
 Consistency mattered too: Ghosted, the sibling project, is MIT, so a reader
 moving between the two repositories does not have to think about licensing.
+### ADR-019 — users are never charged, and the project is never sold into closed source
+
+A monetization decision, written down before there is any money, because the
+order matters: a policy invented after the first offer is a rationalisation.
+
+**What goes to the user:** nothing, ever. Not a free tier with a paid upgrade,
+not a trial, not a "pro" plan. An emergency card that stops working when a
+subscription lapses is worse than the post-it it replaces, and a product whose
+value shows up in the worst ten minutes of someone's week should not have a
+payment form in front of it.
+
+**What pays for it:** project sponsors (static, self-hosted logos on the landing
+and auth pages, D18) and whitelabel arrangements (a partner running an instance
+under their own brand and paying for hosting, customisation and support — MIT
+already grants the permission, so permission is not what is sold). Nothing else.
+
+**What is never sold:** user data — not raw, not aggregated, not "anonymised
+insights". That phrase is a data sale with a friendlier name, and it is the one
+kind of revenue that would make the encryption boundary pointless: the contact
+data is unreadable by design, and the email and metadata around it are not for
+sale either.
+
+**What is refused outright:** an acquisition that closes the product. An emergency
+card is infrastructure for whoever is holding it. Infrastructure that can be
+withdrawn does not deserve the trust people place in it by printing it.
+
+**The honest cost of that last promise:** MIT (ADR-018) lets anyone fork noka,
+close their fork and sell it. This ADR binds the owner, not the licence. Making
+it legally binding would mean a different licence and a contributor agreement —
+more friction for exactly the people the project exists for. Accepted knowingly,
+and written here so nobody later discovers it as a loophole.
+
+**Why now and not later:** the licence (ADR-018) was the moment a reader could
+start asking what the business model is. "We will figure it out" is how projects
+end up with an analytics pixel on an emergency page.

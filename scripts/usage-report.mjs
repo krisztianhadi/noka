@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+/**
+ * Token usage for this workspace, straight out of the harness session logs.
+ *
+ *   node scripts/usage-report.mjs              # print a table
+ *   node scripts/usage-report.mjs --write      # refresh the block in docs/COSTS.md
+ *
+ * What it counts: every `assistant/message` record in
+ * $DSH_HOME/sessions/--<workspace>-- / * / session.v4.jsonl.zstd that carries a
+ * `usage` object. What it does not: money. DeepSeek's rates change by time of
+ * day, so a token total is not a price — see docs/COSTS.md.
+ */
+import { readdirSync, readFileSync, statSync, writeFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { zstdDecompressSync } from 'node:zlib';
+import { homedir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+const DSH_HOME = process.env.DSH_HOME ?? join(homedir(), '.dsh');
+const COSTS_FILE = resolve('docs/COSTS.md');
+const START = '<!-- usage:start -->';
+const END = '<!-- usage:end -->';
+
+const workspace = process.cwd();
+const storeDir = join(DSH_HOME, 'sessions', `--${workspace.replace(/^\/+/, '').replace(/\//g, '-')}--`);
+
+function sessions() {
+  if (!existsSync(storeDir)) return [];
+  return readdirSync(storeDir)
+    .map((name) => join(storeDir, name, 'session.v4.jsonl.zstd'))
+    .filter((file) => existsSync(file))
+    .map((file) => ({
+      file,
+      id: (file.split('/').at(-2) ?? '').replace(/^session-/, '').slice(0, 8),
+      mtime: statSync(file).mtime,
+    }))
+    .sort((a, b) => a.mtime - b.mtime);
+}
+
+/**
+ * The session log is zstd with one frame per append, so Node's
+ * `zstdDecompressSync` returns only the first frame — a few hundred bytes of a
+ * multi-megabyte log. `zstdcat` concatenates the frames; the Node path is the
+ * fallback for a machine without it.
+ */
+function readLog(file) {
+  try {
+    return execFileSync('zstdcat', [file], { maxBuffer: 1024 * 1024 * 1024 }).toString('utf8');
+  } catch {
+    try {
+      return zstdDecompressSync(readFileSync(file)).toString('utf8');
+    } catch {
+      return '';
+    }
+  }
+}
+
+function usageOf(file) {
+  const text = readLog(file);
+  if (!text) return [];
+  const rows = [];
+  for (const line of text.split('\n')) {
+    if (!line.includes('"usage"')) continue;
+    let record;
+    try {
+      record = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const usage = record?.data?.usage;
+    if (!usage || typeof usage !== 'object') continue;
+    rows.push({
+      time: Number(record.time ?? 0),
+      input: Number(usage.inputTokens ?? 0),
+      output: Number(usage.outputTokens ?? 0),
+      cacheRead: Number(usage.cacheReadTokens ?? 0),
+      cacheWrite: Number(usage.cacheWriteTokens ?? 0),
+      total: Number(usage.totalTokens ?? 0),
+    });
+  }
+  return rows;
+}
+
+const bySession = [];
+const totals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0, calls: 0 };
+
+for (const session of sessions()) {
+  const rows = usageOf(session.file);
+  if (rows.length === 0) continue;
+
+  const sum = (key) => rows.reduce((acc, row) => acc + row[key], 0);
+  const entry = {
+    id: session.id,
+    calls: rows.length,
+    first: new Date(Math.min(...rows.map((row) => row.time))),
+    last: new Date(Math.max(...rows.map((row) => row.time))),
+    input: sum('input'),
+    output: sum('output'),
+    cacheRead: sum('cacheRead'),
+    cacheWrite: sum('cacheWrite'),
+    total: sum('total'),
+  };
+  bySession.push(entry);
+  for (const key of ['input', 'output', 'cacheRead', 'cacheWrite', 'total']) totals[key] += entry[key];
+  totals.calls += entry.calls;
+}
+
+const fmt = (value) => value.toLocaleString('en-US');
+const hours = (entry) => ((entry.last - entry.first) / 3_600_000).toFixed(1);
+
+const lines = [];
+lines.push(`| Session started | Turns | Input | Output | Cache read | Cache write | Total |`);
+lines.push(`|---|---:|---:|---:|---:|---:|---:|`);
+for (const entry of bySession) {
+  const started = entry.first.toISOString().replace('T', ' ').slice(0, 16) + 'Z';
+  lines.push(
+    `| ${started} (\`${entry.id.slice(0, 8)}\`, ${hours(entry)} h) | ${entry.calls} | ${fmt(entry.input)} | ${fmt(entry.output)} | ${fmt(entry.cacheRead)} | ${fmt(entry.cacheWrite)} | ${fmt(entry.total)} |`,
+  );
+}
+lines.push(
+  `| **Total** | **${fmt(totals.calls)}** | **${fmt(totals.input)}** | **${fmt(totals.output)}** | **${fmt(totals.cacheRead)}** | **${fmt(totals.cacheWrite)}** | **${fmt(totals.total)}** |`,
+);
+
+const table = lines.join('\n');
+
+if (process.argv.includes('--write')) {
+  if (!existsSync(COSTS_FILE)) {
+    console.error(`No ${COSTS_FILE} to update.`);
+    process.exit(1);
+  }
+  const current = readFileSync(COSTS_FILE, 'utf8');
+  if (!current.includes(START) || !current.includes(END)) {
+    console.error(`Add ${START} … ${END} markers to docs/COSTS.md first.`);
+    process.exit(1);
+  }
+  const next = current.replace(
+    new RegExp(`${START}[\\s\\S]*?${END}`),
+    `${START}\n${table}\n\n_Generated by \`node scripts/usage-report.mjs --write\` on ${new Date().toISOString().slice(0, 10)}._\n${END}`,
+  );
+  writeFileSync(COSTS_FILE, next);
+  console.log(`Updated ${COSTS_FILE}`);
+} else {
+  console.log(`workspace: ${workspace}`);
+  console.log(`sessions with usage: ${bySession.length}\n`);
+  console.log(table);
+}

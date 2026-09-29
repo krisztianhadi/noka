@@ -17,8 +17,9 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
-| [DECISIONS.md](DECISIONS.md) | The ADRs: 17 numbered decisions, the one this project reversed, and the open ones. |
+| [DECISIONS.md](DECISIONS.md) | The ADRs: 19 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |
+| [COSTS.md](COSTS.md) | What the build costs: free brainstorming lane, paid API lane, real token totals. |
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
 | [blog/2026-09-29-the-post-it-in-my-wallet.md](blog/2026-09-29-the-post-it-in-my-wallet.md) | First post draft (unpublished). |
 | [../README.md](../README.md) | Under 200 lines: what it is, quick start, scripts. |

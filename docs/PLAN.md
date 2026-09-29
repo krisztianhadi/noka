@@ -24,7 +24,16 @@ At Phase 1 it splits per the project-docs method: decisions and threat model →
 9. Print languages: **EN / ES / FR / ZH / RU** for now. Later the owner picks the five at card generation. → D15
 10. The **responder pages carry the same language set as the card**, so a card whose instructions are Chinese never lands on an English page. → D19, D20, §3
 11. **Every contact carries its own spoken languages**, so a responder who speaks one language can see who to call. → D17, §4
-12. **Monetization is deferred.** Sponsors are static logos on the landing and the auth pages only — no pricing, no payments, no impressions, nothing on `/c/*`. → D18, §8
+12. **Monetization does not involve charging users.** Static sponsor logos on the
+    landing and auth pages; nothing on `/c/*`. The full policy — sponsors,
+    whitelabel, no data selling, never closed-source — is §18. → D18, D32
+13. **Encryption moved out of PostgreSQL.** The spec asked for `pgcrypto`; the
+    project does AES-256-GCM in the application with a keyring and `key_version`,
+    so the key never reaches the database and the per-row key derivation stays
+    off the responder page's hot path. → D1, §4, ADR-003
+14. **The owner's email is the one plaintext exception.** The auth library looks
+    accounts up by it, so the blind-index design was dropped rather than fought.
+    → ADR-004, §4
 
 ---
 
@@ -87,6 +96,7 @@ wrong or missing and are corrected in this document:
 | D29 | **Byte-deterministic PDFs**: fixed CreationDate/ModDate, no random document `/ID`, stable object order and font subsetting, asserted by a byte-comparison test. | locked |
 | D30 | **Card visual identity** — typography, spacing, header treatment, the printed mark — is one design, decided and reviewed as an image before Phase 7. Extra card designs stay later. | open |
 | D31 | **`relation` is a fixed vocabulary, never free text** — `spouse`, `partner`, `parent`, `sibling`, `child`, `friend`, `other` — validated on write, rendered in the responder's language. There is no formal standard to follow (RFC 6350's `RELATED` types are social, not emergency); this is the emergency-card norm, gender-neutral, with `other` as the escape hatch. | locked |
+| D32 | **Users are never charged, ever.** The product is paid for by project sponsors or whitelabel arrangements; user data is never sold, and the project is never sold into closed source. Full policy: §18, ADR-019. | locked |
 
 **Needed before the first printed card (not blocking code):** the production
 origin baked into every QR (`PUBLIC_CARD_ORIGIN`). Keep it short — every URL
@@ -741,3 +751,44 @@ Written down so nobody discovers them as surprises:
    within the card's own set.
 9. **IP limits can be wrong behind CGNAT**, and the dashboard reports network
    counts, never geolocation (D26).
+
+---
+
+## 18. Monetization and closure policy (D32)
+
+The product is not the business. It exists to be used, and the money question is
+answered by two rules that do not touch the user.
+
+**Users are never charged. Not a free tier, not a trial, not a "pro" tier later.**
+An emergency card that stops working when a subscription lapses is worse than the
+post-it it replaces.
+
+**Revenue, if any, comes from the sides:**
+
+- **Project sponsors** — static, self-hosted logos on the landing and auth pages.
+  Never on `/c/*`, never a pixel, never a script, never an impression counter.
+  (D18 already fixes this; §8 lists what a sponsor must not get.)
+- **Whitelabel** — a partner running an instance under their own brand, paying
+  for the work rather than for permission. MIT already grants the permission, so
+  what is sold is hosting, customisation and support, not a licence.
+- **Nothing else.** No user data sold, shared or brokered, ever. No analytics on
+  the responder page. No "anonymised insights" — that phrase is a data sale with
+  a friendlier name.
+
+**Two commitments about the project itself:**
+
+- **No acquisition that closes it.** If someone offers to buy the product and run
+  it as proprietary software, the answer is no. An emergency card is
+  infrastructure for whoever is holding it, and infrastructure that can be
+  withdrawn does not deserve the trust.
+- **The canonical repository stays MIT** (ADR-018) and stays open. Anyone may
+  fork it; nobody may take this one away.
+
+**What that costs, stated plainly:** MIT means someone else may legally fork noka,
+close their fork and sell it. The commitment above binds the owner, not the
+licence. That is a known, accepted trade — the alternative was a licence that
+would have made the code harder to reuse for the people this is for.
+
+**What is still undecided, and is fine to be:** whether sponsors ever actually
+appear, what a whitelabel deal would cost, and whether any of this is worth
+doing before ten people have printed a card. None of it blocks the build.

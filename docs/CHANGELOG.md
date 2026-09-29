@@ -4,6 +4,25 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — monetization policy, the encryption delta, and a cost record
+
+- **Monetization policy written down (D32, §18, ADR-019):** users are never
+  charged — not a tier, not a trial, not a "pro" plan; revenue, if any, comes from
+  project sponsors and whitelabel arrangements; user data is never sold, shared or
+  brokered; and the product is never sold into closed source. The ADR states what
+  MIT does and does not enforce, so the last promise is a commitment rather than a
+  licence term.
+- **The encryption change is now in the plan's own delta list** (item 13) rather
+  than only inside D1 and ADR-003: the spec asked for `pgcrypto`, the project does
+  AES-256-GCM in the application, and the README says why in one paragraph —
+  including the one plaintext exception (the owner's email, ADR-004).
+- **`docs/COSTS.md` created, with a generator.** `scripts/usage-report.mjs` reads
+  the harness session logs and reports exact token totals per session; the file
+  explains why there is no money column (rates change by time of day, so tokens
+  are not a price) and how to turn the totals into one from the provider's
+  billing page. First run: **369 turns, 107,148,435 total tokens** across six
+  sessions, of which 106.3 M are cached prompt reads.
+
 ### Feature — MIT licence, and the ADR that explains it
 
 - `LICENSE` (MIT, Copyright (c) 2026 Krisztian Hadi) and `"license": "MIT"` in
