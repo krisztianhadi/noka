@@ -37,12 +37,12 @@ better-auth session, SSR forms, origin-checked POSTs.
 | GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
 | ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
-| GET | `/dashboard` | Guarded owner shell. Card summary, PIN, scan activity land in Phase 3. | ✅ shell |
+| GET | `/dashboard` | Guarded owner shell: card state, contact count, PIN, card URL. | ✅ |
 | GET/POST | `/dashboard/profile` | First name; email change. | ⏳ (2b) |
-| GET/POST | `/dashboard/card` | Onboarding: exactly one card, ≥1 contact to activate, origin warning. | ⏳ (3) |
-| POST | `/dashboard/card/rotate-pin` | New PIN, bumps `pin_version`, kills live view cookies. | ⏳ (3) |
-| POST | `/dashboard/card/regenerate-slug` | New QR; the old printed card stops working permanently. | ⏳ (3) |
-| POST | `/dashboard/card/deactivate` \| `/activate` | Gates the guest URL **and** the print endpoints. | ⏳ (3) |
+| GET/POST | `/dashboard/card` | Onboarding: exactly one card per account, idempotent. Creation is gated on nothing; **activation** needs ≥1 contact (D28). Shows the PIN and the responder URL. | ✅ |
+| POST | `/dashboard/card/rotate-pin` | New PIN, bumps `pin_version`, kills live view cookies. | ✅ |
+| POST | `/dashboard/card/regenerate-slug` | New QR; the old printed card stops working permanently. | ✅ |
+| POST | `/dashboard/card/deactivate` \| `/activate` | Gates the guest URL **and** the print endpoints; activation refuses with no contacts. | ✅ |
 | GET/POST | `/dashboard/contacts[/new\|/{id}/edit]`, `POST .../delete` | Encrypted CRUD; relation from the fixed vocabulary (D31); the last contact cannot be deleted while active (D28). | ⏳ (4) |
 | GET/POST | `/dashboard/notes` | Free text, consent line. | ⏳ (4) |
 | GET | `/dashboard/card/preview` | Responder view rendered for the owner, with a language picker. | ⏳ (7) |

@@ -157,6 +157,33 @@ Two consequences worth recording:
 - The session cookie carries `Secure` only when the origin is HTTPS, which is
   how better-auth decides. Production runs on HTTPS, local development does not.
 
+### ADR-011 — the PIN is stored twice, and a card cannot be active while empty
+
+`cards.pin_hash` verifies; `cards.pin_encrypted` lets the owner read and reprint
+their own card for as long as it is active (D9). Losing the encryption key
+therefore costs the ability to *reprint*, not the ability to *verify* — worth
+knowing before anyone "simplifies" the second column away.
+
+Activation is gated on `contactCount(cardId) > 0` (D28, §15): an active card
+that leads to an empty page is worse than an inactive one, and the dashboard
+button is disabled with the reason shown. Deactivation is always allowed.
+`pin_version` is bumped by rotation, which is what invalidates live view cookies
+— the hash swap is what makes the old PIN useless. Two different jobs.
+
+### ADR-012 — the dashboard guard lives in middleware
+
+`src/middleware.ts` resolves the better-auth session for any `/dashboard/*`
+request and either redirects to `/login` or puts `{id, name, email}` on
+`Astro.locals.owner` (typed in `src/env.d.ts`). Pages therefore never
+re-derive the session, and a new dashboard route cannot forget the guard. The
+lookup happens only for `/dashboard/*`, so the responder plane pays nothing for
+it.
+
+Note for local e2e runs: Playwright reuses a server already listening on :3200
+(`reuseExistingServer`). If that server is running an older build, the suite
+tests the old code — restart it before `pnpm test:e2e`, or stop it and let
+Playwright build and start its own.
+
 ## What is deliberately absent
 
 No client framework, no analytics on `/c/*`, no sponsor markup on `/c/*` or

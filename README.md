@@ -10,9 +10,10 @@ pass has happened yet.
 
 ## Status
 
-Phase 2 — accounts work end to end (signup, login, server-side logout, guarded
-dashboard). Cards, contacts and the responder page are next. See
-[docs/CHANGELOG.md](docs/CHANGELOG.md) and [docs/PLAN.md](docs/PLAN.md).
+Phase 3 — accounts and the card work end to end: signup, login, a card with a
+reprintable six-digit PIN, QR reissue, switch on/off. Contacts and the responder
+page are next. See [docs/CHANGELOG.md](docs/CHANGELOG.md) and
+[docs/PLAN.md](docs/PLAN.md).
 
 ## How it works
 

@@ -4,6 +4,26 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — Phase 3: the card
+
+- Card lifecycle service (`src/lib/cards.ts`): exactly one card per account,
+  idempotent creation, PIN rotation, slug regeneration, activate/deactivate,
+  and `cardUrl()` for the QR target.
+- The PIN is stored twice on purpose (ADR-011): `pin_hash` to verify,
+  `pin_encrypted` so the owner can read and reprint their own card while it is
+  active. The dashboard shows it grouped — `123 456` — which is what gets
+  printed.
+- Activation is gated on having at least one contact (D28); the dashboard
+  disables the button and says why. Deactivation is always allowed.
+- `/dashboard/card` plus POST-only, origin-checked endpoints for rotate-pin,
+  regenerate-slug, activate and deactivate; the `/dashboard` shell now shows the
+  card state, contact count, PIN and responder URL.
+- The owner guard moved into middleware (ADR-012): `/dashboard/*` redirects to
+  `/login` without a session and publishes `Astro.locals.owner`, so no page
+  re-derives the session and no new route can forget the guard.
+- Tests: 84 Vitest cases (8 new card-lifecycle ones against real Postgres) and
+  11 Playwright cases, axe clean on the card page too.
+
 ### Feature — Phase 2: the owner plane
 
 - better-auth wired to Drizzle with its own tables (`users`, `sessions`,

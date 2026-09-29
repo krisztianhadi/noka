@@ -1,25 +1,41 @@
 ---
 import Plain from '@/layouts/Plain.astro';
-import { getAuth } from '@/lib/auth';
+import { cardUrl, contactCount, getCardForOwner, revealPin } from '@/lib/cards';
 
-const session = await getAuth().api.getSession({ headers: Astro.request.headers });
-if (!session) return Astro.redirect('/login', 303);
-
-const { user } = session;
+const owner = Astro.locals.owner!;
+const card = await getCardForOwner(owner.id);
+const contacts = card ? await contactCount(card.id) : 0;
 ---
 
-<Plain title="Your card — noka">
-  <h1>Hello, {user.name}</h1>
+<Plain title="Dashboard — noka">
+  <h1>Hello, {owner.name}</h1>
 
   <p>
-    You are signed in as <strong>{user.email}</strong>.
+    Signed in as <strong>{owner.email}</strong>.
   </p>
 
   <h2>Your card</h2>
-  <p>
-    Cards arrive next: a QR slug, a six-digit PIN and the contacts a responder will see. Nothing exists
-    for this account yet.
-  </p>
+  {
+    !card && (
+      <>
+        <p>You have no card yet. A card is a QR code and a six-digit PIN, printed on something the size of a bank card.</p>
+        <p><a href="/dashboard/card">Create your card →</a></p>
+      </>
+    )
+  }
+
+  {
+    card && (
+      <>
+        <p>
+          {card.active ? 'Active' : 'Not active'} · {contacts} {contacts === 1 ? 'contact' : 'contacts'}
+        </p>
+        <p class="pin">{revealPin(card)}</p>
+        <p class="url">{cardUrl(card)}</p>
+        <p><a href="/dashboard/card">Manage the card →</a></p>
+      </>
+    )
+  }
 
   <form method="post" action="/logout">
     <button type="submit">Sign out</button>
@@ -30,5 +46,15 @@ const { user } = session;
   h2 {
     margin-top: 2rem;
     font-size: 1.25rem;
+  }
+  .pin {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 2rem;
+    letter-spacing: 0.12em;
+    margin: 0.5rem 0;
+  }
+  .url {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    word-break: break-all;
   }
 </style>

@@ -64,7 +64,7 @@ Four consequences, all handled by committed config:
 | `pnpm db:migrate` | applies migrations; same script the container runs |
 | `pnpm typecheck` | `astro check`, tests included |
 | `pnpm test` | Vitest; loads `.env`, integration tests need Postgres up |
-| `pnpm test:e2e` | Playwright against the **built** server (dev injects HMR scripts) |
+| `pnpm test:e2e` | Playwright against the **built** server (dev injects HMR scripts). It reuses a server already listening on :3200 — restart yours first, or the suite tests your old build. |
 
 ## Breach procedure (one paragraph, per §8)
 
