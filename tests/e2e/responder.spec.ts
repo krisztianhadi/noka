@@ -79,6 +79,8 @@ test.describe('the responder page', () => {
 
     await stranger.goto(`/c/${slug}`);
     const locked = await stranger.locator('.langs button').allTextContents();
+    // Folded by default on both pages: the device language is already applied.
+    await expect(stranger.locator('.langs')).not.toHaveAttribute('open', '');
 
     await stranger.fill('input[name="pin"]', pin);
     await stranger.getByRole('button').first().click();
@@ -145,7 +147,10 @@ test.describe('the responder page', () => {
     expect(viewHtml).not.toMatch(/<script/i);
     expect(viewHtml).not.toMatch(/<link[^>]+rel="stylesheet"/i);
 
-    // 4. The responder can switch the page into their own language.
+    // 4. The responder can switch the page into their own language. The switcher is
+    //    folded away (the page already opens in the device's language), so open it first.
+    await expect(guest.locator('.langs')).not.toHaveAttribute('open', '');
+    await guest.locator('.langs > summary').click();
     await guest.getByRole('button', { name: 'Русский' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
     await expect(guest.locator('a.call')).toContainText('Позвонить');

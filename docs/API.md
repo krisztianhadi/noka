@@ -10,6 +10,8 @@ Status: ✅ built · ⏳ planned (phase in brackets).
 | GET | `/` | Landing: what the card is, signup/login entry, static sponsor logos (D18). English only. | ✅ placeholder |
 | GET | `/privacy`, `/terms` | Policy pages. | ⏳ (9) |
 | GET | `/robots.txt` | `Disallow: /c/`, `Disallow: /dashboard/`. | ✅ |
+| GET | `/dashboard/settings/export` | Owner's own data as a JSON attachment (`no-store`): contacts decrypted, notes, card + PIN. Portability, Art. 20. | ✅ |
+| POST | `/dashboard/settings/delete` | Erases the account and everything cascading from it, clears the session cookie, redirects to `/?deleted=1`. Erasure, Art. 17. | ✅ |
 | GET | `/privacy` \| `/terms` \| `/imprint` | Legal pages on the owner plane (footer links). Indexable, no data access. | ✅ |
 | GET | `/healthz` | JSON healthcheck; 503 when the database is unreachable. | ✅ |
 

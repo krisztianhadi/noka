@@ -27,6 +27,7 @@ const en = {
   'view.hide': 'Hide now',
   'view.on': 'Available on',
   'view.text_only': 'Text message only — cannot speak or hear',
+  'lang.change': 'change',
 
   'channel.call': 'Call',
   'channel.sms': 'Text message',
@@ -79,6 +80,7 @@ const es: Record<MessageKey, string> = {
   'view.hide': 'Ocultar ahora',
   'view.on': 'Disponible en',
   'view.text_only': 'Solo mensajes de texto — no puede hablar ni oír',
+  'lang.change': 'cambiar',
 
   'channel.call': 'Llamar',
   'channel.sms': 'Mensaje de texto',
@@ -129,6 +131,7 @@ const fr: Record<MessageKey, string> = {
   'view.hide': 'Masquer maintenant',
   'view.on': 'Disponible sur',
   'view.text_only': 'SMS uniquement — ne peut ni parler ni entendre',
+  'lang.change': 'changer',
 
   'channel.call': 'Appeler',
   'channel.sms': 'SMS',
@@ -179,6 +182,7 @@ const zh: Record<MessageKey, string> = {
   'view.hide': '立即隐藏',
   'view.on': '可通过',
   'view.text_only': '仅限短信 — 无法说话或听见',
+  'lang.change': '更改',
 
   'channel.call': '拨打电话',
   'channel.sms': '短信',
@@ -229,6 +233,7 @@ const ru: Record<MessageKey, string> = {
   'view.hide': 'Скрыть сейчас',
   'view.on': 'Доступно в',
   'view.text_only': 'Только СМС — не может говорить или слышать',
+  'lang.change': 'изменить',
 
   'channel.call': 'Позвонить',
   'channel.sms': 'СМС',

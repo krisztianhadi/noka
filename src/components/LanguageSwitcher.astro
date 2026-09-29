@@ -9,17 +9,28 @@ import { flagForLanguage } from '@/lib/flags';
  * It existed twice — the PIN page rendered endonyms, the unlocked page rendered flags
  * beside them — so the same plane looked like two different products depending on
  * whether the PIN had been entered yet. One component, one look.
+ *
+ * The list is folded into a native `<details>`: the page already opens in the visitor's
+ * device language, so switching is the exception and should not take a row of the page
+ * from someone who is trying to read a phone number.
  */
 interface Props {
   action: string;
   languages: readonly CardLanguage[];
   current: CardLanguage;
+  /** Already translated by the page: the hint belongs to the page's language. */
+  changeLabel: string;
 }
 
-const { action, languages, current } = Astro.props;
+const { action, languages, current, changeLabel } = Astro.props;
 ---
 
-<div class="langs">
+<details class="langs">
+  <summary>
+    <span aria-hidden="true">{flagForLanguage(current)}</span>
+    <span>{LANGUAGE_INFO[current].endonym}</span>
+    <span class="hint">{changeLabel}</span>
+  </summary>
   <form method="post" action={action}>
     {
       languages.map((code) => (
@@ -29,4 +40,4 @@ const { action, languages, current } = Astro.props;
       ))
     }
   </form>
-</div>
+</details>

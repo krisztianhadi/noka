@@ -197,6 +197,29 @@ const { lang, title } = Astro.props;
     padding-top: 1rem;
     border-top: 1px solid #e5e5e5;
   }
+  .langs > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    list-style: none;
+  }
+  .langs > summary::-webkit-details-marker {
+    display: none;
+  }
+  .langs > summary .hint {
+    font-weight: 400;
+    color: #555;
+  }
+  .langs[open] > summary {
+    margin-bottom: 0.6rem;
+    border-color: #111;
+  }
   .langs form {
     display: flex;
     flex-wrap: wrap;

@@ -31,6 +31,7 @@ interface Props {
     | 'save'
     | 'chevron'
     | 'sms'
+    | 'download'
     | 'sun-off'
     | 'print';
   size?: number;
@@ -64,6 +65,7 @@ const PATHS: Record<Props['name'], string> = {
   save: '<path d="M5 3.5h11l3 3v14H5z"/><path d="M8.5 3.5v5h6v-5M8.5 20v-6h7v6"/>',
   chevron: '<path d="m6 9.5 6 6 6-6"/>',
   sms: '<path d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"/><path d="M8.5 10.5h7"/>',
+  download: '<path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/>',
   'sun-off': '<path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
 };
 

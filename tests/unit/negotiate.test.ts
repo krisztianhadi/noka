@@ -38,23 +38,33 @@ describe('negotiateLanguage', () => {
     expect(negotiateLanguage('zh-Hans-CN', ALL)).toBe('zh');
   });
 
-  it('falls back to the card default when nothing matches', () => {
-    expect(negotiateLanguage('th-TH,th;q=0.9', RUSSIAN_FIRST)).toBe('ru');
+  it('falls back to English when the device language is not on the card', () => {
+    // The card offers English, so a Thai phone reads English rather than whatever the
+    // owner happened to list first.
+    expect(negotiateLanguage('th-TH,th;q=0.9', RUSSIAN_FIRST)).toBe('en');
     expect(negotiateLanguage('th-TH', ALL)).toBe('en');
   });
 
-  it('uses the card default when there is no header at all', () => {
-    expect(negotiateLanguage(undefined, RUSSIAN_FIRST)).toBe('ru');
-    expect(negotiateLanguage(undefined, ALL)).toBe('en');
+  it('falls back to the card’s first language only when English is not offered', () => {
+    expect(negotiateLanguage('th-TH', ['ru', 'fr'])).toBe('ru');
+    expect(negotiateLanguage('de-DE', ['zh', 'fr'])).toBe('zh');
   });
 
-  it('treats a wildcard as the card default, not as every language', () => {
-    expect(negotiateLanguage('*', RUSSIAN_FIRST)).toBe('ru');
+  it('uses English when the browser sends no preference at all', () => {
+    expect(negotiateLanguage(undefined, RUSSIAN_FIRST)).toBe('en');
+    expect(negotiateLanguage('', ALL)).toBe('en');
   });
 
-  it('honours the order of the card set, which is the owner’s choice', () => {
+  it('treats a wildcard as "any language", so English wins when it is offered', () => {
+    expect(negotiateLanguage('*', RUSSIAN_FIRST)).toBe('en');
+    expect(negotiateLanguage('*', ['fr', 'zh'])).toBe('fr');
+  });
+
+  it('never returns a language the card does not offer', () => {
     for (const allowed of [ALL, RUSSIAN_FIRST, ['zh', 'fr'] as CardLanguage[]]) {
-      expect(negotiateLanguage('th', allowed)).toBe(allowed[0]);
+      for (const header of ['th', undefined, '*', 'en;q=0']) {
+        expect(allowed).toContain(negotiateLanguage(header, allowed));
+      }
     }
   });
 

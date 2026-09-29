@@ -387,6 +387,39 @@ test.describe('the account menu', () => {
     expect(background).toBe(token);
   });
 
+  test('downloads the data, and deletes the account without emailing anyone', async ({ page }) => {
+    const email = await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    await saveNotes(page, 'Type 1 diabetic.');
+
+    await page.goto('/dashboard/settings');
+    const download = await page.request.get('/dashboard/settings/export');
+    expect(download.status()).toBe(200);
+    expect(download.headers()['content-disposition']).toMatch(/attachment; filename="noka-export-\d{4}-\d{2}-\d{2}\.json"/);
+    // It carries the PIN and the decrypted contacts, so it must never be cached.
+    expect(download.headers()['cache-control']).toContain('no-store');
+
+    const exported = await download.json();
+    expect(exported.account.email).toBe(email);
+    expect(exported.contacts[0].name).toBe('Maria Silva');
+    expect(exported.contacts[0].phone).toBe('+66812345678');
+    expect(exported.notes).toBe('Type 1 diabetic.');
+
+    // Deleting asks first, then leaves nothing: the session goes with the account.
+    await page.getByRole('button', { name: 'Delete account' }).click();
+    const warning = await confirmModal(page);
+    expect(warning).toContain('permanently');
+    await expect(page).toHaveURL(/\?deleted=1$/);
+    await expect(page.locator('body')).toContainText('has been deleted');
+
+    // The account is gone: signing in with the same credentials fails.
+    await page.goto('/login');
+    await page.fill('#email', email);
+    await page.fill('#password', 'correct-horse-battery');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.locator('.error')).toBeVisible();
+  });
+
   test('changes the email and the password from settings', async ({ page }) => {
     await signUp(page);
     const newEmail = `changed-${Date.now()}@noka.test`;

@@ -103,5 +103,5 @@ const languages = card ? cardLanguages(card) : [...DEFAULT_CARD_LANGUAGES];
     <button type="submit">{label('pin.submit')}</button>
   </form>
 
-  {languages.length > 1 && <LanguageSwitcher action={`/c/${requestedSlug}/lang`} languages={languages} current={language} />}
+  {languages.length > 1 && <LanguageSwitcher action={`/c/${requestedSlug}/lang`} languages={languages} current={language} changeLabel={label('lang.change')} />}
 </Responder>

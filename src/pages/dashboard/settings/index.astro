@@ -116,5 +116,47 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
         </div>
       </form>
     </section>
+    <section class={cardClass}>
+      <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+        <Icon name="download" size={16} /> Your data
+      </h2>
+
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm">
+            Everything this account holds — your contacts decrypted, your notes, your card and its
+            PIN — as one JSON file. No email needed, no waiting.
+          </p>
+          <div class="mt-3">
+            <a
+              class="inline-flex h-9 items-center gap-2 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
+              href="/dashboard/settings/export"
+              download
+            >
+              <Icon name="download" size={16} /> Download my data
+            </a>
+          </div>
+        </div>
+
+        <div class="border-t border-line pt-4">
+          <p class="text-sm font-medium text-danger">Delete this account</p>
+          <p class="mt-1 text-xs leading-5 text-fg-muted">
+            Erases the account, the contacts, the notes and the card immediately and permanently.
+            The printed card stops working at once. There is no undo and no grace period.
+          </p>
+          <form
+            class="mt-3"
+            method="post"
+            action="/dashboard/settings/delete"
+            data-confirm="This erases your account, your contacts, your notes and your card — permanently, with no way back. The printed card stops working immediately."
+            data-confirm-title="Delete everything?"
+            data-confirm-ok="Delete my account"
+          >
+            <Button type="submit" variant="danger"><Icon name="trash" size={16} /> Delete account</Button>
+          </form>
+        </div>
+      </div>
+    </section>
   </div>
+
 </Plain>

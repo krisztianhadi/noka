@@ -117,7 +117,7 @@ const offered = cardLanguages(card);
 
   {
     offered.length > 1 && (
-      <LanguageSwitcher action={`/c/${card.slug}/lang`} languages={offered} current={language} />
+      <LanguageSwitcher action={`/c/${card.slug}/lang`} languages={offered} current={language} changeLabel={label('lang.change')} />
     )
   }
 </Responder>

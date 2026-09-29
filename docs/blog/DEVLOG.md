@@ -590,3 +590,31 @@ can import `src/` the way the app does — and the next maintenance script gets 
 the page says the email route is the route until that flow exists. A privacy page that overpromises
 is worse than one that admits a gap, and it is the one page a person reads when they are already
 worried.
+
+## 2026-09-29 — Nobody should have to email me to get their own data
+
+**What he asked for.** Make export and deletion self-service rather than "write to this address",
+and default the app's language to the device's, with the switcher tucked away so it does not cost
+a row of the page.
+
+**The two buttons.** Settings now carries a *Your data* section: one download that produces a JSON
+file with everything the account holds — contacts decrypted, notes, the card and its PIN — and one
+button that erases all of it. Both are the owner's own data, so there is no queue, no request, no
+approval step, and no email. The deletion goes through the existing confirmation modal, cascades
+through every table that references the user, and takes the live session with it: a "deleted"
+account with a working cookie would be a lie. The integration test deletes a real account and then
+asserts that the contacts, notes, card, audit rows and sessions are all gone, and that the export
+has nothing left to say.
+
+**One deliberate omission in the export.** Scan attempts are summarised, not dumped. The rows hold
+an HMAC'd address prefix that means nothing to the person reading the file — a list of opaque
+hashes is not portability, it is noise that looks like data. The count and the last attempt are the
+part anyone would actually want.
+
+**The language default.** The card pages already negotiated from `Accept-Language`; the change is
+what happens when nothing matches. It used to fall back to the card's first language — the owner's
+preference — so a Thai browser opening a Russian-first card got Russian. Now English, and only if
+the card does not offer English does the owner's order decide. The switcher itself collapsed into a
+native `<details>`: one line, the current language, and "cambiar" / "changer" / "更改" / "изменить"
+translated in the page's own language. It had been leaking the English word "change" onto Spanish
+pages, which is exactly the kind of small wrongness that makes a translation look unfinished.

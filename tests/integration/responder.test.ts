@@ -160,12 +160,16 @@ describeDb('responder', () => {
     expect(viewCookieStillValid(claims, null)).toBe(false);
   });
 
-  it('resolves the language: cookie, then Accept-Language, then the card default', async () => {
+  it('resolves the language: explicit cookie, then the device, then English', async () => {
     const card = await liveCard();
 
+    // A chosen cookie always wins — that is what choosing means.
     expect(resolveLanguage(card, 'ru', 'en')).toBe('ru');
+    // Otherwise the browser's own preference decides.
     expect(resolveLanguage(card, undefined, 'fr-FR,fr;q=0.9')).toBe('fr');
+    // A language the card does not offer lands on English, not on the owner's first pick.
     expect(resolveLanguage(card, undefined, 'th-TH')).toBe('en');
+    // No preference at all: English.
     expect(resolveLanguage(card, undefined, undefined)).toBe('en');
 
     // A cookie for a language this card does not offer falls through.

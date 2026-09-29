@@ -39,7 +39,11 @@ export function negotiateLanguage(
   header: string | null | undefined,
   allowed: readonly CardLanguage[],
 ): CardLanguage {
-  const fallback = allowed[0] ?? 'en';
+  // The device's language decides; English is the fallback when the card does not offer it,
+  // and only then the owner's first choice. A Thai phone opening a Russian-first card should
+  // read English, not Russian — the card's order is the owner's preference for a responder
+  // who expressed none, not a default to impose on someone whose browser said otherwise.
+  const fallback = allowed.includes('en') ? 'en' : (allowed[0] ?? 'en');
   if (allowed.length === 0) return 'en';
 
   for (const { tag } of parseAcceptLanguage(header)) {
