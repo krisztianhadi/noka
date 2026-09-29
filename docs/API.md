@@ -32,11 +32,13 @@ better-auth session, SSR forms, origin-checked POSTs.
 
 | Method | Path | Behaviour | Status |
 |---|---|---|---|
-| GET/POST | `/signup`, `/login`, `/forgot`, `/reset` | Account lifecycle; first name captured at signup (D27). | ⏳ (2) |
-| ANY | `/api/auth/*` | better-auth (Google callback, session). | ⏳ (2) |
-| POST | `/logout` | Server-side session revocation. | ⏳ (2) |
-| GET | `/dashboard` | Card summary, PIN, scan activity. No sponsor slot. | ⏳ (3) |
-| GET/POST | `/dashboard/profile` | First name; email change rewrites the address in one transaction. | ⏳ (2) |
+| GET/POST | `/signup` | Account lifecycle; the first name is captured here (D27), because better-auth requires it. | ✅ |
+| GET/POST | `/login` | Session cookie on success; one message for every failure. | ✅ |
+| GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
+| ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
+| POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
+| GET | `/dashboard` | Guarded owner shell. Card summary, PIN, scan activity land in Phase 3. | ✅ shell |
+| GET/POST | `/dashboard/profile` | First name; email change. | ⏳ (2b) |
 | GET/POST | `/dashboard/card` | Onboarding: exactly one card, ≥1 contact to activate, origin warning. | ⏳ (3) |
 | POST | `/dashboard/card/rotate-pin` | New PIN, bumps `pin_version`, kills live view cookies. | ⏳ (3) |
 | POST | `/dashboard/card/regenerate-slug` | New QR; the old printed card stops working permanently. | ⏳ (3) |

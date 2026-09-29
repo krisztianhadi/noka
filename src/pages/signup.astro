@@ -1,0 +1,49 @@
+---
+import Plain from '@/layouts/Plain.astro';
+import { getAuth } from '@/lib/auth';
+import { errorMessage, field, forbidden, isSameOrigin, redirectWithCookies } from '@/lib/http';
+
+let error = '';
+let email = '';
+let name = '';
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+
+  const form = await Astro.request.formData();
+  email = field(form, 'email');
+  name = field(form, 'name');
+  const password = field(form, 'password');
+
+  const response = await getAuth().api.signUpEmail({
+    body: { email, password, name },
+    asResponse: true,
+  });
+
+  if (response.ok) return redirectWithCookies('/dashboard', response);
+  error = await errorMessage(response, 'Could not create the account.');
+}
+---
+
+<Plain title="Create your noka account">
+  <h1>Create your account</h1>
+
+  {error && <p class="error" role="alert">{error}</p>}
+
+  <form method="post">
+    <label for="name">First name</label>
+    <input id="name" name="name" type="text" required autocomplete="given-name" value={name} />
+    <p class="note">This is what a responder sees on your card.</p>
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="email" value={email} />
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password" />
+    <p class="note">At least 10 characters. This guards your account; the card is guarded by its PIN.</p>
+
+    <button type="submit">Create account</button>
+  </form>
+
+  <p class="note">Already have an account? <a href="/login">Sign in</a></p>
+</Plain>

@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
 import { getConfig } from '@/config';
 import { closeDb, getDb } from '@/db/client';
+import { users } from '@/db/auth-schema';
 import { cardNotes, cards, contacts, scanAttempts } from '@/db/schema';
 import { decryptJson, encryptJson, keyring } from '@/lib/crypto';
 import { generateSlug } from '@/lib/slug';
@@ -31,11 +32,24 @@ describeDb('database', () => {
   const db = getDb();
   const ring = keyring({ 1: getConfig().CONTACT_ENCRYPTION_KEY });
   const createdCardIds: string[] = [];
+  const createdUserIds: string[] = [];
 
   afterAll(async () => {
     for (const id of createdCardIds) await db.delete(cards).where(eq(cards.id, id));
+    for (const id of createdUserIds) await db.delete(users).where(eq(users.id, id));
     await closeDb();
   });
+
+  /** cards.user_id is a real FK now (ADR-008 resolved), so make the owner first. */
+  async function insertUser() {
+    const [user] = await db
+      .insert(users)
+      .values({ name: 'Test Owner', email: `owner-${randomUUID()}@noka.test` })
+      .returning();
+    if (!user) throw new Error('user insert returned no row');
+    createdUserIds.push(user.id);
+    return user;
+  }
 
   async function insertCard(userId: string, active = true) {
     const [card] = await db
@@ -53,8 +67,12 @@ describeDb('database', () => {
     return card;
   }
 
+  it('refuses a card whose owner does not exist', async () => {
+    await expect(insertCard(randomUUID())).rejects.toThrow();
+  });
+
   it('stores an encrypted contact and reads back no plaintext', async () => {
-    const card = await insertCard(randomUUID());
+    const card = await insertCard((await insertUser()).id);
     await db.insert(contacts).values({
       cardId: card.id,
       payloadEncrypted: encryptJson(payload(), ring),
@@ -79,7 +97,7 @@ describeDb('database', () => {
   });
 
   it('keeps the notes encrypted too', async () => {
-    const card = await insertCard(randomUUID());
+    const card = await insertCard((await insertUser()).id);
     await db
       .insert(cardNotes)
       .values({ cardId: card.id, notesEncrypted: encryptJson({ notes: SECRET_NAME }, ring), keyVersion: 1 });
@@ -94,7 +112,7 @@ describeDb('database', () => {
   });
 
   it('cascades contacts, notes and attempts when the card is deleted', async () => {
-    const card = await insertCard(randomUUID());
+    const card = await insertCard((await insertUser()).id);
     await db.insert(contacts).values({ cardId: card.id, payloadEncrypted: encryptJson(payload(), ring), keyVersion: 1 });
     await db.insert(cardNotes).values({ cardId: card.id, notesEncrypted: encryptJson({ notes: 'x' }, ring), keyVersion: 1 });
     await db.insert(scanAttempts).values({ cardId: card.id, kind: 'pin_fail', success: false, ipPrefixHash: 'deadbeef' });
@@ -107,14 +125,14 @@ describeDb('database', () => {
   });
 
   it('allows only one active card per owner, but any number of inactive ones', async () => {
-    const userId = randomUUID();
+    const userId = (await insertUser()).id;
     await insertCard(userId, true);
     await expect(insertCard(userId, true)).rejects.toThrow();
     await expect(insertCard(userId, false)).resolves.toBeTruthy();
   });
 
   it('defaults the card language set to the five shipped languages', async () => {
-    const card = await insertCard(randomUUID());
+    const card = await insertCard((await insertUser()).id);
     expect(card.languages).toEqual(['en', 'es', 'fr', 'zh', 'ru']);
     expect(card.scanCount).toBe(0);
     expect(card.pinVersion).toBe(1);

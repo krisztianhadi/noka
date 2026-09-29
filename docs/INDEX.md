@@ -5,9 +5,8 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phase 1 complete** — scaffold, schema, i18n catalogue, encryption
-module, 69 tests green. Accounts and cards are not wired yet; see
-[CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 2** — accounts work (signup, login, server-side logout, guarded
+dashboard). Cards are next; see [CHANGELOG.md](CHANGELOG.md).
 
 | Document | What it is |
 |---|---|

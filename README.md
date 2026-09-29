@@ -10,9 +10,9 @@ pass has happened yet.
 
 ## Status
 
-Phase 1 — scaffold, database, i18n catalogue, tests. Accounts and cards are not
-wired yet. See [docs/CHANGELOG.md](docs/CHANGELOG.md) and
-[docs/PLAN.md](docs/PLAN.md) for what is next.
+Phase 2 — accounts work end to end (signup, login, server-side logout, guarded
+dashboard). Cards, contacts and the responder page are next. See
+[docs/CHANGELOG.md](docs/CHANGELOG.md) and [docs/PLAN.md](docs/PLAN.md).
 
 ## How it works
 

@@ -1,0 +1,34 @@
+---
+import Plain from '@/layouts/Plain.astro';
+import { getAuth } from '@/lib/auth';
+
+const session = await getAuth().api.getSession({ headers: Astro.request.headers });
+if (!session) return Astro.redirect('/login', 303);
+
+const { user } = session;
+---
+
+<Plain title="Your card — noka">
+  <h1>Hello, {user.name}</h1>
+
+  <p>
+    You are signed in as <strong>{user.email}</strong>.
+  </p>
+
+  <h2>Your card</h2>
+  <p>
+    Cards arrive next: a QR slug, a six-digit PIN and the contacts a responder will see. Nothing exists
+    for this account yet.
+  </p>
+
+  <form method="post" action="/logout">
+    <button type="submit">Sign out</button>
+  </form>
+</Plain>
+
+<style>
+  h2 {
+    margin-top: 2rem;
+    font-size: 1.25rem;
+  }
+</style>

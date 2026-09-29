@@ -1,0 +1,43 @@
+---
+import Plain from '@/layouts/Plain.astro';
+import { getAuth } from '@/lib/auth';
+import { errorMessage, field, forbidden, isSameOrigin, redirectWithCookies } from '@/lib/http';
+
+let error = '';
+let email = '';
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+
+  const form = await Astro.request.formData();
+  email = field(form, 'email');
+  const password = field(form, 'password');
+
+  const response = await getAuth().api.signInEmail({
+    body: { email, password },
+    asResponse: true,
+  });
+
+  if (response.ok) return redirectWithCookies('/dashboard', response);
+  // One message for every failure: no account-existence oracle (§6 layer 0).
+  error = (await errorMessage(response, '')) || 'That email and password do not match.';
+}
+---
+
+<Plain title="Sign in to noka">
+  <h1>Sign in</h1>
+
+  {error && <p class="error" role="alert">{error}</p>}
+
+  <form method="post">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autocomplete="email" value={email} />
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+    <button type="submit">Sign in</button>
+  </form>
+
+  <p class="note">No account yet? <a href="/signup">Create one</a></p>
+</Plain>

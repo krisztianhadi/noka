@@ -122,11 +122,40 @@ The cookie is `{slug, pin_version, exp}` signed with `VIEW_COOKIE_SECRET`
 anyway and Astro's session driver would add a second store with its own
 lifecycle. Owner sessions are better-auth's DB-backed sessions.
 
-### ADR-008 — `cards.user_id` has no foreign key yet
+### ADR-008 — `cards.user_id` is a real foreign key (resolved)
 
-better-auth's `users` table arrives in Phase 2; the FK is added by that
-migration. No card row can exist before then (Phase 3 creates the first one), so
-there is no window in which the constraint could be violated.
+better-auth's `users` table landed in Phase 2 (`src/db/auth-schema.ts`), and
+`cards.user_id` now references it with `ON DELETE CASCADE`. An integration test
+asserts that a card whose owner does not exist is rejected.
+
+### ADR-009 — Argon2id for owner passwords too, not better-auth's scrypt
+
+better-auth defaults to scrypt. §3 of PLAN asks for argon2id, and the project
+already has a tested Argon2id module for PINs, so `emailAndPassword.password`
+is wired to `hash`/`verify` from `src/lib/argon2.ts`: one KDF, one set of
+parameters, in one place. An integration test asserts the stored value starts
+with `$argon2id$` and never contains the password.
+
+### ADR-010 — the owner plane is plain server-rendered forms
+
+`/signup` and `/login` POST to themselves, call `auth.api.*` with
+`asResponse: true`, and forward better-auth's `Set-Cookie` on a 303 — so the
+browser needs no JavaScript and the session cookie is never touched by our own
+code. Every state-changing POST passes `isSameOrigin` (`src/lib/http.ts`):
+`SameSite=Lax` already blocks cross-site POSTs from carrying the session, and
+this is the second lock on the same door. `/logout` is POST-only for the same
+reason a GET logout is a bad idea: any page could sign the owner out with an
+image tag.
+
+Two consequences worth recording:
+
+- better-auth logs "Invalid password" for a wrong password and "User not found"
+  for an unknown address. The **responses** are byte-identical (asserted in
+  `tests/integration/auth.test.ts`), which is what an attacker sees; the log
+  difference is for us. Response-time padding for that path is §6 layer 0 work
+  and is still outstanding.
+- The session cookie carries `Secure` only when the origin is HTTPS, which is
+  how better-auth decides. Production runs on HTTPS, local development does not.
 
 ## What is deliberately absent
 

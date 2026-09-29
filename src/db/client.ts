@@ -1,7 +1,11 @@
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { getConfig } from '@/config';
+import * as authSchema from './auth-schema';
 import * as schema from './schema';
+
+/** Our tables plus better-auth's, so one adapter sees everything. */
+const fullSchema = { ...schema, ...authSchema };
 
 /**
  * One lazily created pool per process. `prepare: false` keeps the driver
@@ -9,12 +13,12 @@ import * as schema from './schema';
  * the local container.
  */
 let sql: ReturnType<typeof postgres> | undefined;
-let database: PostgresJsDatabase<typeof schema> | undefined;
+let database: PostgresJsDatabase<typeof fullSchema> | undefined;
 
-export function getDb(): PostgresJsDatabase<typeof schema> {
+export function getDb(): PostgresJsDatabase<typeof fullSchema> {
   if (!database) {
     sql = postgres(getConfig().DATABASE_URL, { max: 5, prepare: false, idle_timeout: 20 });
-    database = drizzle(sql, { schema });
+    database = drizzle(sql, { schema: fullSchema });
   }
   return database;
 }

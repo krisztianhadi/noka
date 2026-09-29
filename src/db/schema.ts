@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { bigserial, boolean, customType, index, integer, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { users } from './auth-schema';
 
 /**
  * Schema of §10.
@@ -18,9 +19,9 @@ export const cards = pgTable(
   'cards',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    // FK to better-auth's users.id arrives with the auth schema in Phase 2 —
-    // no card row exists before then (Phase 3).
-    userId: uuid('user_id').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     /** 16 random bytes, uppercase Crockford base32 (D13). */
     slug: text('slug').notNull().unique(),
     pinHash: text('pin_hash').notNull(),

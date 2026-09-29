@@ -1,24 +1,13 @@
 import { randomInt } from 'node:crypto';
-import { hash, verify } from '@node-rs/argon2';
+import { ARGON2_OPTIONS, argon2Hash, argon2Verify } from './argon2';
 
 /**
- * The guest PIN (§3, D2): six digits, never stored in the clear.
- *
- * Argon2id with the OWASP-recommended parameters (19 MiB, t=2, p=1). The
- * numeric algorithm id is used because @node-rs/argon2's `Algorithm` is a
- * `declare const enum`: TypeScript inlines it, but no value exists at
- * runtime. A test asserts the produced PHC string starts with `$argon2id$`.
+ * The guest PIN (§3, D2): six digits, never stored in the clear, hashed with
+ * the same Argon2id parameters as owner passwords (src/lib/argon2.ts).
  */
-const ARGON2ID = 2;
-
 export const PIN_LENGTH = 6;
-export const ARGON2_OPTIONS = {
-  algorithm: ARGON2ID,
-  memoryCost: 19_456,
-  timeCost: 2,
-  parallelism: 1,
-  outputLen: 32,
-} as const;
+
+export { ARGON2_OPTIONS };
 
 export function generatePin(random: (max: number) => number = (max) => randomInt(max)): string {
   const max = 10 ** PIN_LENGTH;
@@ -26,16 +15,11 @@ export function generatePin(random: (max: number) => number = (max) => randomInt
 }
 
 export function hashPin(pin: string): Promise<string> {
-  return hash(pin, ARGON2_OPTIONS);
+  return argon2Hash(pin);
 }
 
-/** False on any failure — a malformed stored hash must never throw into the request. */
-export async function verifyPin(storedHash: string, pin: string): Promise<boolean> {
-  try {
-    return await verify(storedHash, pin, ARGON2_OPTIONS);
-  } catch {
-    return false;
-  }
+export function verifyPin(storedHash: string, pin: string): Promise<boolean> {
+  return argon2Verify(storedHash, pin);
 }
 
 let decoyHash: Promise<string> | undefined;

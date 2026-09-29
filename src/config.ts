@@ -17,6 +17,8 @@ const schema = z.object({
     .refine((value) => /^https?:\/\/[^/\s]+$/.test(value), 'must be an origin, e.g. https://noka.example'),
   VIEW_COOKIE_SECRET: z.string().min(32, 'must be at least 32 characters'),
   BETTER_AUTH_SECRET: z.string().min(32, 'must be at least 32 characters'),
+  // Optional: better-auth falls back to the card origin when it is absent.
+  BETTER_AUTH_URL: z.string().optional(),
   CONTACT_ENCRYPTION_KEY: z
     .string()
     .min(1, 'is required')

@@ -4,6 +4,26 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — Phase 2: the owner plane
+
+- better-auth wired to Drizzle with its own tables (`users`, `sessions`,
+  `accounts`, `verifications`), plural names and uuid ids, sessions in Postgres
+  so revoking one is a server-side act. Migration `0001_unique_maelstrom.sql`.
+- `cards.user_id` is now a real foreign key with `ON DELETE CASCADE` — ADR-008
+  closed, with a test that a card whose owner does not exist is rejected.
+- Owner passwords are **Argon2id** through better-auth's password hooks instead
+  of its default scrypt (ADR-009), so the app has one KDF.
+- `/signup`, `/login`, `/logout`, the `/api/auth/*` catch-all, a guarded
+  `/dashboard` shell, and a shared `<Plain>` layout. Both forms are plain HTML
+  POSTs that forward better-auth's cookie on a 303 — no client JavaScript.
+- Every state-changing POST is origin-checked; `/logout` is POST-only.
+- Tests: 76 Vitest cases (auth included) and 8 Playwright cases; the owner
+  journey signup → dashboard → sign out → sign back in runs in a real browser
+  and axe is clean on both auth pages.
+- Verified by hand against the built server: signup sets an `HttpOnly`,
+  `SameSite=Lax` cookie, `/dashboard` greets the owner, a cross-origin logout is
+  `403`, and the session row is gone after sign-out.
+
 ### Feature — Phase 1 scaffold
 
 - Astro 7 SSR with `@astrojs/node` (standalone), no client framework anywhere.
