@@ -1,0 +1,49 @@
+---
+import Plain from '@/layouts/Plain.astro';
+
+/**
+ * Imprint — the operator details, in the shape the German obligation expects, kept minimal
+ * on purpose (the same approach as the sibling project).
+ */
+---
+
+<Plain title="Imprint — noka" theme={Astro.locals.theme}>
+  <h1 class="text-xl font-semibold tracking-tight">Imprint</h1>
+
+  <section class="mt-6 space-y-2">
+    <h2 class="text-base font-semibold">Operator</h2>
+    <p class="text-sm">
+      <strong>Lost Signals Studio</strong><br />
+      (legal entity to be formalized — operator details are kept minimal to protect the operator's
+      privacy)
+    </p>
+  </section>
+
+  <section class="mt-6 space-y-2">
+    <h2 class="text-base font-semibold">Contact</h2>
+    <p class="text-sm">
+      Email: <a href="mailto:hey@lostsignals.studio">hey@lostsignals.studio</a>
+    </p>
+  </section>
+
+  <section class="mt-6 space-y-2">
+    <h2 class="text-base font-semibold">Further information</h2>
+    <p class="text-sm">
+      VAT ID / USt-IdNr.: not yet applicable<br />
+      Responsible for content: Lost Signals Studio, contactable via the email above
+    </p>
+  </section>
+
+  <section class="mt-6 space-y-2">
+    <h2 class="text-base font-semibold">Source</h2>
+    <p class="text-sm">
+      noka is MIT licensed and developed in the open:
+      <a href="https://github.com/krisztianhadi/noka">github.com/krisztianhadi/noka</a>.
+    </p>
+  </section>
+
+  <p class="mt-8 border-t border-line pt-4 text-xs text-fg-muted">
+    This page will be updated as the operator's legal details are formalized. Requirements vary by
+    jurisdiction (e.g. the German Impressum obligations); this is not legal advice.
+  </p>
+</Plain>

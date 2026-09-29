@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "author": "Krisztian Hadi",
-  "description": "noka — next of kin access. An emergency contact card: QR + PIN, zero-JS responder page.",
+  "description": "noka \u2014 next of kin access. An emergency contact card: QR + PIN, zero-JS responder page.",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -22,7 +22,7 @@
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate-on-start.mjs",
     "db:studio": "drizzle-kit studio",
     "migrate-on-start": "node scripts/migrate-on-start.mjs",
-    "purge": "node --env-file-if-exists=.env scripts/purge.mjs"
+    "purge": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/purge.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.6",

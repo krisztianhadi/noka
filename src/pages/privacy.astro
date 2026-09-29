@@ -1,0 +1,110 @@
+---
+import Plain from '@/layouts/Plain.astro';
+
+/**
+ * Privacy. Written against what the code actually does, clause by clause, because a
+ * privacy page is a promise and this project's whole argument is that it keeps them.
+ * Where something is not built yet, it says so rather than implying it.
+ */
+const section = 'mt-6 space-y-2';
+const heading = 'text-base font-semibold';
+const list = 'list-disc space-y-1 pl-5 text-sm';
+---
+
+<Plain title="Privacy — noka" theme={Astro.locals.theme}>
+  <h1 class="text-xl font-semibold tracking-tight">Privacy</h1>
+  <p class="mt-2 text-sm text-fg-muted">
+    noka is an emergency contact card. This page describes exactly what the service stores, and
+    what it deliberately does not.
+  </p>
+
+  <section class={section}>
+    <h2 class={heading}>1. Who is responsible</h2>
+    <p class="text-sm">
+      noka is operated by <strong>Lost Signals Studio</strong> (legal entity to be formalized —
+      operator details are kept minimal to protect the operator's privacy). Privacy questions and
+      requests: <a href="mailto:hey@lostsignals.studio">hey@lostsignals.studio</a>.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>2. What is stored</h2>
+    <ul class={list}>
+      <li>
+        <strong>Your account:</strong> name, email address and an Argon2id password hash. The email
+        is the one field stored in plain text, because that is how sign-in finds you.
+      </li>
+      <li>
+        <strong>Your contacts and notes:</strong> name, relation, phone number, the services that
+        number is on, the languages they speak, free-text notes, and whether a contact cannot speak
+        or hear. All of it is encrypted with AES-256-GCM before it reaches the database, and the
+        key is held in the application environment — never in the database, never in a backup.
+      </li>
+      <li>
+        <strong>Your card:</strong> the link slug, a hash of the six-digit PIN, and an encrypted copy
+        of the PIN so you can reprint the card. The card's language set.
+      </li>
+      <li>
+        <strong>Scan attempts:</strong> when someone enters a PIN on a card page, a row is written
+        with whether it succeeded and an HMAC of the network prefix (the full address for IPv4, the
+        /64 for IPv6). The raw address is never stored, and the page views themselves are not
+        logged.
+      </li>
+      <li>
+        <strong>Cookies:</strong> one session cookie when you are signed in, one short-lived cookie
+        for the card page you unlocked, one for your language choice, and one for your light/dark
+        preference. No advertising or analytics cookies exist.
+      </li>
+    </ul>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>3. What is not done</h2>
+    <ul class={list}>
+      <li>No analytics, no pixels, no third-party scripts — on the card page, nothing external is loaded at all.</li>
+      <li>No data is sold, shared, brokered or aggregated. Not raw, not anonymised.</li>
+      <li>No profiling, no advertising, and no use of your contacts for anything except showing them to someone who has the card and the PIN.</li>
+      <li>Users are never charged, so no payment data is collected.</li>
+    </ul>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>4. Why it is processed</h2>
+    <p class="text-sm">
+      To provide the service you asked for (your account, your card, and the page it opens), and to
+      protect it against abuse — the scan-attempt rows exist so a stolen card cannot be
+      brute-forced.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>5. Retention</h2>
+    <p class="text-sm">
+      Scan attempts are deleted 30 days after they are written; that purge is a scheduled job, not
+      a promise (<code class="font-mono text-xs">pnpm purge</code>). Contacts, notes and the card
+      stay for as long as your account exists, and are deleted with it.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>6. Your rights</h2>
+    <p class="text-sm">
+      You can edit or delete contacts, notes and the card at any time, and delete the account
+      itself by writing to the address above. A self-service export and account deletion flow is
+      planned; until it exists, the email route is the route, and it will be answered.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>7. Hosting</h2>
+    <p class="text-sm">
+      The service is not deployed publicly yet. When it is, it runs on a single hosting provider
+      with a managed Postgres database in the same region, and this section will name them.
+    </p>
+  </section>
+
+  <p class="mt-8 border-t border-line pt-4 text-xs text-fg-muted">
+    This page describes the current build and is written to be accurate rather than complete. It is
+    not legal advice.
+  </p>
+</Plain>

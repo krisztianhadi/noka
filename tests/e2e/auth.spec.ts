@@ -62,8 +62,8 @@ test.describe('owner plane', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('signup and login are accessible', async ({ page }) => {
-    for (const path of ['/signup', '/login']) {
+  test('signup, login and the legal pages are accessible', async ({ page }) => {
+    for (const path of ['/signup', '/login', '/privacy', '/terms', '/imprint']) {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations, `${path} violations`).toEqual([]);

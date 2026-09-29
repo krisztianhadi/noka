@@ -560,3 +560,33 @@ form stays keyboard-reachable). Partner as the default relation. One `LanguageSw
 both responder pages. The text-only fact is an alert box in the contact's language, and that
 contact is not offered a call at all — text leads, the messaging apps follow, because they all
 open a chat.
+
+## 2026-09-29 — A footer, and the retention job that was only a line in package.json
+
+**What he asked for.** A footer like the sibling project's: made-by line, legal links, owner
+surfaces only. Straightforward, and the responder plane keeps its one job — show the people to
+call, nothing else. The suite now asserts the footer on every owner page and its absence from
+`/c/*`, because "only where it belongs" is a contract, not a layout choice.
+
+**What it turned up.** Writing the privacy page, I went to check the retention claim before
+writing it down and found `pnpm purge` pointing at `scripts/purge.mjs`, a file that has never
+existed. The plan's D24 promises the scan audit trail is deleted after 30 days, with a dry-run
+mode, from a cron service. The privacy page was one paragraph away from stating a policy that no
+code implements.
+
+**So the claim is backed now.** The deletion and its boundary live in `src/lib/retention.ts`; the
+script is a thin cron entry point that can also say what it would do. The integration test pins
+the boundary against the real database — 31 days goes, exactly 30 days stays, a dry run changes
+nothing, a second run finds nothing — because "30 days" is precisely the number a privacy policy
+asserts and nobody ever checks.
+
+**One piece of plumbing worth keeping.** The purge script could not import the app's source: Node
+strips the types but has no idea what `@/` means, and the imports have no extensions. The
+temptation was to write the purge SQL straight into the script, which would have left the tested
+function and the running code as two different things. Twenty lines of loader hook later, a script
+can import `src/` the way the app does — and the next maintenance script gets it for free.
+
+**The honest note in the privacy text.** Export and account deletion are not self-service yet, so
+the page says the email route is the route until that flow exists. A privacy page that overpromises
+is worse than one that admits a gap, and it is the one page a person reads when they are already
+worried.

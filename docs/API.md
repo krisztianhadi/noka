@@ -10,6 +10,7 @@ Status: ✅ built · ⏳ planned (phase in brackets).
 | GET | `/` | Landing: what the card is, signup/login entry, static sponsor logos (D18). English only. | ✅ placeholder |
 | GET | `/privacy`, `/terms` | Policy pages. | ⏳ (9) |
 | GET | `/robots.txt` | `Disallow: /c/`, `Disallow: /dashboard/`. | ✅ |
+| GET | `/privacy` \| `/terms` \| `/imprint` | Legal pages on the owner plane (footer links). Indexable, no data access. | ✅ |
 | GET | `/healthz` | JSON healthcheck; 503 when the database is unreachable. | ✅ |
 
 ## Guest plane — `/c/*`

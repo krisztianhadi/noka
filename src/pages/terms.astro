@@ -1,0 +1,87 @@
+---
+import Plain from '@/layouts/Plain.astro';
+
+/** Terms, written plainly: what this is, what it is not, and what it costs (nothing). */
+const section = 'mt-6 space-y-2';
+const heading = 'text-base font-semibold';
+const list = 'list-disc space-y-1 pl-5 text-sm';
+---
+
+<Plain title="Terms — noka" theme={Astro.locals.theme}>
+  <h1 class="text-xl font-semibold tracking-tight">Terms</h1>
+  <p class="mt-2 text-sm text-fg-muted">Short, because the product is small.</p>
+
+  <section class={section}>
+    <h2 class={heading}>1. The service</h2>
+    <p class="text-sm">
+      noka stores emergency contacts and prints them on a card with a QR code and a six-digit PIN.
+      Anyone holding the card who knows the PIN can read those contacts. That is the entire point,
+      and it is also the risk you accept by using it.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>2. Not an emergency service</h2>
+    <p class="text-sm">
+      noka is not a substitute for emergency services, medical advice or a written emergency plan.
+      It is a more elegant way to keep a note in your wallet. Call your local emergency number
+      first; this card is for the people you would want reached afterwards.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>3. Your account</h2>
+    <ul class={list}>
+      <li>You are responsible for your password, and for keeping the printed card somewhere sensible.</li>
+      <li>Anyone with the card and the PIN can read the contacts on it — that is the design, not a flaw.</li>
+      <li>Making a new card invalidates the old link and PIN immediately; printing a fresh one is your responsibility.</li>
+    </ul>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>4. Acceptable use</h2>
+    <p class="text-sm">
+      Do not put data in a contact or note that you are not allowed to hold — someone else's
+      medical details, for instance. Do not use the service to harass anyone. Do not attempt to
+      access cards that are not yours.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>5. Price</h2>
+    <p class="text-sm">
+      It is free, and it stays free: there is no tier, no trial and no plan that turns the card off.
+      The project is paid for by sponsors and whitelabel arrangements.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>6. Availability and liability</h2>
+    <p class="text-sm">
+      The service is provided as it is, without warranty. It may be unavailable, and a card might
+      fail to open at the worst possible moment. To the extent the law allows, the operator is not
+      liable for indirect or consequential loss arising from its use. Nothing here limits liability
+      that cannot be limited by law.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>7. Source and licence</h2>
+    <p class="text-sm">
+      The code is MIT licensed: you may self-host, fork and change it, including commercially. The
+      licence binds anyone who takes the code, including the operator.
+    </p>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>8. Changes</h2>
+    <p class="text-sm">
+      These terms will change as the service does. Material changes will be noted in the
+      repository's changelog, which is public.
+    </p>
+  </section>
+
+  <p class="mt-8 border-t border-line pt-4 text-xs text-fg-muted">
+    This page describes the current build and is not legal advice.
+  </p>
+</Plain>
