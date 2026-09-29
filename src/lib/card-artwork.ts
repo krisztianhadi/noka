@@ -43,20 +43,25 @@ async function qrSvg(url: string, size: number): Promise<string> {
 
 /** The whole card as SVG: header, QR, PIN, instructions. */
 export async function cardSvg(input: CardArtworkInput): Promise<string> {
-  const padding = Math.round(3 * MM);
-  const qrSize = CARD_WIDTH_PX - padding * 2;
-  const qr = await qrSvg(input.url, qrSize);
+  const qrBox = Math.round(CARD_WIDTH_PX * 0.68);
+  const qr = await qrSvg(input.url, qrBox);
   const pinSpaced = input.pin;
   const languages = input.languages.join(' · ').toUpperCase();
 
+  const qrX = Math.round((CARD_WIDTH_PX - qrBox) / 2);
+  const rule = (y: number) =>
+    `<line x1="56" y1="${y}" x2="${CARD_WIDTH_PX - 56}" y2="${y}" stroke="#e2e2e2" stroke-width="2"/>`;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_WIDTH_PX}" height="${CARD_HEIGHT_PX}" viewBox="0 0 ${CARD_WIDTH_PX} ${CARD_HEIGHT_PX}">
   <rect width="100%" height="100%" fill="#ffffff"/>
-  <text x="${CARD_WIDTH_PX / 2}" y="${padding + 34}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="bold" fill="#111111">${escapeXml(input.ownerName || 'EMERGENCY')}</text>
-  <g transform="translate(${padding}, ${padding + 56})">${qr}</g>
-  <text x="${CARD_WIDTH_PX / 2}" y="${padding + 56 + qrSize + 78}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="34" fill="#333333">PIN</text>
-  <text x="${CARD_WIDTH_PX / 2}" y="${padding + 56 + qrSize + 148}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="76" font-weight="bold" letter-spacing="6" fill="#000000">${escapeXml(pinSpaced)}</text>
-  <text x="${CARD_WIDTH_PX / 2}" y="${CARD_HEIGHT_PX - padding - 46}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="24" fill="#333333">SCAN · PIN · CALL</text>
-  <text x="${CARD_WIDTH_PX / 2}" y="${CARD_HEIGHT_PX - padding - 14}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="#666666">${escapeXml(languages)}</text>
+  <text x="${CARD_WIDTH_PX / 2}" y="76" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="bold" fill="#111111">${escapeXml(input.ownerName || 'EMERGENCY')}</text>
+  ${rule(98)}
+  <g transform="translate(${qrX}, 126)">${qr}</g>
+  <text x="${CARD_WIDTH_PX / 2}" y="622" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="28" letter-spacing="4" fill="#555555">PIN</text>
+  <text x="${CARD_WIDTH_PX / 2}" y="706" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="92" font-weight="bold" letter-spacing="8" fill="#000000">${escapeXml(pinSpaced)}</text>
+  ${rule(748)}
+  <text x="${CARD_WIDTH_PX / 2}" y="860" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="26" letter-spacing="3" fill="#333333">SCAN · PIN · CALL</text>
+  <text x="${CARD_WIDTH_PX / 2}" y="918" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#666666">${escapeXml(languages)}</text>
 </svg>`;
 }
 
