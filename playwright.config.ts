@@ -12,6 +12,12 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * :3300 is deliberate — :3000 is ghosted, :3100 kaja, :3200 the dev server this repo
  * runs by hand. A port nobody else uses means the suite can always start clean.
+ *
+ * It also builds into its **own** output directory (`dist-e2e`). Building into the
+ * shared `dist/` while a dev server was running deleted the page chunks that server
+ * still referenced, so every page it served answered 500 — "login is broken" was
+ * exactly that. Separate ports were not enough; the build output had to be separate
+ * too.
  */
 export default defineConfig({
   testDir: './tests/e2e',
@@ -30,7 +36,8 @@ export default defineConfig({
   webServer: {
     // The built server, not `astro dev`: dev injects the Vite/HMR client, and the
     // zero-JavaScript assertion is only meaningful in production output.
-    command: 'pnpm build && node --env-file-if-exists=.env ./dist/server/entry.mjs',
+    command:
+      'NOKA_OUT_DIR=dist-e2e pnpm build && node --env-file-if-exists=.env ./dist-e2e/server/entry.mjs',
     url: 'http://127.0.0.1:3300/healthz',
     reuseExistingServer: false,
     timeout: 180_000,

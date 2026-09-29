@@ -417,3 +417,26 @@ restart when a server is already listening. Three times today the suite tested a
 the change — twice reporting failures that did not exist, once nearly sending me to "fix" a phone
 row that was already correct. It owns its server on :3300 now, and a port nobody else uses means the
 mistake cannot happen again (ADR-029). A rule that depends on me remembering has already failed.
+
+## 2026-09-29 — "login is broken", and the build directory I should have separated an hour earlier
+
+**Symptom.** `/login` answered 500 with `ERR_MODULE_NOT_FOUND` for a chunk filename that no longer
+existed. Every other page was fine, because Astro imports page modules lazily: the running process
+had loaded the pages it had been asked for and held the rest as paths — paths my e2e run had just
+deleted underneath it.
+
+**Root cause.** I gave the test suite its own port this afternoon (ADR-029) so it could not reuse a
+stale server. It still built into the shared `dist/`, so "the suite always builds" turned a
+sometimes-problem into a guaranteed one: any rebuild while the dev server was up invalidated that
+server's module graph. Ports were separated; state was not.
+
+**Fix.** One build output per process: `outDir` from `NOKA_OUT_DIR`, the suite builds into
+`dist-e2e`, both ignored by git and Docker. Verified the only way that proves anything — ran the
+full suite with the dev server deliberately left up, then checked `/`, `/login` and `/signup`
+answered 200 with both directories on disk.
+
+**What I should have seen sooner.** Three separate stale-build incidents today, all in the same
+family: the suite and the server sharing something they should not. I fixed the port and stopped
+there, which is exactly the "one layer deep" mistake this whole session keeps punishing. The rule I
+am taking forward: when two processes must not disturb each other, separate *all* the state they
+touch — port, build directory, database — not just the one that produced today's error message.

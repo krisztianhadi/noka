@@ -230,6 +230,13 @@ failure impossible: if something is listening there, the suite fails loudly inst
 **Consequences.** Every e2e run pays for one build (~1s, incremental). In exchange, "the tests
 pass" means the current code passed. The dev server can stay up for a human to click.
 
+**Addendum, same day — separate ports were not enough.** The first version of this still built into
+the shared `dist/`, and that broke the running dev server: Astro's standalone server imports page
+modules lazily by hashed filename, so a rebuild under a live server deletes the chunks it still
+holds references to and every page answers 500. He found it as "login is broken". The build output
+is now per-process — `outDir` comes from `NOKA_OUT_DIR`, and the suite builds into `dist-e2e`
+(gitignored, dockerignored). Two servers, two build directories, no shared mutable state.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

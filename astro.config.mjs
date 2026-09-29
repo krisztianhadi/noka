@@ -6,6 +6,12 @@ import tailwindcss from '@tailwindcss/vite';
 // scripts, fonts or third-party requests on the responder pages.
 export default defineConfig({
   output: 'server',
+  // Each server process gets its own build output. The e2e suite builds on every run
+  // (ADR-029), and Astro's standalone server imports page modules lazily by hashed
+  // filename — so building into the same directory a live server is serving from
+  // deletes the chunks it still holds references to, and every page 500s. That is
+  // exactly what "login is broken" was: a rebuild under a running server.
+  outDir: process.env.NOKA_OUT_DIR ?? './dist',
   adapter: node({ mode: 'standalone' }),
   // Astro's own sessions are not used: the guest cookie is signed by hand
   // (VIEW_COOKIE_SECRET) and the owner plane uses better-auth's DB sessions.
