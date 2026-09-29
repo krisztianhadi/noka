@@ -181,7 +181,7 @@ const BLOCK_LABELS = [
   'Phase 3 — the card: PIN, rotation, activation',
   'Phase 4 — contacts, notes, spoken languages',
   'Phase 5 — the responder page',
-  'Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs',
+  'Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n',
 ];
 
 /** Split one session's usage rows at its round boundaries. */

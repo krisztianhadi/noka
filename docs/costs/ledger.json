@@ -4,5 +4,11 @@
     "total": 28.97,
     "currency": "USD",
     "note": "ledger opened — work up to here is estimated, not measured"
+  },
+  {
+    "at": 1790696108339,
+    "total": 27.24,
+    "currency": "USD",
+    "note": "footer, self-service data, full i18n"
   }
 ]

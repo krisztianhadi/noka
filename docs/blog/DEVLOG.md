@@ -618,3 +618,37 @@ the card does not offer English does the owner's order decide. The switcher itse
 native `<details>`: one line, the current language, and "cambiar" / "changer" / "更改" / "изменить"
 translated in the page's own language. It had been leaking the English word "change" onto Spanish
 pages, which is exactly the kind of small wrongness that makes a translation look unfinished.
+
+## 2026-09-29 (day two, evening) — Five languages, four subagents, one reflection
+
+**The ask.** Translate everything, make the language set easy to extend and easy for strangers to
+contribute to, then push, reflect, count the tokens, and have Claude and GPT-Sol review it.
+
+**How the translation was built.** One file per language under `src/i18n/locales/`, each typed
+`Record<MessageKey, string>` with `MessageKey` derived from English — so a missing key is a compile
+error that names the key, not an English sentence on a Spanish page. `src/lib/dashboard.ts` stopped
+returning English sentences and now returns message *keys*, which means the pages physically cannot
+ship an untranslated string. 199 keys cover both planes. Four subagents translated Spanish, French,
+Simplified Chinese and Russian in parallel from the English key set, using the 43 existing responder
+strings as the terminology reference; the suite then checked parity, placeholders and empty values,
+and I read rendered pages in Spanish and Chinese before believing any of it.
+
+**The nicest bug of the day.** The catalogue's untranslated-marker guard matched any string starting
+with the letters "TODO" — and failed Spanish "Todo listo" ("all ready"). A gate that rejects correct
+copy is a bug in the gate: it now matches marker tokens, not letter prefixes.
+
+**Cost, told honestly.** A five-language owner plane — 145 keys × 4 languages — cost under two
+cents in translation subagents. The whole build is at roughly three dollars estimated. The one
+expensive block is a long interactive session that was never restarted; its cache-hit input dwarfs
+everything else, which is a lesson about restarting at phase boundaries rather than about the work.
+
+**And then two reviews.** Claude Sonnet 5 and GPT-5.6 Sol read the repository independently and came
+back with real findings — non-transactional last-contact deletion, check-then-insert card creation,
+an export that is not snapshot-consistent, a landing claim about bad connections that no offline
+support backs. All of it goes into tomorrow's plan rather than into this evening's commit; a review
+that changes the plan is worth more than a review that changes the diff at midnight.
+
+**The public write-up** is `docs/blog/2026-09-29-building-noka-in-a-day.md`: the three verification
+failures, what the model was good at (the unglamorous middle) and bad at (noticing it had broken
+something), and the habit that came out of it — look at the page, and where a property is
+measurable, measure it in the suite.

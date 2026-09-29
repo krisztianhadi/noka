@@ -26,7 +26,7 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 15:34Z (c9b83d6c) | 2026-09-29 15:20+07 | 1119 | 2,983,333 | 422,682,240 | 921,399 | $1.1112 | $1.7128 | $2.8240 |
+| 2026-09-29 08:20Z → 15:35Z (c9b83d6c) | 2026-09-29 15:20+07 | 1130 | 2,990,743 | 425,290,752 | 928,402 | $1.1112 | $1.7259 | $2.8371 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
@@ -52,7 +52,9 @@ the figures below are read rather than remembered:
 | 2026-09-29 15:28Z → 15:29Z (5472fadc) | 2026-09-29 22:28+07 | 8 | 16 | 207,838 | 6,121 | $0.0000 | $0.0043 | $0.0043 |
 | 2026-09-29 15:28Z → 15:29Z (fc28992e) | 2026-09-29 22:28+07 | 6 | 12 | 144,459 | 5,362 | $0.0000 | $0.0037 | $0.0037 |
 | 2026-09-29 15:28Z → 15:29Z (0d274ff5) | 2026-09-29 22:28+07 | 7 | 14 | 180,208 | 6,334 | $0.0000 | $0.0043 | $0.0043 |
-| **Total** | | **1,206** | **3,535,042** | **424,003,128** | **1,012,624** | **$1.1426** | **$1.8385** | **$2.9812** |
+| 2026-09-29 15:35Z → 15:35Z (d13d4683) | 2026-09-29 22:35+07 | 8 | 24 | 317,913 | 1,865 | $0.0000 | $0.0021 | $0.0021 |
+| 2026-09-29 15:35Z → 15:35Z (399d8d63) | 2026-09-29 22:35+07 | 6 | 12 | 333,770 | 2,648 | $0.0000 | $0.0026 | $0.0026 |
+| **Total** | | **1,231** | **3,542,488** | **427,263,323** | **1,024,140** | **$1.1426** | **$1.8563** | **$2.9990** |
 
 _Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-29 by `node scripts/usage-report.mjs --write`._
 <!-- usage:end -->
@@ -78,10 +80,10 @@ rates. The error is on the safe side.
 | 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 2% |
 | 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 3% |
 | 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 8% |
-| 09:08–15:34Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 854 | 362,730,021 | $2.0016 | 71% |
-| **Total** | | **1,119** | **426,586,972** | **$2.8240** | |
+| 09:08–15:35Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 865 | 365,352,946 | $2.0147 | 71% |
+| **Total** | | **1,130** | **429,209,897** | **$2.8371** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1572 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1619 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
@@ -92,6 +94,13 @@ it (Phase 2), and closing the Phase 0 spikes, which meant a container build, a
 font pipeline, and discovering that a hand-rolled PDF has to be made
 byte-deterministic on purpose. Roughly: cheap where the problem was mine,
 expensive where the problem was someone else's code.
+
+The last row is the whole of day two — the interface in five languages, self-service
+export and deletion, the retention purge, the footer and the legal pages — and it dwarfs
+everything before it. Part of that is real work; part of it is a long interactive session
+that was never restarted, so its cache-hit input is enormous and its price is dominated by
+context that was re-read rather than re-derived. The lesson for the next build: **restart
+the session at a phase boundary**, because a fresh context is cheaper than a familiar one.
 
 Attribution is by goal-round boundary in the session log — the only signal the
 harness records. The mapping from each round to what it built is hand-written in
@@ -119,14 +128,22 @@ inside peak is not worth scheduling around.
   the logs below because it does not cost anything.
 - **Writing is paid.** Every file edit, test run, migration and container build
   went through the harness, and that is what the tables measure.
-- **Zero subagent fan-out.** Not one delegation call in this project: the work
-  was sequential and your feedback was in the loop, so handing a subtask to a
-  second model would have meant paying twice to re-establish the same context.
-  Delegation is for bulk mechanical sweeps; there were none.
-- **One route, no model juggling.** The harness log names a single route
-  (`deepseek-flash`). There is no "cheap model for grunt work, expensive model for
-  review" story here — that is a gap in the experiment, not a finding, and it is
-  the obvious next thing to measure.
+- **Fan-out arrived on day two, and it was worth it.** Everything up to the first
+  phase was one model in one context. The five-language translation was the first
+  genuine fan-out: four subagents, one per language, each given the English key set
+  and the existing responder strings as the terminology reference, all running at
+  once. That is bulk mechanical work with a checkable result, and it cost under two
+  cents for 145 keys × 4 languages. **A five-language owner plane for the price of a
+  coffee is the single most convincing number in this file.**
+- **More than one route now.** The build runs on `deepseek-flash`; the translation
+  batch and the two end-of-day reviews went out over OpenRouter — Claude Sonnet 5
+  for the translations (terminology and register matter), Claude Sonnet 5 and
+  GPT-5.6 Sol for the reviews. The token counts for those runs are in the table
+  above under their own session ids; the harness cannot see the OpenRouter balance,
+  so only the DeepSeek side has a ledger.
+- **Review is cheap, and cheap on purpose.** Two independent reviews of the whole
+  codebase cost less than two cents. Neither model's opinion was treated as a
+  finding until the claim could be checked against the code.
 
 ## What I would not do again
 
@@ -161,8 +178,9 @@ file, the same script and the same rules, with its own ledger.
 | Recorded (UTC) | Balance | Change | Note |
 |---|---:|---:|---|
 | 2026-09-29 10:15Z | $28.97 | — | ledger opened — work up to here is estimated, not measured |
+| 2026-09-29 15:35Z | $27.24 | −$1.7300 | footer, self-service data, full i18n |
 
-_Only one balance recorded so far, so there is nothing to subtract yet. Run `--balance` again after the next block of work._
+**Actually spent across 2026-09-29 10:15Z → 2026-09-29 15:35Z: $1.73** — this is the provider's own arithmetic.
 <!-- ledger:end -->
 
 The ledger is sampled before and after a block of work —
