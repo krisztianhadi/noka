@@ -1,0 +1,45 @@
+{
+  "name": "noka",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "noka — next of kin access. An emergency contact card: QR + PIN, zero-JS responder page.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs",
+    "typecheck": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate-on-start.mjs",
+    "db:studio": "drizzle-kit studio",
+    "migrate-on-start": "node scripts/migrate-on-start.mjs",
+    "purge": "node --env-file-if-exists=.env scripts/purge.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.6",
+    "@node-rs/argon2": "^2.2.1",
+    "astro": "^7.3.5",
+    "better-auth": "^1.7.6",
+    "drizzle-orm": "^0.45.3",
+    "pino": "^10.3.1",
+    "postgres": "^3.4.9",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  }
+}

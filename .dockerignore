@@ -1,0 +1,17 @@
+node_modules
+dist
+.astro
+.git
+.github
+.tmp
+.tmp-review
+.env
+.env.*
+!.env.example
+test-results
+playwright-report
+coverage
+docs
+README.md
+*.md
+Dockerfile

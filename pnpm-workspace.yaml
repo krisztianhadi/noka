@@ -1,0 +1,5 @@
+# Postinstall scripts are opt-in under pnpm 10+. Only what the build needs.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
