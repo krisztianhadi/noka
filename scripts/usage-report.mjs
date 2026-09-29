@@ -16,7 +16,7 @@
  * public holidays. Everything else (and weekends entirely) is off-peak, at half
  * the peak rate.
  */
-import { readdirSync, readFileSync, statSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { zstdDecompressSync } from 'node:zlib';
 import { homedir } from 'node:os';
@@ -141,7 +141,7 @@ const usd = (value) => `$${value.toFixed(4)}`;
 const utc = (ms) => new Date(ms).toISOString().replace('T', ' ').slice(0, 16) + 'Z';
 const local = (ms) => new Date(ms + 7 * 3_600_000).toISOString().replace('T', ' ').slice(0, 16) + '+07';
 
-function balance() {
+async function balance() {
   let key = process.env.DEEPSEEK_API_KEY;
   if (!key) {
     try {
@@ -152,13 +152,17 @@ function balance() {
     }
   }
   if (!key) throw new Error('No DEEPSEEK_API_KEY in the environment or ~/.dsh/.credentials.yaml');
-  return fetch('https://api.deepseek.com/user/balance', { headers: { Authorization: `Bearer ${key}` } })
-    .then((response) => response.json())
-    .then((body) => {
-      const info = body?.balance_infos?.[0];
-      if (!info) throw new Error(`Unexpected balance response: ${JSON.stringify(body).slice(0, 120)}`);
-      return { currency: info.currency, total: Number(info.total_balance), toppedUp: Number(info.topped_up_balance) };
-    });
+  const response = await fetch('https://api.deepseek.com/user/balance', {
+    headers: { Authorization: `Bearer ${key}` },
+  });
+  const body = await response.json();
+  const info = body?.balance_infos?.[0];
+  if (!info) throw new Error(`Unexpected balance response: ${JSON.stringify(body).slice(0, 120)}`);
+  return {
+    currency: info.currency,
+    total: Number(info.total_balance),
+    toppedUp: Number(info.topped_up_balance),
+  };
 }
 
 function readLedger() {
