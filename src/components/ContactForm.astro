@@ -1,48 +1,60 @@
 ---
+import type { Channel } from '@/lib/channels';
 import { MESSAGES } from '@/i18n/catalogue';
 import type { ContactView } from '@/lib/contacts';
 import { RELATIONS } from '@/lib/relations';
 import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
 
 /**
- * One form for creating and editing a contact. Labels come from the catalogue's
- * English entries — the dashboard is English-only (§13), but the vocabulary
- * itself has exactly one home.
+ * One form for creating and editing a contact, used inline on the dashboard.
+ *
+ * Channel order is his (2026-09-29): WhatsApp first because it is the one people
+ * ask for, then the rest, with **phone call on by default** and text message
+ * present because a responder may be unable to speak or hear.
  */
 interface Props {
   action: string;
   contact?: ContactView | null;
   error?: string;
   submitLabel?: string;
+  compact?: boolean;
 }
 
-const { action, contact = null, error = '', submitLabel = 'Save contact' } = Astro.props;
+const { action, contact = null, error = '', submitLabel = 'Save contact', compact = false } = Astro.props;
 
+const CHANNEL_ORDER: Channel[] = ['whatsapp', 'signal', 'telegram', 'viber', 'call', 'sms'];
+const selectedChannels = new Set(contact?.channels ?? ['call']);
 const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
+const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
 const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
 const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
 ---
 
 {error && <p class="error" role="alert">{error}</p>}
 
-<form method="post" action={action}>
-  <label for="name">Name</label>
-  <input id="name" name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
+<form method="post" action={action} class={compact ? 'compact' : ''}>
+  <div class="row">
+    <div>
+      <label for={`name-${contact?.id ?? 'new'}`}>Name</label>
+      <input id={`name-${contact?.id ?? 'new'}`} name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
+    </div>
+    <div>
+      <label for={`relation-${contact?.id ?? 'new'}`}>Relation</label>
+      <select id={`relation-${contact?.id ?? 'new'}`} name="relation" required>
+        {
+          RELATIONS.map((relation) => (
+            <option value={relation} selected={contact?.relation === relation}>
+              {relationLabel(relation)}
+            </option>
+          ))
+        }
+      </select>
+    </div>
+  </div>
 
-  <label for="relation">Relation</label>
-  <select id="relation" name="relation" required>
-    {
-      RELATIONS.map((relation) => (
-        <option value={relation} selected={contact?.relation === relation}>
-          {relationLabel(relation)}
-        </option>
-      ))
-    }
-  </select>
-
-  <label for="phone">Phone</label>
+  <label for={`phone-${contact?.id ?? 'new'}`}>Phone</label>
   <input
-    id="phone"
+    id={`phone-${contact?.id ?? 'new'}`}
     name="phone"
     type="tel"
     required
@@ -52,12 +64,28 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
   />
   <p class="note">
     International format with a country code — <code>+66</code> for Thailand, <code>+36</code> for Hungary.
-    It is what the Call and WhatsApp buttons use.
   </p>
 
   <fieldset>
-    <legend>Speaks</legend>
-    <p class="note">So a responder can see who they can actually talk to.</p>
+    <legend>How can they be reached?</legend>
+    <div class="channels">
+      {
+        CHANNEL_ORDER.map((channel) => (
+          <label class="chip">
+            <input type="checkbox" name="channels" value={channel} checked={selectedChannels.has(channel)} />
+            <span>{channelLabel(channel)}</span>
+          </label>
+        ))
+      }
+    </div>
+    <p class="note">
+      A responder sees these as buttons or as a line of "available on". Text message matters: it is what
+      works when someone cannot speak or hear.
+    </p>
+  </fieldset>
+
+  <details>
+    <summary>Languages this contact speaks</summary>
     <div class="chips">
       {
         SPOKEN_LANGUAGES.map((code) => (
@@ -68,7 +96,7 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
         ))
       }
     </div>
-  </fieldset>
+  </details>
 
   <button type="submit">{submitLabel}</button>
 </form>
@@ -85,14 +113,30 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
     border-radius: 4px;
     background: #fff;
   }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
+  }
+  .row > div {
+    flex: 1 1 12rem;
+  }
   fieldset {
-    margin-top: 1.25rem;
+    margin-top: 1rem;
     border: 1px solid #999;
     border-radius: 4px;
   }
   legend {
     font-weight: 600;
   }
+  details {
+    margin-top: 0.75rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .channels,
   .chips {
     display: flex;
     flex-wrap: wrap;

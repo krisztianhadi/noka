@@ -22,6 +22,34 @@
       "when": 1790673006752,
       "tag": "0002_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790678473672,
+      "tag": "0003_contacts_drop_card_link",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790678478757,
+      "tag": "0004_contacts_belong_to_owner",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790678536793,
+      "tag": "0005_owner_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790678542428,
+      "tag": "0006_drop_card_notes",
+      "breakpoints": true
     }
   ]
 }

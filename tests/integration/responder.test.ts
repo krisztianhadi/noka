@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
 import { cards, scanAttempts } from '@/db/schema';
-import { createCardForOwner, getCardForOwner, rotatePin, setCardActive, type Card } from '@/lib/cards';
+import { createCardForOwner, getCardForOwner, newCardForOwner, type Card } from '@/lib/cards';
 import { createContact, setNotes } from '@/lib/contacts';
 import {
   canonicalSlug,
@@ -39,19 +39,19 @@ describeDb('responder', () => {
     return user!;
   }
 
-  /** A card that is ready to be reached: one contact, switched on. */
+  /** Contacts first, then a card: a card needs someone to reach. */
   async function liveCard(): Promise<Card> {
     const owner = await freshOwner();
-    const card = await createCardForOwner(owner.id);
-    await createContact(card.id, {
+    await createContact(owner.id, {
       name: 'Maria Silva',
       relation: 'spouse',
       phone: '+66812345678',
       spokenLanguages: ['th', 'en'],
+      channels: ['call', 'whatsapp'],
     });
-    const activated = await setCardActive(owner.id, true);
-    if (!activated.ok) throw new Error('could not activate the test card');
-    return activated.card;
+    const created = await createCardForOwner(owner.id);
+    if (!created.ok) throw new Error('could not create the test card');
+    return created.card;
   }
 
   function pinOf(card: Card): string {
@@ -78,22 +78,22 @@ describeDb('responder', () => {
     await expect(verifyPinAgainst(card, '000000')).resolves.toBe(false);
   });
 
-  it('never unlocks a deactivated card, even with the right PIN', async () => {
-    const owner = await freshOwner();
-    const card = await createCardForOwner(owner.id);
-    await createContact(card.id, {
-      name: 'Maria',
-      relation: 'spouse',
-      phone: '+66812345678',
-      spokenLanguages: [],
-    });
-    await setCardActive(owner.id, true);
-    const active = await getCardForOwner(owner.id);
-    await expect(verifyPinAgainst(active, pinOf(active!))).resolves.toBe(true);
+  it('stops unlocking the old card once a new one has been issued', async () => {
+    const card = await liveCard();
+    await expect(verifyPinAgainst(card, pinOf(card))).resolves.toBe(true);
 
-    await setCardActive(owner.id, false);
-    const off = await getCardForOwner(owner.id);
-    await expect(verifyPinAgainst(off, pinOf(off!))).resolves.toBe(false);
+    // "New card" changes the slug and the PIN. The old PIN is dead, and the old
+    // slug no longer resolves at all.
+    const renewed = await newCardForOwner(card.userId);
+    if (!renewed.ok) throw new Error('expected a new card');
+
+    // The stale in-memory row still matches its own old hash; what matters is the
+    // stored card. So re-read it, as the PIN endpoint does on every request.
+    const stored = await getCardForOwner(card.userId);
+    await expect(verifyPinAgainst(stored, pinOf(card))).resolves.toBe(false);
+    await expect(verifyPinAgainst(stored, pinOf(renewed.card))).resolves.toBe(true);
+    await expect(findCardBySlug(card.slug)).resolves.toBeNull();
+    await expect(findCardBySlug(renewed.card.slug)).resolves.toBeTruthy();
   });
 
   it('answers an unknown card with the same shape of refusal', async () => {
@@ -130,7 +130,7 @@ describeDb('responder', () => {
 
   it('loads the responder view with the owner name, contacts and notes', async () => {
     const card = await liveCard();
-    await setNotes(card.id, 'Type 1 diabetic.');
+    await setNotes(card.userId, 'Type 1 diabetic.');
 
     const view = await loadResponderView(card);
     expect(view.ownerName).toBe('Krisztian');
@@ -140,14 +140,21 @@ describeDb('responder', () => {
     expect(view.notes).toBe('Type 1 diabetic.');
   });
 
-  it('treats a rotated or deactivated card as unlocked-by-nobody', async () => {
+  it('treats a renewed card as unlocked-by-nobody for the old cookie', async () => {
     const card = await liveCard();
     const claims = { slug: card.slug, pinVersion: card.pinVersion };
     expect(viewCookieStillValid(claims, card)).toBe(true);
 
-    const rotated = await rotatePin(card.userId);
-    expect(rotated.ok).toBe(true);
-    if (rotated.ok) expect(viewCookieStillValid(claims, rotated.card)).toBe(false);
+    const renewed = await newCardForOwner(card.userId);
+    expect(renewed.ok).toBe(true);
+    if (renewed.ok) {
+      expect(viewCookieStillValid(claims, renewed.card)).toBe(false);
+      expect(viewCookieStillValid(claims, renewed.card)).toBe(false);
+      // The card itself is live; only the old claims are stale.
+      expect(
+        viewCookieStillValid({ slug: renewed.card.slug, pinVersion: renewed.card.pinVersion }, renewed.card),
+      ).toBe(true);
+    }
 
     expect(viewCookieStillValid({ slug: 'X'.repeat(26), pinVersion: card.pinVersion }, card)).toBe(false);
     expect(viewCookieStillValid(claims, null)).toBe(false);

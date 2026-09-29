@@ -1,44 +1,23 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { addContact, makeCard, saveNotes, signUp } from './helpers';
 
 /**
  * The whole point of the product (§3, §9): a stranger with the card and the PIN
  * reaches the contacts in the card's own language, on a page with no JavaScript
  * and no third-party request — and gets nothing without the PIN.
  */
-const PASSWORD = 'correct-horse-battery';
 
-async function owner(page: Page): Promise<{ slug: string; pin: string }> {
-  const email = `responder-e2e-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@noka.test`;
-  await page.goto('/signup');
-  await page.fill('#name', 'Krisztian');
-  await page.fill('#email', email);
-  await page.fill('#password', PASSWORD);
-  await page.getByRole('button', { name: 'Create account' }).click();
-
-  await page.goto('/dashboard/card');
-  await page.getByRole('button', { name: 'Create my card' }).click();
-  await expect(page).toHaveURL(/notice=created$/);
-  const pin = ((await page.locator('.pin').textContent()) ?? '').trim();
-  const slug = ((await page.locator('.url').textContent()) ?? '').trim().split('/').pop() ?? '';
-
-  await page.goto('/dashboard/contacts/new');
-  await page.fill('#name', 'Maria Silva');
-  await page.selectOption('#relation', 'spouse');
-  await page.fill('#phone', '+66 812 345 678');
-  await page.locator('input[name="spoken"][value="th"]').check();
-  await page.locator('input[name="spoken"][value="en"]').check();
-  await page.getByRole('button', { name: 'Add contact' }).click();
-
-  await page.goto('/dashboard/notes');
-  await page.fill('#notes', 'Type 1 diabetic. Allergic to penicillin.');
-  await page.getByRole('button', { name: 'Save notes' }).click();
-
-  await page.goto('/dashboard/card');
-  await page.getByRole('button', { name: 'Switch on' }).click();
-  await expect(page).toHaveURL(/notice=activated$/);
-
-  return { slug, pin };
+async function owner(page: import('@playwright/test').Page): Promise<{ slug: string; pin: string }> {
+  await signUp(page);
+  await addContact(page, {
+    name: 'Maria Silva',
+    phone: '+66 812 345 678',
+    channels: ['whatsapp', 'sms', 'signal'],
+    spoken: ['th', 'en'],
+  });
+  await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
+  return makeCard(page);
 }
 
 test.describe('the responder page', () => {
@@ -74,6 +53,9 @@ test.describe('the responder page', () => {
     await expect(guest.locator('.speaks')).toContainText('Thai');
     await expect(guest.locator('a.call')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('a.whatsapp')).toHaveAttribute('href', 'https://wa.me/66812345678');
+    await expect(guest.locator('a.sms')).toHaveAttribute('href', 'sms:+66812345678');
+    // The less reliable schemes are named, not turned into buttons.
+    await expect(guest.locator('.on-channels a[href^="https://signal.me"]')).toContainText('Signal');
     await expect(guest.locator('.notes')).toContainText('Allergic to penicillin.');
 
     // Still zero JavaScript, still one request.
@@ -111,7 +93,7 @@ test.describe('the responder page', () => {
     expect(await posted.text()).toContain('That PIN is not correct.');
   });
 
-  test('switching the card off closes the door on a live guest cookie', async ({ browser, page }) => {
+  test('a new card closes the door on a live guest cookie', async ({ browser, page }) => {
     const { slug, pin } = await owner(page);
 
     const stranger = await browser.newContext();
@@ -121,9 +103,8 @@ test.describe('the responder page', () => {
     await guest.getByRole('button', { name: 'Open' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
 
-    await page.goto('/dashboard/card');
-    await page.getByRole('button', { name: 'Switch off' }).click();
-    await expect(page).toHaveURL(/notice=deactivated$/);
+    await page.getByRole('button', { name: 'New card' }).click();
+    await expect(page).toHaveURL(/notice=card-renewed$/);
 
     await guest.goto(`/c/${slug}/view`);
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}$`));

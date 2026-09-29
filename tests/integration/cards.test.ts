@@ -4,26 +4,29 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { getConfig } from '@/config';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
-import { contacts } from '@/db/schema';
 import {
   cardUrl,
+  countContacts,
   createCardForOwner,
   getCardForOwner,
-  regenerateSlug,
+  newCardForOwner,
   revealPin,
-  rotatePin,
-  setCardActive,
   type Card,
 } from '@/lib/cards';
-import { decryptJson, encryptJson, keyring } from '@/lib/crypto';
+import { createContact } from '@/lib/contacts';
+import { decryptJson, keyring } from '@/lib/crypto';
 import { formatPin, verifyPin } from '@/lib/pin';
 import { isSlug } from '@/lib/slug';
 
 /**
- * Card lifecycle against the real database (Phase 3, D7/D9/D13).
+ * Card lifecycle against the real database, as simplified on 2026-09-29:
+ *
+ *   a card needs a contact, and it is live the moment it exists
+ *   "new card" changes the slug and the PIN together
+ *
+ * There is no activate/deactivate and no separate PIN/QR rotation to test.
  */
 const describeDb = process.env.DATABASE_URL ? describe : describe.skip;
-
 const ring = keyring({ 1: getConfig().CONTACT_ENCRYPTION_KEY });
 
 function rawPin(card: Card): string {
@@ -43,121 +46,115 @@ describeDb('card lifecycle', () => {
     return user!.id;
   }
 
+  async function addContact(userId: string, name = 'Maria Silva') {
+    return createContact(userId, {
+      name,
+      relation: 'spouse',
+      phone: '+66812345678',
+      spokenLanguages: ['en'],
+      channels: ['call', 'whatsapp'],
+    });
+  }
+
   afterAll(async () => {
     for (const id of createdUserIds) await db.delete(users).where(eq(users.id, id));
     await closeDb();
   });
 
-  it('creates exactly one card per account, idempotently', async () => {
+  it('refuses to make a card with nobody to reach', async () => {
     const owner = await insertOwner();
+    await expect(createCardForOwner(owner)).resolves.toEqual({ ok: false, reason: 'no-contacts' });
+    expect(await getCardForOwner(owner)).toBeNull();
+  });
+
+  it('makes a card that is live immediately, with the five shipped languages', async () => {
+    const owner = await insertOwner();
+    await addContact(owner);
+
+    const result = await createCardForOwner(owner);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.card.active).toBe(true);
+    expect(result.card.languages).toEqual(['en', 'es', 'fr', 'zh', 'ru']);
+    expect(result.card.pinVersion).toBe(1);
+    expect(isSlug(result.card.slug)).toBe(true);
+    expect(await countContacts(owner)).toBe(1);
+  });
+
+  it('is idempotent: asking twice returns the same card', async () => {
+    const owner = await insertOwner();
+    await addContact(owner);
+
     const first = await createCardForOwner(owner);
     const second = await createCardForOwner(owner);
-    expect(second.id).toBe(first.id);
-    expect(isSlug(first.slug)).toBe(true);
+    if (!first.ok || !second.ok) throw new Error('expected cards');
+
+    expect(second.card.id).toBe(first.card.id);
+    expect(second.card.slug).toBe(first.card.slug);
   });
 
-  it('starts inactive with the five shipped languages', async () => {
-    const card = await createCardForOwner(await insertOwner());
-    expect(card.active).toBe(false);
-    expect(card.languages).toEqual(['en', 'es', 'fr', 'zh', 'ru']);
-    expect(card.pinVersion).toBe(1);
-    expect(card.scanCount).toBe(0);
-  });
+  it('stores the PIN hashed and encrypted, and shows it formatted', async () => {
+    const owner = await insertOwner();
+    await addContact(owner);
+    const result = await createCardForOwner(owner);
+    if (!result.ok) return;
 
-  it('stores a six-digit PIN hashed and encrypted, and shows it formatted', async () => {
-    const card = await createCardForOwner(await insertOwner());
-    const pin = rawPin(card);
-
+    const pin = rawPin(result.card);
     expect(pin).toMatch(/^\d{6}$/);
-    expect(revealPin(card)).toBe(formatPin(pin));
-    expect(card.pinHash).toMatch(/^\$argon2id\$/);
-    expect(card.pinHash).not.toContain(pin);
-    await expect(verifyPin(card.pinHash, pin)).resolves.toBe(true);
+    expect(revealPin(result.card)).toBe(formatPin(pin));
+    expect(result.card.pinHash).toMatch(/^\$argon2id\$/);
+    expect(result.card.pinHash).not.toContain(pin);
+    await expect(verifyPin(result.card.pinHash, pin)).resolves.toBe(true);
   });
 
-  it('rotates the PIN: new hash, bumped version, old PIN dead', async () => {
+  it('“new card” changes the slug and the PIN together, killing the old card', async () => {
     const owner = await insertOwner();
-    const card = await createCardForOwner(owner);
-    const oldPin = rawPin(card);
+    await addContact(owner);
+    const created = await createCardForOwner(owner);
+    if (!created.ok) return;
 
-    const result = await rotatePin(owner);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    const oldSlug = created.card.slug;
+    const oldPin = rawPin(created.card);
 
-    expect(result.card.pinVersion).toBe(card.pinVersion + 1);
-    expect(result.card.pinHash).not.toBe(card.pinHash);
-    expect(result.card.slug).toBe(card.slug);
-    expect(result.card.pinRotatedAt).not.toBeNull();
+    const renewed = await newCardForOwner(owner);
+    expect(renewed.ok).toBe(true);
+    if (!renewed.ok) return;
 
-    // The version bump is what kills live view cookies; the hash swap is what
-    // makes the old PIN useless.
-    await expect(verifyPin(result.card.pinHash, oldPin)).resolves.toBe(false);
-    await expect(verifyPin(result.card.pinHash, rawPin(result.card))).resolves.toBe(true);
+    expect(renewed.card.id).toBe(created.card.id);
+    expect(renewed.card.slug).not.toBe(oldSlug);
+    expect(isSlug(renewed.card.slug)).toBe(true);
+    expect(renewed.card.pinVersion).toBe(created.card.pinVersion + 1);
+    expect(renewed.card.active).toBe(true);
+    expect(revealPin(renewed.card)).not.toBe(formatPin(oldPin));
+    await expect(verifyPin(renewed.card.pinHash, oldPin)).resolves.toBe(false);
+    await expect(verifyPin(renewed.card.pinHash, rawPin(renewed.card))).resolves.toBe(true);
   });
 
-  it('regenerates the slug without touching the PIN or the state', async () => {
+  it('keeps the contacts across a new card', async () => {
     const owner = await insertOwner();
-    const card = await createCardForOwner(owner);
+    await addContact(owner, 'First');
+    await addContact(owner, 'Second');
+    const created = await createCardForOwner(owner);
+    if (!created.ok) return;
 
-    const result = await regenerateSlug(owner);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-
-    expect(result.card.slug).not.toBe(card.slug);
-    expect(isSlug(result.card.slug)).toBe(true);
-    expect(rawPin(result.card)).toBe(rawPin(card));
-    expect(result.card.active).toBe(card.active);
-
-    const reread = await getCardForOwner(owner);
-    expect(reread?.slug).toBe(result.card.slug);
-  });
-
-  it('refuses to activate a card with no contacts (D28)', async () => {
-    const owner = await insertOwner();
-    const card = await createCardForOwner(owner);
-
-    const refused = await setCardActive(owner, true);
-    expect(refused).toEqual({ ok: false, reason: 'no-contacts' });
-    expect((await getCardForOwner(owner))?.active).toBe(false);
-
-    // One contact is enough.
-    await db.insert(contacts).values({
-      cardId: card.id,
-      payloadEncrypted: encryptJson(
-        {
-          schema: 2,
-          name: 'Maria Silva',
-          relation: 'spouse',
-          phone_e164: '+66812345678',
-          phone_display: '+66 81 234 5678',
-          spoken_languages: ['en'],
-        },
-        ring,
-      ),
-      keyVersion: 1,
-    });
-
-    const activated = await setCardActive(owner, true);
-    expect(activated.ok).toBe(true);
-    expect((await getCardForOwner(owner))?.active).toBe(true);
-
-    const again = await setCardActive(owner, true);
-    expect(again).toEqual({ ok: false, reason: 'already-active' });
-
-    const off = await setCardActive(owner, false);
-    expect(off.ok).toBe(true);
-    expect((await getCardForOwner(owner))?.active).toBe(false);
+    await newCardForOwner(owner);
+    expect(await countContacts(owner)).toBe(2);
+    expect((await getCardForOwner(owner))?.id).toBe(created.card.id);
   });
 
   it('reports a missing card instead of throwing', async () => {
     const owner = await insertOwner();
-    await expect(rotatePin(owner)).resolves.toEqual({ ok: false, reason: 'no-card' });
-    await expect(regenerateSlug(owner)).resolves.toEqual({ ok: false, reason: 'no-card' });
-    await expect(setCardActive(owner, true)).resolves.toEqual({ ok: false, reason: 'no-card' });
+    await addContact(owner);
+    await expect(newCardForOwner(owner)).resolves.toEqual({ ok: false, reason: 'no-card' });
   });
 
   it('builds the responder URL from the card origin', async () => {
-    const card = await createCardForOwner(await insertOwner());
-    expect(cardUrl(card)).toBe(`${getConfig().PUBLIC_CARD_ORIGIN}/c/${card.slug}`);
+    const owner = await insertOwner();
+    await addContact(owner);
+    const result = await createCardForOwner(owner);
+    if (!result.ok) return;
+
+    expect(cardUrl(result.card)).toBe(`${getConfig().PUBLIC_CARD_ORIGIN}/c/${result.card.slug}`);
   });
 });

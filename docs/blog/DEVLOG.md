@@ -243,3 +243,38 @@ becomes its own piece, separate from the product story:
 project only. Costs are never added up across projects: another project lost a
 month of session logs, so a combined total would silently under-report. The method
 is now the **project-costs** skill.
+
+
+## 2026-09-29 — His first hands-on pass, and six corrections
+
+**What happened.** He tested the built app and came back with six changes: two password
+fields at signup, contacts before the card, reachability channels per contact, no card
+on/off switch, "new PIN" and "new QR" merged into one "New card", and the whole owner
+plane on a single page. All six are implemented, with 152 Vitest and 23 Playwright tests
+green behind them.
+
+**The one that mattered most.** "First I add contacts then I create a card" is not a UI
+change, it is a data-model change: contacts and notes were children of the *card*, so the
+card had to exist first and reissuing one either orphaned or duplicated the people. They
+belong to the **owner** now, and the card is only the thing a QR points at. That is why
+the migration is written to copy before it drops — and why the auto-generated version was
+wrong: drizzle-kit emitted `DROP COLUMN card_id` first, which would have destroyed the
+attribution of every existing contact. I rebuilt the dev database from empty to prove the
+fresh-install path instead of trusting the upgrade path alone.
+
+**The bug I shipped and the test caught.** Every endpoint was passing a *sentence* where
+the dashboard expected an *error key*, so the page resolved "Start with a country code,
+e.g. +66 for Thailand." to "Something went wrong." The type system was happy (both are
+strings) and reading the code was too. The browser test that checked the wording found it.
+
+**What he was right about that I had sequenced wrongly.** The card switch existed because
+the plan gave it a purpose (gate the guest URL, gate the print endpoints). He used it once
+and it produced the worst possible failure mode: a card that looks fine and does nothing,
+after which he reported "the PIN doesn't work". The real lesson is not that the feature
+was wrong, it is that a safety product should not have a state whose only symptom is
+silence.
+
+**Decisions.** ADR-020 (a card is live or it does not exist), ADR-021 (reachability
+channels, with text message because a responder may be unable to speak or hear),
+ADR-022 (contacts and notes belong to the owner). The plan's contract grows items 15–17,
+so the document and the code still agree.

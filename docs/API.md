@@ -37,19 +37,17 @@ better-auth session, SSR forms, origin-checked POSTs.
 | GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
 | ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
-| GET | `/dashboard` | Guarded owner shell: card state, contact count, PIN, card URL. | ✅ |
+| GET | `/dashboard` | The whole owner plane on one page: contacts, then notes, then the card. | ✅ |
 | GET/POST | `/dashboard/profile` | First name; email change. | ⏳ (2b) |
-| GET/POST | `/dashboard/card` | Onboarding: exactly one card per account, idempotent. Creation is gated on nothing; **activation** needs ≥1 contact (D28). Shows the PIN and the responder URL. | ✅ |
-| POST | `/dashboard/card/rotate-pin` | New PIN, bumps `pin_version`, kills live view cookies. | ✅ |
-| POST | `/dashboard/card/regenerate-slug` | New QR; the old printed card stops working permanently. | ✅ |
-| POST | `/dashboard/card/deactivate` \| `/activate` | Gates the guest URL **and** the print endpoints; activation refuses with no contacts. | ✅ |
-| GET | `/dashboard/contacts` | List, with the card's on/off state and Call/WhatsApp links. | ✅ |
-| GET/POST | `/dashboard/contacts/new` | Create: name, relation (fixed vocabulary), phone (E.164), spoken languages. | ✅ |
-| GET/POST | `/dashboard/contacts/{id}/edit` | Edit; same validation. | ✅ |
-| POST | `/dashboard/contacts/{id}/delete` | Refused while the card is active and this is the last contact (D28). | ✅ |
-| GET/POST | `/dashboard/notes` | Free text, consent line, stored encrypted; blank clears the row. | ✅ |
+| POST | `/dashboard/card/create` | Make the card. **Refused with no contacts**; live immediately (ADR-020). | ✅ |
+| POST | `/dashboard/card/new` | "New card": new slug and new PIN together, killing the printed one. | ✅ |
+| GET | `/dashboard/card/card.jpg` | The card as a 300 dpi JPEG (QR + PIN), `no-store`, never cached. | ✅ |
+| POST | `/dashboard/contacts/new` | Add a contact: name, relation, phone (E.164), channels, spoken languages. | ✅ |
+| POST | `/dashboard/contacts/{id}/edit` | Edit; same validation. | ✅ |
+| POST | `/dashboard/contacts/{id}/delete` | Refused while a card exists and this is the last contact. | ✅ |
+| POST | `/dashboard/notes` | Free text, stored encrypted, blank clears the row. | ✅ |
 | GET | `/dashboard/card/preview` | Responder view rendered for the owner, with a language picker. | ⏳ (7) |
-| GET | `/dashboard/card/print/{card\|a4}.pdf` | Deterministic download; disappears when inactive. | ⏳ (7) |
+| GET | `/dashboard/card/print/{card\|a4}.pdf` | Deterministic download, replacing the interim JPEG. | ⏳ (7) |
 | GET | `/dashboard/card/print.svg` | Engraving vector, text as paths. | ⏳ (later) |
 | GET | `/dashboard/activity` | Aggregated scan/failure log. | ⏳ (6) |
 | GET | `/dashboard/export` | JSON export of the account's data. | ⏳ (9) |

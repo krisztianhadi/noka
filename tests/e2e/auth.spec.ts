@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
  * dashboard, sign out, sign back in. Plain form POSTs — no client JavaScript
  * is involved on either side (D6).
  */
-const PASSWORD = 'correct-horse-battery';
+import { PASSWORD } from './helpers';
 
 test.describe('owner plane', () => {
   test('signs up, guards the dashboard, signs out and back in', async ({ page }) => {
@@ -16,6 +16,7 @@ test.describe('owner plane', () => {
     await page.fill('#name', 'Krisztian');
     await page.fill('#email', email);
     await page.fill('#password', PASSWORD);
+    await page.fill('#password_confirm', PASSWORD);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     await expect(page).toHaveURL(/\/dashboard$/);
@@ -33,6 +34,18 @@ test.describe('owner plane', () => {
     await page.fill('#password', PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
+  });
+
+  test('needs the password twice, and refuses a mismatch', async ({ page }) => {
+    await page.goto('/signup');
+    await page.fill('#name', 'Krisztian');
+    await page.fill('#email', `mismatch-${Date.now()}@noka.test`);
+    await page.fill('#password', PASSWORD);
+    await page.fill('#password_confirm', `${PASSWORD}-typo`);
+    await page.getByRole('button', { name: 'Create account' }).click();
+
+    await expect(page.locator('.error')).toContainText('do not match');
+    await expect(page).toHaveURL(/\/signup$/);
   });
 
   test('reports a wrong password without saying whether the account exists', async ({ page }) => {

@@ -132,8 +132,9 @@ export async function loadResponderView(card: Card): Promise<ResponderView> {
 
   return {
     ownerName: owner?.name ?? '',
-    contacts: await listContacts(card.id),
-    notes: await getNotes(card.id),
+    // Contacts and notes belong to the owner; the card only points at them.
+    contacts: await listContacts(card.userId),
+    notes: await getNotes(card.userId),
   };
 }
 

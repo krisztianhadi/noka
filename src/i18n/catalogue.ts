@@ -25,6 +25,14 @@ const en = {
   'view.speaks': 'Speaks',
   'view.notes': 'Notes',
   'view.hide': 'Hide now',
+  'view.on': 'Available on',
+
+  'channel.call': 'Call',
+  'channel.sms': 'Text message',
+  'channel.whatsapp': 'WhatsApp',
+  'channel.signal': 'Signal',
+  'channel.telegram': 'Telegram',
+  'channel.viber': 'Viber',
 
   'error.rateLimited': 'Too many attempts. Try again later.',
   'error.notFound': 'This card is not available.',
@@ -68,6 +76,14 @@ const es: Record<MessageKey, string> = {
   'view.speaks': 'Habla',
   'view.notes': 'Notas',
   'view.hide': 'Ocultar ahora',
+  'view.on': 'Disponible en',
+
+  'channel.call': 'Llamar',
+  'channel.sms': 'Mensaje de texto',
+  'channel.whatsapp': 'WhatsApp',
+  'channel.signal': 'Signal',
+  'channel.telegram': 'Telegram',
+  'channel.viber': 'Viber',
 
   'error.rateLimited': 'Demasiados intentos. Inténtalo más tarde.',
   'error.notFound': 'Esta tarjeta no está disponible.',
@@ -109,6 +125,14 @@ const fr: Record<MessageKey, string> = {
   'view.speaks': 'Parle',
   'view.notes': 'Notes',
   'view.hide': 'Masquer maintenant',
+  'view.on': 'Disponible sur',
+
+  'channel.call': 'Appeler',
+  'channel.sms': 'SMS',
+  'channel.whatsapp': 'WhatsApp',
+  'channel.signal': 'Signal',
+  'channel.telegram': 'Telegram',
+  'channel.viber': 'Viber',
 
   'error.rateLimited': 'Trop de tentatives. Réessayez plus tard.',
   'error.notFound': "Cette carte n'est pas disponible.",
@@ -150,6 +174,14 @@ const zh: Record<MessageKey, string> = {
   'view.speaks': '会说的语言',
   'view.notes': '备注',
   'view.hide': '立即隐藏',
+  'view.on': '可通过',
+
+  'channel.call': '拨打电话',
+  'channel.sms': '短信',
+  'channel.whatsapp': 'WhatsApp',
+  'channel.signal': 'Signal',
+  'channel.telegram': 'Telegram',
+  'channel.viber': 'Viber',
 
   'error.rateLimited': '尝试次数过多，请稍后再试。',
   'error.notFound': '此卡片不可用。',
@@ -191,6 +223,14 @@ const ru: Record<MessageKey, string> = {
   'view.speaks': 'Говорит на',
   'view.notes': 'Заметки',
   'view.hide': 'Скрыть сейчас',
+  'view.on': 'Доступно в',
+
+  'channel.call': 'Позвонить',
+  'channel.sms': 'СМС',
+  'channel.whatsapp': 'WhatsApp',
+  'channel.signal': 'Signal',
+  'channel.telegram': 'Telegram',
+  'channel.viber': 'Viber',
 
   'error.rateLimited': 'Слишком много попыток. Попробуйте позже.',
   'error.notFound': 'Эта карта недоступна.',

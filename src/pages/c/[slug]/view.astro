@@ -2,7 +2,7 @@
 import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
-import { whatsappHref, telHref } from '@/lib/contact-payload';
+import { channelHref, isButtonChannel } from '@/lib/channels';
 import {
   cardLanguages,
   findCardBySlug,
@@ -55,13 +55,27 @@ const offered = cardLanguages(card);
           </div>
         )}
         <div class="actions">
-          <a class="call" href={telHref(contact.phoneE164)}>
-            {label('view.call')}
-          </a>
-          <a class="whatsapp" href={whatsappHref(contact.phoneE164)}>
-            {label('view.whatsapp')}
-          </a>
+          {contact.channels
+            .filter((channel) => isButtonChannel(channel))
+            .map((channel) => (
+              <a class={channel} href={channelHref(channel, contact.phoneE164)}>
+                {label(`channel.${channel}` as MessageKey)}
+              </a>
+            ))}
         </div>
+        {contact.channels.some((channel) => !isButtonChannel(channel)) && (
+          <div class="on-channels">
+            {label('view.on')}:{' '}
+            {contact.channels
+              .filter((channel) => !isButtonChannel(channel))
+              .map((channel, index) => (
+                <>
+                  {index > 0 && ' · '}
+                  <a href={channelHref(channel, contact.phoneE164)}>{label(`channel.${channel}` as MessageKey)}</a>
+                </>
+              ))}
+          </div>
+        )}
       </div>
     ))
   }

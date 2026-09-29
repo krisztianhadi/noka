@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { getConfig } from '@/config';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
-import { cardNotes, cards, contacts, scanAttempts } from '@/db/schema';
+import { cards, contacts, ownerNotes, scanAttempts } from '@/db/schema';
 import { decryptJson, encryptJson, keyring } from '@/lib/crypto';
 import { generateSlug } from '@/lib/slug';
 
@@ -74,7 +74,7 @@ describeDb('database', () => {
   it('stores an encrypted contact and reads back no plaintext', async () => {
     const card = await insertCard((await insertUser()).id);
     await db.insert(contacts).values({
-      cardId: card.id,
+      userId: card.userId,
       payloadEncrypted: encryptJson(payload(), ring),
       keyVersion: 1,
       sortOrder: 0,
@@ -83,14 +83,14 @@ describeDb('database', () => {
     // Raw, uninterpreted view of the table: the escape encoding leaves
     // printable ASCII intact, so an unencrypted column would show the name.
     const raw = await db.execute(
-      sql`select encode(payload_encrypted, 'escape') as encoded, key_version from contacts where card_id = ${card.id}`,
+      sql`select encode(payload_encrypted, 'escape') as encoded, key_version from contacts where user_id = ${card.userId}`,
     );
     const row = raw[0] as unknown as { encoded: string; key_version: number };
     expect(row.key_version).toBe(1);
     expect(row.encoded).not.toContain('ZZTOPSECRET');
     expect(row.encoded).not.toContain('66899999999');
 
-    const stored = await db.select().from(contacts).where(eq(contacts.cardId, card.id));
+    const stored = await db.select().from(contacts).where(eq(contacts.userId, card.userId));
     const decrypted = decryptJson<ReturnType<typeof payload>>(stored[0]!.payloadEncrypted, ring);
     expect(decrypted.value).toEqual(payload());
     expect(decrypted.keyVersion).toBe(1);
@@ -99,28 +99,31 @@ describeDb('database', () => {
   it('keeps the notes encrypted too', async () => {
     const card = await insertCard((await insertUser()).id);
     await db
-      .insert(cardNotes)
-      .values({ cardId: card.id, notesEncrypted: encryptJson({ notes: SECRET_NAME }, ring), keyVersion: 1 });
+      .insert(ownerNotes)
+      .values({ userId: card.userId, notesEncrypted: encryptJson({ notes: SECRET_NAME }, ring), keyVersion: 1 });
 
     const raw = await db.execute(
-      sql`select encode(notes_encrypted, 'escape') as encoded from card_notes where card_id = ${card.id}`,
+      sql`select encode(notes_encrypted, 'escape') as encoded from owner_notes where user_id = ${card.userId}`,
     );
     expect((raw[0] as unknown as { encoded: string }).encoded).not.toContain('ZZTOPSECRET');
 
-    const [notes] = await db.select().from(cardNotes).where(eq(cardNotes.cardId, card.id));
+    const [notes] = await db.select().from(ownerNotes).where(eq(ownerNotes.userId, card.userId));
     expect(decryptJson<{ notes: string }>(notes!.notesEncrypted!, ring).value.notes).toBe(SECRET_NAME);
   });
 
-  it('cascades contacts, notes and attempts when the card is deleted', async () => {
+  it('keeps the owner’s contacts and notes when a card is deleted, and takes the attempts', async () => {
     const card = await insertCard((await insertUser()).id);
-    await db.insert(contacts).values({ cardId: card.id, payloadEncrypted: encryptJson(payload(), ring), keyVersion: 1 });
-    await db.insert(cardNotes).values({ cardId: card.id, notesEncrypted: encryptJson({ notes: 'x' }, ring), keyVersion: 1 });
+    await db.insert(contacts).values({ userId: card.userId, payloadEncrypted: encryptJson(payload(), ring), keyVersion: 1 });
+    await db.insert(ownerNotes).values({ userId: card.userId, notesEncrypted: encryptJson({ notes: 'x' }, ring), keyVersion: 1 });
     await db.insert(scanAttempts).values({ cardId: card.id, kind: 'pin_fail', success: false, ipPrefixHash: 'deadbeef' });
 
     await db.delete(cards).where(eq(cards.id, card.id));
 
-    expect(await db.select().from(contacts).where(eq(contacts.cardId, card.id))).toHaveLength(0);
-    expect(await db.select().from(cardNotes).where(eq(cardNotes.cardId, card.id))).toHaveLength(0);
+    // Contacts and notes belong to the owner, so reissuing or deleting a card
+    // never touches the people or the notes…
+    expect(await db.select().from(contacts).where(eq(contacts.userId, card.userId))).toHaveLength(1);
+    expect(await db.select().from(ownerNotes).where(eq(ownerNotes.userId, card.userId))).toHaveLength(1);
+    // …while the audit rows for that card go with it.
     expect(await db.select().from(scanAttempts).where(eq(scanAttempts.cardId, card.id))).toHaveLength(0);
   });
 

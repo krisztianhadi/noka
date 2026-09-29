@@ -42,27 +42,37 @@ export const cards = pgTable(
   (table) => [uniqueIndex('cards_one_active_per_user').on(table.userId).where(sql`${table.active}`)],
 );
 
+/**
+ * Contacts belong to the **owner**, not to a card: the owner adds people first and
+ * makes a card afterwards (his onboarding order, 2026-09-29). The responder page
+ * reaches them through the card's `user_id`.
+ */
 export const contacts = pgTable(
   'contacts',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    cardId: uuid('card_id')
+    userId: uuid('user_id')
       .notNull()
-      .references(() => cards.id, { onDelete: 'cascade' }),
-    /** AES-256-GCM of the schema-2 payload (src/lib/contact-payload.ts). */
+      .references(() => users.id, { onDelete: 'cascade' }),
+    /** AES-256-GCM of the schema-3 payload (src/lib/contact-payload.ts). */
     payloadEncrypted: bytea('payload_encrypted').notNull(),
     keyVersion: smallint('key_version').notNull(),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('contacts_card_sort_idx').on(table.cardId, table.sortOrder)],
+  (table) => [index('contacts_user_sort_idx').on(table.userId, table.sortOrder)],
 );
 
-export const cardNotes = pgTable('card_notes', {
-  cardId: uuid('card_id')
+/**
+ * Free-text notes belong to the owner as well: they are written before any card
+ * exists (contacts → notes → card), and the responder page reads them through the
+ * card's owner.
+ */
+export const ownerNotes = pgTable('owner_notes', {
+  userId: uuid('user_id')
     .primaryKey()
-    .references(() => cards.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' }),
   notesEncrypted: bytea('notes_encrypted'),
   keyVersion: smallint('key_version'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

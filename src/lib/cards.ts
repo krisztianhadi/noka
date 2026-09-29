@@ -4,88 +4,87 @@ import { getDb } from '@/db/client';
 import { cards, contacts } from '@/db/schema';
 import { activeKeyVersion, decryptJson, encryptJson } from '@/lib/crypto';
 import { contactKeyring } from '@/lib/keys';
-import { generatePin, formatPin, hashPin } from '@/lib/pin';
 import { DEFAULT_CARD_LANGUAGES, sanitizeLanguageSet } from '@/i18n/languages';
+import { formatPin, generatePin, hashPin } from '@/lib/pin';
 import { generateSlug } from '@/lib/slug';
 
 /**
- * Card lifecycle (D7, D9, D13, D27): exactly one card per account, a
- * reprintable PIN, and a state machine the dashboard drives.
+ * Card lifecycle (D9, D13 — simplified 2026-09-29 after his test pass).
  *
- * The PIN is stored twice on purpose: `pin_hash` for verification and
- * `pin_encrypted` so the owner can read, download and reprint their own card
- * for as long as it is active. Losing the encryption key therefore loses the
- * ability to *reprint*, not the ability to verify.
+ * A card exists because there are contacts to reach, and it is **live the moment
+ * it exists**. The switch-on/switch-off pair and the separate "new PIN" / "new QR"
+ * actions are gone; there are two things an owner can do:
+ *
+ *   make a card      — needs at least one contact; it is active immediately
+ *   make a new card  — new slug and new PIN in one action, which kills the
+ *                      printed card outright
+ *
+ * The PIN is still stored twice (a hash to verify, a ciphertext to reprint), and
+ * `pin_version` still exists so rotation invalidates live view cookies.
  */
 export type Card = typeof cards.$inferSelect;
 
-export type CardResult =
-  | { ok: true; card: Card }
-  | { ok: false; reason: 'no-card' | 'no-contacts' | 'already-active' | 'already-inactive' };
+export type CardResult = { ok: true; card: Card } | { ok: false; reason: 'no-card' | 'no-contacts' };
 
-function keyringFromConfig() {
-  return contactKeyring();
-}
-
-/** The owner's card, active or not. One row per account at the application level. */
 export async function getCardForOwner(userId: string): Promise<Card | null> {
   const [card] = await getDb().select().from(cards).where(eq(cards.userId, userId)).limit(1);
   return card ?? null;
 }
 
-export async function contactCount(cardId: string): Promise<number> {
-  const [row] = await getDb().select({ value: count() }).from(contacts).where(eq(contacts.cardId, cardId));
+/** How many people the owner has added, card or no card. */
+export async function countContacts(userId: string): Promise<number> {
+  const [row] = await getDb().select({ value: count() }).from(contacts).where(eq(contacts.userId, userId));
   return row?.value ?? 0;
 }
 
-/**
- * Onboarding is idempotent: calling it twice never mints a second card, and
- * the language set is the card's own ordered list (D15) — first entry is the
- * responder fallback.
- */
-export async function createCardForOwner(userId: string, languages = [...DEFAULT_CARD_LANGUAGES]): Promise<Card> {
+/** A card needs somewhere to send a responder: no contacts, no card. */
+export async function createCardForOwner(
+  userId: string,
+  languages = [...DEFAULT_CARD_LANGUAGES],
+): Promise<CardResult> {
   const existing = await getCardForOwner(userId);
-  if (existing) return existing;
+  if (existing) return { ok: true, card: existing };
+  if ((await countContacts(userId)) === 0) return { ok: false, reason: 'no-contacts' };
 
-  const db = getDb();
+  const ring = contactKeyring();
   const pin = generatePin();
-  const [card] = await db
+  const [card] = await getDb()
     .insert(cards)
     .values({
       userId,
       slug: generateSlug(),
       pinHash: await hashPin(pin),
-      pinEncrypted: encryptJson({ pin }, keyringFromConfig(), activeKeyVersion(keyringFromConfig())),
+      pinEncrypted: encryptJson({ pin }, ring, activeKeyVersion(ring)),
       languages: sanitizeLanguageSet(languages),
-      // Inactive until it has somewhere to send a responder (D28, Phase 4).
-      active: false,
+      active: true,
     })
     .returning();
 
   if (!card) throw new Error('Card insert returned no row');
-  return card;
+  return { ok: true, card };
 }
 
-/** The owner's own PIN, decrypted for display and reprinting (D9). */
-export function revealPin(card: Card): string {
-  const { value } = decryptJson<{ pin: string }>(card.pinEncrypted, keyringFromConfig());
-  return formatPin(value.pin);
-}
-
-/** New PIN, new hash, new ciphertext, and `pin_version` bumped so every live view cookie dies. */
-export async function rotatePin(userId: string): Promise<CardResult> {
+/**
+ * "New card": a new slug and a new PIN in one action. The previous printed card
+ * stops resolving immediately — that is the point, and the reason it is one
+ * button rather than two.
+ */
+export async function newCardForOwner(userId: string): Promise<CardResult> {
   const card = await getCardForOwner(userId);
   if (!card) return { ok: false, reason: 'no-card' };
+  if ((await countContacts(userId)) === 0) return { ok: false, reason: 'no-contacts' };
 
-  const ring = keyringFromConfig();
+  const ring = contactKeyring();
   const pin = generatePin();
   const [updated] = await getDb()
     .update(cards)
     .set({
+      slug: generateSlug(),
       pinHash: await hashPin(pin),
       pinEncrypted: encryptJson({ pin }, ring, activeKeyVersion(ring)),
       pinVersion: card.pinVersion + 1,
       pinRotatedAt: new Date(),
+      active: true,
     })
     .where(eq(cards.id, card.id))
     .returning();
@@ -93,32 +92,10 @@ export async function rotatePin(userId: string): Promise<CardResult> {
   return updated ? { ok: true, card: updated } : { ok: false, reason: 'no-card' };
 }
 
-/** New QR: the old printed card stops working permanently (§15). */
-export async function regenerateSlug(userId: string): Promise<CardResult> {
-  const card = await getCardForOwner(userId);
-  if (!card) return { ok: false, reason: 'no-card' };
-
-  const [updated] = await getDb()
-    .update(cards)
-    .set({ slug: generateSlug() })
-    .where(eq(cards.id, card.id))
-    .returning();
-
-  return updated ? { ok: true, card: updated } : { ok: false, reason: 'no-card' };
-}
-
-/**
- * Activation is gated on having at least one contact: an active card with
- * nothing behind it is worse than an inactive one (D28, §15).
- */
-export async function setCardActive(userId: string, active: boolean): Promise<CardResult> {
-  const card = await getCardForOwner(userId);
-  if (!card) return { ok: false, reason: 'no-card' };
-  if (card.active === active) return { ok: false, reason: active ? 'already-active' : 'already-inactive' };
-  if (active && (await contactCount(card.id)) === 0) return { ok: false, reason: 'no-contacts' };
-
-  const [updated] = await getDb().update(cards).set({ active }).where(eq(cards.id, card.id)).returning();
-  return updated ? { ok: true, card: updated } : { ok: false, reason: 'no-card' };
+/** The owner's own PIN, decrypted for display and reprinting (D9). */
+export function revealPin(card: Card): string {
+  const { value } = decryptJson<{ pin: string }>(card.pinEncrypted, contactKeyring());
+  return formatPin(value.pin);
 }
 
 /** The URL a responder's QR points at. */

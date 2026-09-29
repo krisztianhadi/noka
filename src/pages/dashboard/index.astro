@@ -1,55 +1,169 @@
 ---
+import ContactForm from '@/components/ContactForm.astro';
 import Plain from '@/layouts/Plain.astro';
-import { cardUrl, contactCount, getCardForOwner, revealPin } from '@/lib/cards';
+import { MESSAGES } from '@/i18n/catalogue';
+import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
+import { channelHref, isButtonChannel, type Channel } from '@/lib/channels';
+import { getNotes, listContacts } from '@/lib/contacts';
+import { errorMessage, noticeMessage } from '@/lib/dashboard';
 
+/**
+ * The whole owner plane on one page, in his order (2026-09-29): contacts, then
+ * notes, then the card. Sub-pages are gone; editing happens inline.
+ *
+ * A card is the last thing, because it is the only thing that depends on the
+ * others existing.
+ */
 const owner = Astro.locals.owner!;
+
+const contacts = await listContacts(owner.id);
+const notes = await getNotes(owner.id);
 const card = await getCardForOwner(owner.id);
-const contacts = card ? await contactCount(card.id) : 0;
+const count = await countContacts(owner.id);
+
+const notice = noticeMessage(Astro.url.searchParams.get('notice'));
+const error = errorMessage(Astro.url.searchParams.get('error'));
+
+const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
+const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
+const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
+void isButtonChannel;
 ---
 
-<Plain title="Dashboard — noka">
+<Plain title="Your noka">
+  <p class="brand"><a href="/">noka</a></p>
   <h1>Hello, {owner.name}</h1>
+  <p class="account">Signed in as {owner.email}</p>
 
-  <p>
-    Signed in as <strong>{owner.email}</strong>.
-  </p>
+  {notice && <p class="notice" role="status">{notice}</p>}
+  {error && <p class="error" role="alert">{error}</p>}
 
-  <nav>
-    <ul>
-      <li><a href="/dashboard/card">Your card</a></li>
-      <li><a href="/dashboard/contacts">Contacts ({contacts})</a></li>
-      <li><a href="/dashboard/notes">Notes</a></li>
-    </ul>
-  </nav>
+  <section id="contacts">
+    <h2>Emergency contacts</h2>
 
-  <h2>Your card</h2>
-  {
-    !card && (
-      <>
+    {
+      contacts.length === 0 ? (
         <p>
-          You have no card yet. A card is a QR code and a six-digit PIN, printed on something the size of a
-          bank card.
+          Nobody yet. Add the person a responder should call — the card cannot exist until at least one
+          contact does.
         </p>
-        <p><a href="/dashboard/card">Create your card →</a></p>
-      </>
-    )
-  }
+      ) : (
+        <ul class="contacts">
+          {contacts.map((contact) => (
+            <li>
+              <p class="who">
+                <strong>{contact.name}</strong> — {relationLabel(contact.relation)}
+              </p>
+              <p class="phone">{contact.phoneDisplay}</p>
+              <p class="tags">
+                {contact.channels.map((channel: Channel) => (
+                  <span class="tag">{channelLabel(channel)}</span>
+                ))}
+                {contact.spokenLanguages.map((code) => (
+                  <span class="tag muted">{spokenLabel(code)}</span>
+                ))}
+              </p>
+              <p class="actions">
+                <a href={channelHref('call', contact.phoneE164)}>Call</a>
+                {contact.channels.includes('whatsapp') && (
+                  <>
+                    {' · '}
+                    <a href={channelHref('whatsapp', contact.phoneE164)}>WhatsApp</a>
+                  </>
+                )}
+                {contact.channels.includes('sms') && (
+                  <>
+                    {' · '}
+                    <a href={channelHref('sms', contact.phoneE164)}>Text</a>
+                  </>
+                )}
+              </p>
 
-  {
-    card && (
-      <>
-        <p class="status">
-          {card.active ? 'Active' : 'Not active'}
-          {' · '}
-          {contacts} {contacts === 1 ? 'contact' : 'contacts'}
-          {!card.active && contacts > 0 && ' — ready to switch on'}
-        </p>
-        <p class="pin">{revealPin(card)}</p>
-        <p class="url">{cardUrl(card)}</p>
-        <p><a href="/dashboard/card">Manage the card →</a></p>
-      </>
-    )
-  }
+              <details>
+                <summary>Edit {contact.name}</summary>
+                <ContactForm
+                  action={`/dashboard/contacts/${contact.id}/edit`}
+                  contact={contact}
+                  submitLabel="Save changes"
+                  compact
+                />
+              </details>
+
+              <form method="post" action={`/dashboard/contacts/${contact.id}/delete`}>
+                <button type="submit" class="danger">
+                  Delete
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <h3>Add a contact</h3>
+    <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+  </section>
+
+  <section id="notes-section">
+    <h2>Notes for a responder</h2>
+    <p>Free text, shown under the contacts on the card page. Where the medication is, who to call first.</p>
+    <form method="post" action="/dashboard/notes">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="5" maxlength="2000">{notes}</textarea>
+      <p class="note">
+        Do not enter anyone else's data, and nothing you would not want a stranger holding your card to
+        read.
+      </p>
+      <button type="submit">Save notes</button>
+    </form>
+  </section>
+
+  <section id="card">
+    <h2>Your card</h2>
+
+    {
+      !card && (
+        <>
+          <p>
+            {count === 0
+              ? 'A card needs at least one contact behind it. Add someone above, then come back.'
+              : 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.'}
+          </p>
+          <form method="post" action="/dashboard/card/create">
+            <button type="submit" disabled={count === 0}>
+              Make my card
+            </button>
+          </form>
+        </>
+      )
+    }
+
+    {
+      card && (
+        <>
+          <img
+            class="preview"
+            src="/dashboard/card/card.jpg"
+            alt="Your card: name, QR code, PIN and instructions"
+            width="632"
+            height="1011"
+          />
+          <p class="pin">{revealPin(card)}</p>
+          <p class="url">{cardUrl(card)}</p>
+          <p class="note">
+            Print the image above, or copy the link and PIN by hand. The QR points at the link.
+          </p>
+
+          <form method="post" action="/dashboard/card/new">
+            <button type="submit">New card</button>
+          </form>
+          <p class="note">
+            A new card means a new link and a new PIN. Anything already printed stops working immediately.
+          </p>
+        </>
+      )
+    }
+  </section>
 
   <form method="post" action="/logout">
     <button type="submit">Sign out</button>
@@ -57,30 +171,100 @@ const contacts = card ? await contactCount(card.id) : 0;
 </Plain>
 
 <style>
-  h2 {
-    margin-top: 2rem;
-    font-size: 1.25rem;
+  .account {
+    margin: 0 0 1rem;
+    color: #555;
+    font-size: 0.95rem;
   }
-  nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 1rem;
+  .brand {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+  section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+  }
+  h2 {
+    margin-top: 0;
+    font-size: 1.35rem;
+  }
+  h3 {
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+  }
+  .contacts {
     list-style: none;
     padding: 0;
   }
-  .status {
-    padding: 0.6rem 0.8rem;
-    border: 1px solid #666;
+  .contacts > li {
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+  }
+  .who {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .phone {
+    margin: 0.2rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .tags {
+    margin: 0.3rem 0;
+  }
+  .tag {
+    display: inline-block;
+    margin: 0 0.35rem 0.35rem 0;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.85rem;
+    border: 1px solid #999;
+    border-radius: 999px;
+  }
+  .tag.muted {
+    border-style: dashed;
+    color: #555;
+  }
+  .actions {
+    margin: 0.4rem 0 0.6rem;
+  }
+  .danger {
+    background: #fff;
+    color: #7a0000;
+    border-color: #a00;
+    font-weight: 500;
+    margin-top: 0;
+  }
+  .notice {
+    padding: 0.7rem 0.8rem;
+    border: 2px solid #0a5;
     border-radius: 4px;
+    color: #064;
+  }
+  .preview {
+    display: block;
+    width: min(100%, 260px);
+    height: auto;
+    margin: 0.5rem 0 1rem;
+    border: 1px solid #ccc;
   }
   .pin {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 2rem;
     letter-spacing: 0.12em;
-    margin: 0.5rem 0;
+    margin: 0.25rem 0;
   }
   .url {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     word-break: break-all;
+    margin: 0.25rem 0;
+  }
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.7rem;
+    font: inherit;
+    border: 1px solid #666;
+    border-radius: 4px;
   }
 </style>

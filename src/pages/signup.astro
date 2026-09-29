@@ -15,14 +15,21 @@ if (Astro.request.method === 'POST') {
   email = field(form, 'email');
   name = field(form, 'name');
   const password = field(form, 'password');
+  const confirmation = field(form, 'password_confirm');
 
-  const response = await getAuth().api.signUpEmail({
+  // Industry standard for a reason: a typo in a password field locks the account
+  // out of its own recovery flow.
+  if (password !== confirmation) {
+    error = 'The two passwords do not match.';
+  } else {
+    const response = await getAuth().api.signUpEmail({
     body: { email, password, name },
     asResponse: true,
   });
 
-  if (response.ok) return redirectWithCookies('/dashboard', response);
-  error = await errorMessage(response, 'Could not create the account.');
+    if (response.ok) return redirectWithCookies('/dashboard', response);
+    error = await errorMessage(response, 'Could not create the account.');
+  }
 }
 ---
 
@@ -41,6 +48,16 @@ if (Astro.request.method === 'POST') {
 
     <label for="password">Password</label>
     <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password" />
+
+    <label for="password_confirm">Password again</label>
+    <input
+      id="password_confirm"
+      name="password_confirm"
+      type="password"
+      required
+      minlength="10"
+      autocomplete="new-password"
+    />
     <p class="note">At least 10 characters. This guards your account; the card is guarded by its PIN.</p>
 
     <button type="submit">Create account</button>

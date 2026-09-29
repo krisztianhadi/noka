@@ -34,6 +34,18 @@ At Phase 1 it splits per the project-docs method: decisions and threat model →
 14. **The owner's email is the one plaintext exception.** The auth library looks
     accounts up by it, so the blind-index design was dropped rather than fought.
     → ADR-004, §4
+15. **The card has no switch.** Activation and deactivation are gone: a card is
+    live when it is made, and "New card" replaces the separate new-PIN and new-QR
+    actions by replacing the card itself. A card cannot exist without a contact.
+    → ADR-020, supersedes parts of D9 and D28
+16. **Contacts carry reachability channels** — call, text, WhatsApp, Signal,
+    Telegram, Viber; call on by default, text because it is what works for a
+    responder who cannot speak or hear. The responder page shows buttons for the
+    reliable schemes and a readable "available on" line for the rest.
+    → ADR-021, §4
+17. **Contacts and notes belong to the owner**, not to the card, so the order is
+    contacts → notes → card and reissuing a card never touches the people. The
+    owner plane is a single page. → ADR-022, ADR-020, §7
 
 ---
 
@@ -73,7 +85,7 @@ wrong or missing and are corrected in this document:
 | D6 | Dashboard = **SSR forms, zero islands, no client framework**. | locked |
 | D7 | **One card per account** in v1 (the spec contradicted itself); partial unique index. | locked |
 | D8 | Owner auth via **better-auth** (official Astro example: email+password, Google, reset, DB sessions) rather than hand-rolled OAuth. Phase 0 confirms versions and the schema it owns. | recommended |
-| D9 | **`pin_encrypted` alongside `pin_hash`**, so the owner can view, download and reprint the card as many times as they like **while it is `active`**. Revoked or deactivated → nothing printable. | locked |
+| D9 | **`pin_encrypted` alongside `pin_hash`**, so the owner can view, download and reprint the card as many times as they like. *(Amended by ADR-020: there is no deactivated state any more — "New card" replaces the card, and the old one stops resolving.)* | amended |
 | D10 | One encrypted **JSON payload per contact**; only `sort_order` stays plaintext. | recommended |
 | D11 | Owner **email at rest**: `email_hash` (HMAC, unique, for lookup) + `email_encrypted`. A DB dump contains no plaintext address. | recommended |
 | D12 | Rate-limit state in **Postgres** via `rate-limiter-flexible`; no Redis in v1. | recommended |

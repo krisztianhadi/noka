@@ -3,8 +3,6 @@ import { eq, sql } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
-import { cards } from '@/db/schema';
-import { createCardForOwner } from '@/lib/cards';
 import {
   createContact,
   deleteContact,
@@ -31,6 +29,7 @@ function input(overrides: Partial<ContactInput> = {}): ContactInput {
     relation: 'spouse',
     phone: SECRET_PHONE,
     spokenLanguages: ['en', 'th'],
+    channels: ['call', 'whatsapp'],
     ...overrides,
   };
 }
@@ -39,13 +38,14 @@ describeDb('contacts and notes', () => {
   const db = getDb();
   const createdUserIds: string[] = [];
 
-  async function freshCard() {
+  /** Contacts belong to the owner now, so tests deal in owners. */
+  async function freshOwner(): Promise<string> {
     const [user] = await db
       .insert(users)
       .values({ name: 'Owner', email: `contacts-${randomUUID()}@noka.test` })
       .returning();
     createdUserIds.push(user!.id);
-    return createCardForOwner(user!.id);
+    return user!.id;
   }
 
   afterAll(async () => {
@@ -54,8 +54,8 @@ describeDb('contacts and notes', () => {
   });
 
   it('stores a contact encrypted and reads it back intact', async () => {
-    const card = await freshCard();
-    const created = await createContact(card.id, input());
+    const owner = await freshOwner();
+    const created = await createContact(owner, input());
     expect(created.ok).toBe(true);
     if (!created.ok) return;
 
@@ -65,17 +65,18 @@ describeDb('contacts and notes', () => {
       phoneE164: SECRET_PHONE,
       phoneDisplay: SECRET_PHONE,
       spokenLanguages: ['en', 'th'],
+      channels: ['call', 'whatsapp'],
       sortOrder: 0,
     });
 
-    const listed = await listContacts(card.id);
+    const listed = await listContacts(owner);
     expect(listed).toHaveLength(1);
     expect(listed[0]?.name).toBe(SECRET_NAME);
 
     // Raw view: the escape encoding keeps printable ASCII, so an unencrypted
     // column would show the name and the number.
     const raw = await db.execute(
-      sql`select encode(payload_encrypted, 'escape') as encoded from contacts where card_id = ${card.id}`,
+      sql`select encode(payload_encrypted, 'escape') as encoded from contacts where user_id = ${owner}`,
     );
     const encoded = (raw[0] as unknown as { encoded: string }).encoded;
     expect(encoded).not.toContain('ZZCONTACTSECRET');
@@ -83,121 +84,131 @@ describeDb('contacts and notes', () => {
   });
 
   it('validates instead of storing garbage', async () => {
-    const card = await freshCard();
+    const owner = await freshOwner();
 
-    await expect(createContact(card.id, input({ name: '   ' }))).resolves.toEqual({
+    await expect(createContact(owner, input({ name: '   ' }))).resolves.toEqual({
       ok: false,
       error: 'name-required',
     });
-    await expect(createContact(card.id, input({ relation: 'uncle' }))).resolves.toEqual({
+    await expect(createContact(owner, input({ relation: 'uncle' }))).resolves.toEqual({
       ok: false,
       error: 'relation-invalid',
     });
-    await expect(createContact(card.id, input({ phone: '0812345678' }))).resolves.toEqual({
+    await expect(createContact(owner, input({ phone: '0812345678' }))).resolves.toEqual({
       ok: false,
       error: 'missing-country-code',
     });
-    expect(await listContacts(card.id)).toHaveLength(0);
+    expect(await listContacts(owner)).toHaveLength(0);
+  });
+
+  it('keeps only the channels it knows, and defaults to a phone call', async () => {
+    const owner = await freshOwner();
+
+    const explicit = await createContact(owner, input({ channels: ['whatsapp', 'nonsense', 'sms'] }));
+    expect(explicit.ok && explicit.contact.channels).toEqual(['sms', 'whatsapp']);
+
+    const none = await createContact(owner, input({ channels: [] }));
+    expect(none.ok && none.contact.channels).toEqual(['call']);
   });
 
   it('drops unknown spoken languages on write', async () => {
-    const card = await freshCard();
-    const created = await createContact(card.id, input({ spokenLanguages: ['th', 'xx', 'th', 'en'] }));
+    const owner = await freshOwner();
+    const created = await createContact(owner, input({ spokenLanguages: ['th', 'xx', 'th', 'en'] }));
     expect(created.ok && created.contact.spokenLanguages).toEqual(['th', 'en']);
   });
 
   it('updates in place and keeps the row count', async () => {
-    const card = await freshCard();
-    const created = await createContact(card.id, input());
+    const owner = await freshOwner();
+    const created = await createContact(owner, input());
     if (!created.ok) return;
 
-    const updated = await updateContact(card.id, created.contact.id, input({ name: 'Maria Silva', relation: 'sibling' }));
+    const updated = await updateContact(owner, created.contact.id, input({ name: 'Maria Silva', relation: 'sibling' }));
     expect(updated.ok).toBe(true);
     if (!updated.ok) return;
 
     expect(updated.contact.id).toBe(created.contact.id);
     expect(updated.contact.name).toBe('Maria Silva');
     expect(updated.contact.relation).toBe('sibling');
-    expect(await listContacts(card.id)).toHaveLength(1);
+    expect(await listContacts(owner)).toHaveLength(1);
   });
 
   it('reports a missing contact rather than throwing', async () => {
-    const card = await freshCard();
-    await expect(updateContact(card.id, randomUUID(), input())).resolves.toEqual({ ok: false, error: 'not-found' });
-    expect(await getContact(card.id, randomUUID())).toBeNull();
+    const owner = await freshOwner();
+    await expect(updateContact(owner, randomUUID(), input())).resolves.toEqual({ ok: false, error: 'not-found' });
+    expect(await getContact(owner, randomUUID())).toBeNull();
   });
 
-  it('scopes every read to its own card', async () => {
-    const first = await freshCard();
-    const second = await freshCard();
-    const created = await createContact(first.id, input());
+  it('scopes every read to its own owner', async () => {
+    const first = await freshOwner();
+    const second = await freshOwner();
+    const created = await createContact(first, input());
     if (!created.ok) return;
 
-    expect(await getContact(second.id, created.contact.id)).toBeNull();
-    expect(await listContacts(second.id)).toHaveLength(0);
-    await expect(
-      deleteContact(second.id, created.contact.id, { cardActive: false }),
-    ).resolves.toEqual({ ok: false, error: 'not-found' });
-    expect(await listContacts(first.id)).toHaveLength(1);
+    expect(await getContact(second, created.contact.id)).toBeNull();
+    expect(await listContacts(second)).toHaveLength(0);
+    await expect(deleteContact(second, created.contact.id, { hasCard: false })).resolves.toEqual({
+      ok: false,
+      error: 'not-found',
+    });
+    expect(await listContacts(first)).toHaveLength(1);
   });
 
   it('numbers contacts in creation order and reorders on request', async () => {
-    const card = await freshCard();
-    const first = await createContact(card.id, input({ name: 'First' }));
-    const second = await createContact(card.id, input({ name: 'Second' }));
-    const third = await createContact(card.id, input({ name: 'Third' }));
+    const owner = await freshOwner();
+    const first = await createContact(owner, input({ name: 'First' }));
+    const second = await createContact(owner, input({ name: 'Second' }));
+    const third = await createContact(owner, input({ name: 'Third' }));
     if (!first.ok || !second.ok || !third.ok) return;
 
-    expect((await listContacts(card.id)).map((contact) => contact.name)).toEqual(['First', 'Second', 'Third']);
+    expect((await listContacts(owner)).map((contact) => contact.name)).toEqual(['First', 'Second', 'Third']);
 
-    await reorderContacts(card.id, [third.contact.id, first.contact.id, second.contact.id]);
-    expect((await listContacts(card.id)).map((contact) => contact.name)).toEqual(['Third', 'First', 'Second']);
+    await reorderContacts(owner, [third.contact.id, first.contact.id, second.contact.id]);
+    expect((await listContacts(owner)).map((contact) => contact.name)).toEqual(['Third', 'First', 'Second']);
   });
 
-  it('refuses to delete the last contact while the card is active (D28)', async () => {
-    const card = await freshCard();
-    const solo = await createContact(card.id, input());
+  it('refuses to delete the last contact while a card exists', async () => {
+    const owner = await freshOwner();
+    const solo = await createContact(owner, input());
     if (!solo.ok) return;
 
-    // Inactive card: deleting the last one is allowed.
-    await expect(deleteContact(card.id, solo.contact.id, { cardActive: true })).resolves.toEqual({
+    // No card yet: deleting the last one is allowed.
+    await expect(deleteContact(owner, solo.contact.id, { hasCard: true })).resolves.toEqual({
       ok: false,
-      error: 'last-contact-while-active',
+      error: 'last-contact-while-card-exists',
     });
-    await expect(deleteContact(card.id, solo.contact.id, { cardActive: false })).resolves.toEqual({ ok: true });
+    await expect(deleteContact(owner, solo.contact.id, { hasCard: false })).resolves.toEqual({ ok: true });
 
-    // Active card with two contacts: deleting one is fine.
-    const a = await createContact(card.id, input({ name: 'A' }));
-    const b = await createContact(card.id, input({ name: 'B' }));
+    // With a card and two contacts, deleting one is fine.
+    const a = await createContact(owner, input({ name: 'A' }));
+    const b = await createContact(owner, input({ name: 'B' }));
     if (!a.ok || !b.ok) return;
-    await expect(deleteContact(card.id, a.contact.id, { cardActive: true })).resolves.toEqual({ ok: true });
-    await expect(deleteContact(card.id, b.contact.id, { cardActive: true })).resolves.toEqual({
+    await expect(deleteContact(owner, a.contact.id, { hasCard: true })).resolves.toEqual({ ok: true });
+    await expect(deleteContact(owner, b.contact.id, { hasCard: true })).resolves.toEqual({
       ok: false,
-      error: 'last-contact-while-active',
+      error: 'last-contact-while-card-exists',
     });
   });
 
   it('round-trips the notes and stores them encrypted', async () => {
-    const card = await freshCard();
-    expect(await getNotes(card.id)).toBe('');
+    const owner = await freshOwner();
+    expect(await getNotes(owner)).toBe('');
 
-    await setNotes(card.id, `Type 1 diabetic. ${SECRET_NAME}`);
-    expect(await getNotes(card.id)).toBe(`Type 1 diabetic. ${SECRET_NAME}`);
+    await setNotes(owner, `Type 1 diabetic. ${SECRET_NAME}`);
+    expect(await getNotes(owner)).toBe(`Type 1 diabetic. ${SECRET_NAME}`);
 
     const raw = await db.execute(
-      sql`select encode(notes_encrypted, 'escape') as encoded from card_notes where card_id = ${card.id}`,
+      sql`select encode(notes_encrypted, 'escape') as encoded from owner_notes where user_id = ${owner}`,
     );
     expect((raw[0] as unknown as { encoded: string }).encoded).not.toContain('ZZCONTACTSECRET');
 
-    // Saving the same card twice updates instead of duplicating.
-    await setNotes(card.id, 'Allergic to penicillin.');
-    expect(await getNotes(card.id)).toBe('Allergic to penicillin.');
+    // Saving twice updates instead of duplicating.
+    await setNotes(owner, 'Allergic to penicillin.');
+    expect(await getNotes(owner)).toBe('Allergic to penicillin.');
 
     // Blank notes delete the row.
-    await setNotes(card.id, '   ');
-    expect(await getNotes(card.id)).toBe('');
-    expect(await db.select().from(cards).where(eq(cards.id, card.id))).toHaveLength(1);
-    const noteRows = await db.execute(sql`select count(*)::int as value from card_notes where card_id = ${card.id}`);
+    await setNotes(owner, '   ');
+    expect(await getNotes(owner)).toBe('');
+    const noteRows = await db.execute(sql`select count(*)::int as value from owner_notes where user_id = ${owner}`);
     expect((noteRows[0] as unknown as { value: number }).value).toBe(0);
   });
 });

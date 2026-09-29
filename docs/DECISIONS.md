@@ -28,6 +28,66 @@ later reversed.
 | 018 | MIT — the licence, with the reasoning written down | locked |
 | 019 | Users are never charged; sponsors or whitelabel; never sold into closed source | locked |
 
+### ADR-020 — A card is live or it does not exist (supersedes parts of D9, D28)
+
+**Context.** He tested the first build and reported: the PIN "doesn't work" (it did — the
+card was switched off), and "new PIN" and "new QR" were two buttons for one intention.
+
+**Decision.** Delete activation and deactivation, and merge the two rotations. A card is
+set `active` at creation and stays that way; the owner has exactly two actions:
+
+- **Make my card** — refused unless at least one contact exists, live immediately.
+- **New card** — new slug and new PIN together; the printed card dies at once.
+
+**Why.** The switch was a state a personal emergency card never needed, and it produced the
+worst possible failure mode: a card that looks fine and does nothing. Merging the rotations
+matches the mental model — the object being replaced is the *card*, not its parts.
+
+**Consequences.** `cards.active` and the partial unique index survive (a revoked card is
+still expressible), but nothing in the UI sets it false. Deleting the last contact while a
+card exists is refused, since a card with nobody behind it is worse than no card; the way
+out is to edit the contact or add another. `pin_version` still bumps so live view cookies
+die with the old card.
+
+### ADR-021 — Reachability channels, not a phone number
+
+**Context.** "WhatsApp should be an option… WhatsApp, Signal, Telegram, Viber, phone call
+(on by default), SMS/text (covers the case if the user is mute or lives with disability)."
+
+**Decision.** Each contact carries a set of channels — `call`, `sms`, `whatsapp`, `signal`,
+`telegram`, `viber` — stored as codes in the encrypted payload (schema 3), defaulting to
+`call` when nothing is selected. The responder page renders a **button** for call, WhatsApp
+and SMS, and a labelled "Available on …" line for Signal, Telegram and Viber.
+
+**Why.** A number is not the same as a way to reach a person. Text matters most: it is what
+works when the responder cannot speak, cannot hear, or cannot use a phone at all. Buttons
+are reserved for the schemes that are recognised and reliable; the rest stay readable as
+text even when their deep link does nothing, which is the honest failure mode.
+
+**Consequences.** `whatsappHref`/`telHref` moved out of the contact payload into
+`src/lib/channels.ts`; the payload schema is 3 and still reads 2, upgrading it in memory
+with `call`. Channel labels join the five-language catalogue, so the responder page stays
+translatable (D31).
+
+### ADR-022 — Contacts and notes belong to the owner, not to the card
+
+**Context.** "Add contact pointed to the create a card — I think it should be the other way
+around: first I add contacts then I create a card."
+
+**Decision.** `contacts.user_id` replaces `contacts.card_id`, and `card_notes` becomes
+`owner_notes` keyed by `user_id`. A card is only the thing a QR points at; the responder
+page reads the people and the notes through the card's owner.
+
+**Why.** The old model made the card a parent of the people, so onboarding had to start with
+the card, and reissuing a card either orphaned or duplicated the contacts. The new model has
+one owner of the data and one access token to it: reissuing a card touches nothing that
+matters, deleting a card touches nothing that matters.
+
+**Consequences.** Two migrations, written to **copy before dropping** — the auto-generated
+version dropped the card link first, which would have destroyed the attribution of every
+existing contact. The dev database was rebuilt from empty to verify the fresh-install path.
+The delete guard (ADR-020) is now expressed as "last contact while a card exists".
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.
