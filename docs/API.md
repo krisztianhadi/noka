@@ -43,8 +43,11 @@ better-auth session, SSR forms, origin-checked POSTs.
 | POST | `/dashboard/card/rotate-pin` | New PIN, bumps `pin_version`, kills live view cookies. | ✅ |
 | POST | `/dashboard/card/regenerate-slug` | New QR; the old printed card stops working permanently. | ✅ |
 | POST | `/dashboard/card/deactivate` \| `/activate` | Gates the guest URL **and** the print endpoints; activation refuses with no contacts. | ✅ |
-| GET/POST | `/dashboard/contacts[/new\|/{id}/edit]`, `POST .../delete` | Encrypted CRUD; relation from the fixed vocabulary (D31); the last contact cannot be deleted while active (D28). | ⏳ (4) |
-| GET/POST | `/dashboard/notes` | Free text, consent line. | ⏳ (4) |
+| GET | `/dashboard/contacts` | List, with the card's on/off state and Call/WhatsApp links. | ✅ |
+| GET/POST | `/dashboard/contacts/new` | Create: name, relation (fixed vocabulary), phone (E.164), spoken languages. | ✅ |
+| GET/POST | `/dashboard/contacts/{id}/edit` | Edit; same validation. | ✅ |
+| POST | `/dashboard/contacts/{id}/delete` | Refused while the card is active and this is the last contact (D28). | ✅ |
+| GET/POST | `/dashboard/notes` | Free text, consent line, stored encrypted; blank clears the row. | ✅ |
 | GET | `/dashboard/card/preview` | Responder view rendered for the owner, with a language picker. | ⏳ (7) |
 | GET | `/dashboard/card/print/{card\|a4}.pdf` | Deterministic download; disappears when inactive. | ⏳ (7) |
 | GET | `/dashboard/card/print.svg` | Engraving vector, text as paths. | ⏳ (later) |

@@ -1,0 +1,111 @@
+---
+import { MESSAGES } from '@/i18n/catalogue';
+import type { ContactView } from '@/lib/contacts';
+import { RELATIONS } from '@/lib/relations';
+import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
+
+/**
+ * One form for creating and editing a contact. Labels come from the catalogue's
+ * English entries — the dashboard is English-only (§13), but the vocabulary
+ * itself has exactly one home.
+ */
+interface Props {
+  action: string;
+  contact?: ContactView | null;
+  error?: string;
+  submitLabel?: string;
+}
+
+const { action, contact = null, error = '', submitLabel = 'Save contact' } = Astro.props;
+
+const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
+const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
+const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
+---
+
+{error && <p class="error" role="alert">{error}</p>}
+
+<form method="post" action={action}>
+  <label for="name">Name</label>
+  <input id="name" name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
+
+  <label for="relation">Relation</label>
+  <select id="relation" name="relation" required>
+    {
+      RELATIONS.map((relation) => (
+        <option value={relation} selected={contact?.relation === relation}>
+          {relationLabel(relation)}
+        </option>
+      ))
+    }
+  </select>
+
+  <label for="phone">Phone</label>
+  <input
+    id="phone"
+    name="phone"
+    type="tel"
+    required
+    autocomplete="tel"
+    placeholder="+66 812 345 678"
+    value={contact?.phoneDisplay ?? ''}
+  />
+  <p class="note">
+    International format with a country code — <code>+66</code> for Thailand, <code>+36</code> for Hungary.
+    It is what the Call and WhatsApp buttons use.
+  </p>
+
+  <fieldset>
+    <legend>Speaks</legend>
+    <p class="note">So a responder can see who they can actually talk to.</p>
+    <div class="chips">
+      {
+        SPOKEN_LANGUAGES.map((code) => (
+          <label class="chip">
+            <input type="checkbox" name="spoken" value={code} checked={selectedSpoken.has(code)} />
+            <span>{spokenLabel(code)}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <button type="submit">{submitLabel}</button>
+</form>
+
+<style>
+  input[type='text'],
+  input[type='tel'],
+  select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.7rem;
+    font: inherit;
+    border: 1px solid #666;
+    border-radius: 4px;
+    background: #fff;
+  }
+  fieldset {
+    margin-top: 1.25rem;
+    border: 1px solid #999;
+    border-radius: 4px;
+  }
+  legend {
+    font-weight: 600;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 400;
+    margin: 0;
+  }
+  .chip input {
+    width: auto;
+  }
+</style>

@@ -12,7 +12,9 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:3200',
+    // 127.0.0.1, not localhost: `localhost` can resolve to ::1 first, which
+    // makes Playwright think no server is running and fail to start its own.
+    baseURL: 'http://127.0.0.1:3200',
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
@@ -20,7 +22,7 @@ export default defineConfig({
     // The built server, not `astro dev`: dev injects the Vite/HMR client, and
     // the zero-JavaScript assertion is only meaningful in production output.
     command: 'pnpm build && node --env-file-if-exists=.env ./dist/server/entry.mjs',
-    url: 'http://localhost:3200/healthz',
+    url: 'http://127.0.0.1:3200/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },

@@ -10,10 +10,10 @@ pass has happened yet.
 
 ## Status
 
-Phase 3 — accounts and the card work end to end: signup, login, a card with a
-reprintable six-digit PIN, QR reissue, switch on/off. Contacts and the responder
-page are next. See [docs/CHANGELOG.md](docs/CHANGELOG.md) and
-[docs/PLAN.md](docs/PLAN.md).
+Phase 4 — the owner side works end to end: signup, login, a card with a
+reprintable six-digit PIN, encrypted contacts with spoken languages, notes, and a
+card you can switch on. The responder page — what a stranger sees after scanning —
+is next. See [docs/CHANGELOG.md](docs/CHANGELOG.md) and [docs/PLAN.md](docs/PLAN.md).
 
 ## How it works
 

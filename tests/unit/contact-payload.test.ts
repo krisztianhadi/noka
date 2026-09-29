@@ -45,10 +45,10 @@ describe('contact payload (schema 2)', () => {
 
 describe('link builders', () => {
   it('builds a tel: link from E.164', () => {
-    expect(telHref(valid)).toBe('tel:+66812345678');
+    expect(telHref(valid.phone_e164)).toBe('tel:+66812345678');
   });
 
   it('builds a wa.me link without the plus, as WhatsApp requires', () => {
-    expect(whatsappHref(valid)).toBe('https://wa.me/66812345678');
+    expect(whatsappHref(valid.phone_e164)).toBe('https://wa.me/66812345678');
   });
 });

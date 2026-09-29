@@ -2,7 +2,8 @@ import { count, eq } from 'drizzle-orm';
 import { getConfig } from '@/config';
 import { getDb } from '@/db/client';
 import { cards, contacts } from '@/db/schema';
-import { activeKeyVersion, decryptJson, encryptJson, keyring, type Keyring } from '@/lib/crypto';
+import { activeKeyVersion, decryptJson, encryptJson } from '@/lib/crypto';
+import { contactKeyring } from '@/lib/keys';
 import { generatePin, formatPin, hashPin } from '@/lib/pin';
 import { DEFAULT_CARD_LANGUAGES, sanitizeLanguageSet } from '@/i18n/languages';
 import { generateSlug } from '@/lib/slug';
@@ -22,8 +23,8 @@ export type CardResult =
   | { ok: true; card: Card }
   | { ok: false; reason: 'no-card' | 'no-contacts' | 'already-active' | 'already-inactive' };
 
-function keyringFromConfig(): Keyring {
-  return keyring({ 1: getConfig().CONTACT_ENCRYPTION_KEY });
+function keyringFromConfig() {
+  return contactKeyring();
 }
 
 /** The owner's card, active or not. One row per account at the application level. */

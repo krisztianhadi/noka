@@ -7,6 +7,9 @@ import type { CardLanguage } from './languages';
  *
  * Nothing here is the owner's own wording: names, notes and anything else the
  * owner typed stay exactly as typed (D19).
+ *
+ * The dashboard and the landing are English-only (§13), so their form labels
+ * and messages live in the pages, not here.
  */
 const en = {
   'pin.title': 'Emergency contacts',
@@ -19,6 +22,7 @@ const en = {
   'view.heading': 'Emergency contacts',
   'view.call': 'Call',
   'view.whatsapp': 'WhatsApp',
+  'view.speaks': 'Speaks',
   'view.notes': 'Notes',
   'view.hide': 'Hide now',
 
@@ -32,6 +36,20 @@ const en = {
   'relation.child': 'Child',
   'relation.friend': 'Friend',
   'relation.other': 'Other',
+
+  'spoken.en': 'English',
+  'spoken.hu': 'Hungarian',
+  'spoken.th': 'Thai',
+  'spoken.zh': 'Chinese',
+  'spoken.ru': 'Russian',
+  'spoken.es': 'Spanish',
+  'spoken.fr': 'French',
+  'spoken.de': 'German',
+  'spoken.it': 'Italian',
+  'spoken.pt': 'Portuguese',
+  'spoken.ar': 'Arabic',
+  'spoken.ja': 'Japanese',
+  'spoken.other': 'Other',
 } as const;
 
 export type MessageKey = keyof typeof en;
@@ -47,6 +65,7 @@ const es: Record<MessageKey, string> = {
   'view.heading': 'Contactos de emergencia',
   'view.call': 'Llamar',
   'view.whatsapp': 'WhatsApp',
+  'view.speaks': 'Habla',
   'view.notes': 'Notas',
   'view.hide': 'Ocultar ahora',
 
@@ -60,6 +79,20 @@ const es: Record<MessageKey, string> = {
   'relation.child': 'Hijo o hija',
   'relation.friend': 'Amigo o amiga',
   'relation.other': 'Otro',
+
+  'spoken.en': 'inglés',
+  'spoken.hu': 'húngaro',
+  'spoken.th': 'tailandés',
+  'spoken.zh': 'chino',
+  'spoken.ru': 'ruso',
+  'spoken.es': 'español',
+  'spoken.fr': 'francés',
+  'spoken.de': 'alemán',
+  'spoken.it': 'italiano',
+  'spoken.pt': 'portugués',
+  'spoken.ar': 'árabe',
+  'spoken.ja': 'japonés',
+  'spoken.other': 'otro',
 };
 
 const fr: Record<MessageKey, string> = {
@@ -73,6 +106,7 @@ const fr: Record<MessageKey, string> = {
   'view.heading': "Contacts d'urgence",
   'view.call': 'Appeler',
   'view.whatsapp': 'WhatsApp',
+  'view.speaks': 'Parle',
   'view.notes': 'Notes',
   'view.hide': 'Masquer maintenant',
 
@@ -86,6 +120,20 @@ const fr: Record<MessageKey, string> = {
   'relation.child': 'Enfant',
   'relation.friend': 'Ami(e)',
   'relation.other': 'Autre',
+
+  'spoken.en': 'anglais',
+  'spoken.hu': 'hongrois',
+  'spoken.th': 'thaï',
+  'spoken.zh': 'chinois',
+  'spoken.ru': 'russe',
+  'spoken.es': 'espagnol',
+  'spoken.fr': 'français',
+  'spoken.de': 'allemand',
+  'spoken.it': 'italien',
+  'spoken.pt': 'portugais',
+  'spoken.ar': 'arabe',
+  'spoken.ja': 'japonais',
+  'spoken.other': 'autre',
 };
 
 const zh: Record<MessageKey, string> = {
@@ -99,6 +147,7 @@ const zh: Record<MessageKey, string> = {
   'view.heading': '紧急联系人',
   'view.call': '拨打电话',
   'view.whatsapp': 'WhatsApp',
+  'view.speaks': '会说的语言',
   'view.notes': '备注',
   'view.hide': '立即隐藏',
 
@@ -112,6 +161,20 @@ const zh: Record<MessageKey, string> = {
   'relation.child': '子女',
   'relation.friend': '朋友',
   'relation.other': '其他',
+
+  'spoken.en': '英语',
+  'spoken.hu': '匈牙利语',
+  'spoken.th': '泰语',
+  'spoken.zh': '中文',
+  'spoken.ru': '俄语',
+  'spoken.es': '西班牙语',
+  'spoken.fr': '法语',
+  'spoken.de': '德语',
+  'spoken.it': '意大利语',
+  'spoken.pt': '葡萄牙语',
+  'spoken.ar': '阿拉伯语',
+  'spoken.ja': '日语',
+  'spoken.other': '其他',
 };
 
 const ru: Record<MessageKey, string> = {
@@ -125,6 +188,7 @@ const ru: Record<MessageKey, string> = {
   'view.heading': 'Экстренные контакты',
   'view.call': 'Позвонить',
   'view.whatsapp': 'WhatsApp',
+  'view.speaks': 'Говорит на',
   'view.notes': 'Заметки',
   'view.hide': 'Скрыть сейчас',
 
@@ -138,6 +202,20 @@ const ru: Record<MessageKey, string> = {
   'relation.child': 'Ребёнок',
   'relation.friend': 'Друг',
   'relation.other': 'Другое',
+
+  'spoken.en': 'английский',
+  'spoken.hu': 'венгерский',
+  'spoken.th': 'тайский',
+  'spoken.zh': 'китайский',
+  'spoken.ru': 'русский',
+  'spoken.es': 'испанский',
+  'spoken.fr': 'французский',
+  'spoken.de': 'немецкий',
+  'spoken.it': 'итальянский',
+  'spoken.pt': 'португальский',
+  'spoken.ar': 'арабский',
+  'spoken.ja': 'японский',
+  'spoken.other': 'другое',
 };
 
 export const MESSAGES: Record<CardLanguage, Record<MessageKey, string>> = { en, es, fr, zh, ru };

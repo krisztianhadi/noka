@@ -14,11 +14,22 @@ const contacts = card ? await contactCount(card.id) : 0;
     Signed in as <strong>{owner.email}</strong>.
   </p>
 
+  <nav>
+    <ul>
+      <li><a href="/dashboard/card">Your card</a></li>
+      <li><a href="/dashboard/contacts">Contacts ({contacts})</a></li>
+      <li><a href="/dashboard/notes">Notes</a></li>
+    </ul>
+  </nav>
+
   <h2>Your card</h2>
   {
     !card && (
       <>
-        <p>You have no card yet. A card is a QR code and a six-digit PIN, printed on something the size of a bank card.</p>
+        <p>
+          You have no card yet. A card is a QR code and a six-digit PIN, printed on something the size of a
+          bank card.
+        </p>
         <p><a href="/dashboard/card">Create your card →</a></p>
       </>
     )
@@ -27,8 +38,11 @@ const contacts = card ? await contactCount(card.id) : 0;
   {
     card && (
       <>
-        <p>
-          {card.active ? 'Active' : 'Not active'} · {contacts} {contacts === 1 ? 'contact' : 'contacts'}
+        <p class="status">
+          {card.active ? 'Active' : 'Not active'}
+          {' · '}
+          {contacts} {contacts === 1 ? 'contact' : 'contacts'}
+          {!card.active && contacts > 0 && ' — ready to switch on'}
         </p>
         <p class="pin">{revealPin(card)}</p>
         <p class="url">{cardUrl(card)}</p>
@@ -46,6 +60,18 @@ const contacts = card ? await contactCount(card.id) : 0;
   h2 {
     margin-top: 2rem;
     font-size: 1.25rem;
+  }
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    list-style: none;
+    padding: 0;
+  }
+  .status {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #666;
+    border-radius: 4px;
   }
   .pin {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;

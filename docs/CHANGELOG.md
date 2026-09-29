@@ -4,6 +4,27 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — Phase 4: contacts and notes
+
+- Contact CRUD (`src/lib/contacts.ts`) with every value encrypted before it
+  touches the database and decrypted per read, never cached (ADR-013).
+- Relation and spoken languages are vocabulary codes inside the payload, so the
+  responder page can translate them. The spoken-language list (13 codes) is
+  deliberately wider than the card's five print languages, with labels in all
+  five UI languages — which the catalogue's completeness test now covers.
+- Phone numbers are normalised to E.164 with **no country inference**: a
+  national number without `+` is refused with a reason instead of being guessed
+  at (ADR-013).
+- Dashboard pages: contacts list with Call/WhatsApp links and spoken-language
+  chips, create, edit, delete, and the notes editor with the consent line.
+- Two rules live in the service, not the pages: every query is scoped by
+  `card_id`, and the last contact on an active card cannot be deleted (D28).
+  A card can now be switched on.
+- Tests: 106 Vitest cases (9 new integration ones) and 15 Playwright cases, axe
+  clean on the contacts and notes pages.
+- Playwright now drives `127.0.0.1` rather than `localhost`, which is what made
+  server reuse flaky on this machine.
+
 ### Feature — Phase 3: the card
 
 - Card lifecycle service (`src/lib/cards.ts`): exactly one card per account,

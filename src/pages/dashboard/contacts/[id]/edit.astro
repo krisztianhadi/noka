@@ -1,0 +1,40 @@
+---
+import ContactForm from '@/components/ContactForm.astro';
+import Plain from '@/layouts/Plain.astro';
+import { getCardForOwner } from '@/lib/cards';
+import { getContact, updateContact } from '@/lib/contacts';
+import { contactErrorMessage, ownerRedirect } from '@/lib/dashboard';
+import { field, forbidden, isSameOrigin } from '@/lib/http';
+
+const owner = Astro.locals.owner!;
+const card = await getCardForOwner(owner.id);
+if (!card) return ownerRedirect('/dashboard/card');
+
+const id = Astro.params.id ?? '';
+const contact = await getContact(card.id, id);
+if (!contact) return ownerRedirect('/dashboard/contacts?error=not-found');
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+
+  const form = await Astro.request.formData();
+  const result = await updateContact(card.id, id, {
+    name: field(form, 'name'),
+    relation: field(form, 'relation'),
+    phone: field(form, 'phone'),
+    spokenLanguages: form.getAll('spoken').map(String),
+  });
+
+  if (result.ok) return ownerRedirect('/dashboard/contacts?notice=updated');
+  error = contactErrorMessage(result.error);
+}
+---
+
+<Plain title={`Edit ${contact.name} — noka`}>
+  <p><a href="/dashboard/contacts">← Contacts</a></p>
+  <h1>Edit {contact.name}</h1>
+
+  <ContactForm action={`/dashboard/contacts/${id}/edit`} contact={contact} error={error} submitLabel="Save changes" />
+</Plain>

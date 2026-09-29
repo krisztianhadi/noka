@@ -1,0 +1,41 @@
+---
+import ContactForm from '@/components/ContactForm.astro';
+import Plain from '@/layouts/Plain.astro';
+import { getCardForOwner } from '@/lib/cards';
+import { createContact } from '@/lib/contacts';
+import { contactErrorMessage, ownerRedirect } from '@/lib/dashboard';
+import { field, forbidden, isSameOrigin } from '@/lib/http';
+
+const owner = Astro.locals.owner!;
+const card = await getCardForOwner(owner.id);
+if (!card) return ownerRedirect('/dashboard/card');
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+
+  const form = await Astro.request.formData();
+  const result = await createContact(card.id, {
+    name: field(form, 'name'),
+    relation: field(form, 'relation'),
+    phone: field(form, 'phone'),
+    spokenLanguages: form.getAll('spoken').map(String),
+  });
+
+  if (result.ok) return ownerRedirect('/dashboard/contacts?notice=created');
+  error = contactErrorMessage(result.error);
+}
+---
+
+<Plain title="Add a contact — noka">
+  <p><a href="/dashboard/contacts">← Contacts</a></p>
+  <h1>Add a contact</h1>
+
+  <ContactForm action="/dashboard/contacts/new" error={error} submitLabel="Add contact" />
+
+  <p class="note">
+    By adding someone, you confirm they know they are your emergency contact, and that you are not entering
+    anyone else's data.
+  </p>
+</Plain>

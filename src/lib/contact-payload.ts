@@ -38,10 +38,10 @@ export function readContactPayload(value: unknown): ContactPayload {
 }
 
 /** `tel:` needs the raw E.164; `wa.me` needs it without the plus. */
-export function telHref(payload: Pick<ContactPayload, 'phone_e164'>): string {
-  return `tel:${payload.phone_e164}`;
+export function telHref(phoneE164: string): string {
+  return `tel:${phoneE164}`;
 }
 
-export function whatsappHref(payload: Pick<ContactPayload, 'phone_e164'>): string {
-  return `https://wa.me/${payload.phone_e164.replace(/^\+/, '')}`;
+export function whatsappHref(phoneE164: string): string {
+  return `https://wa.me/${phoneE164.replace(/^\+/, '')}`;
 }

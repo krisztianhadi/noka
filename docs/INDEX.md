@@ -5,9 +5,9 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phase 3** — accounts and the card work: signup, login, a reprintable
-PIN, QR reissue, activate/deactivate. Contacts are next; see
-[CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 4** — accounts, the card, contacts and notes all work, and a card
+can be switched on. The responder page (what a stranger sees after scanning) is
+next; see [CHANGELOG.md](CHANGELOG.md).
 
 | Document | What it is |
 |---|---|

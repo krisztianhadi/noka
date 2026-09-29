@@ -184,6 +184,31 @@ Note for local e2e runs: Playwright reuses a server already listening on :3200
 tests the old code — restart it before `pnpm test:e2e`, or stop it and let
 Playwright build and start its own.
 
+### ADR-013 — contacts are vocabulary codes inside the encrypted blob, and phones are not guessed at
+
+A contact is one encrypted JSON payload (schema 2) holding `name`, `relation`,
+`phone_e164`, `phone_display` and `spoken_languages`. Relation and spoken
+languages are **codes**, validated on write against closed vocabularies, so the
+responder page can translate them (D19, D31) and an invalid code cannot reach a
+rendering.
+
+The spoken-language vocabulary is deliberately wider than the card's five print
+languages — it answers "who can I talk to", not "what is this printed in" — and
+every code needs a label in all five UI languages, which is what keeps the list
+curated (`other` covers the rest).
+
+**Phone numbers are not guessed at.** `normalizePhone` strips separators,
+requires a leading `+`, validates the length and refuses a country code starting
+with zero — and returns `missing-country-code` rather than inventing a country
+for a national number. That means a Hungarian typing `06 1 234 5678` gets a
+clear refusal instead of a saved number that dials the wrong country. Swapping
+in libphonenumber later changes only this module; the payload format stays.
+
+Two more rules live in the service rather than in the pages, so they cannot be
+bypassed by a new route: every contact query is scoped by `card_id` (a test
+asserts one account cannot read or delete another's contact), and the last
+contact on an active card cannot be deleted (D28).
+
 ## What is deliberately absent
 
 No client framework, no analytics on `/c/*`, no sponsor markup on `/c/*` or

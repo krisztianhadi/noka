@@ -1,0 +1,134 @@
+---
+import Plain from '@/layouts/Plain.astro';
+import { MESSAGES } from '@/i18n/catalogue';
+import { getCardForOwner } from '@/lib/cards';
+import { deleteErrorMessage, ownerRedirect } from '@/lib/dashboard';
+import { listContacts } from '@/lib/contacts';
+import { telHref, whatsappHref } from '@/lib/contact-payload';
+
+const owner = Astro.locals.owner!;
+const card = await getCardForOwner(owner.id);
+if (!card) return ownerRedirect('/dashboard/card');
+
+const contacts = await listContacts(card.id);
+const error = deleteErrorMessage(Astro.url.searchParams.get('error') ?? '');
+const NOTICES: Record<string, string> = {
+  created: 'Contact added.',
+  updated: 'Contact updated.',
+  deleted: 'Contact deleted.',
+};
+const notice = NOTICES[Astro.url.searchParams.get('notice') ?? ''];
+
+const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
+const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
+---
+
+<Plain title="Contacts — noka">
+  <p><a href="/dashboard">← Dashboard</a></p>
+  <h1>Emergency contacts</h1>
+
+  {error && Astro.url.searchParams.has('error') && <p class="error" role="alert">{error}</p>}
+  {notice && <p class="notice" role="status">{notice}</p>}
+
+  {
+    contacts.length === 0 ? (
+      <p>
+        No contacts yet. A card cannot be switched on without at least one — the whole point is that a
+        responder reaches a person.
+      </p>
+    ) : (
+      <>
+        <p class={card.active ? 'status' : 'status off'}>
+          {card.active
+            ? 'The card is on. These are the people a responder sees.'
+            : 'The card is off. Switch it on from the card page to make these reachable.'}
+        </p>
+
+        <ul class="contacts">
+          {contacts.map((contact) => (
+            <li>
+              <p class="who">
+                <strong>{contact.name}</strong> — {relationLabel(contact.relation)}
+              </p>
+              <p class="phone">{contact.phoneDisplay}</p>
+              {contact.spokenLanguages.length > 0 && (
+                <p class="spoken">
+                  {contact.spokenLanguages.map((code) => (
+                    <span class="tag">{spokenLabel(code)}</span>
+                  ))}
+                </p>
+              )}
+              <p class="actions">
+                <a href={telHref(contact.phoneE164)}>Call</a> ·{' '}
+                <a href={whatsappHref(contact.phoneE164)}>WhatsApp</a> ·{' '}
+                <a href={`/dashboard/contacts/${contact.id}/edit`}>Edit</a>
+              </p>
+              <form method="post" action={`/dashboard/contacts/${contact.id}/delete`}>
+                <button type="submit" class="danger">
+                  Delete
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+
+  <p><a href="/dashboard/contacts/new">Add a contact →</a></p>
+  <p><a href="/dashboard/notes">Notes for a responder →</a></p>
+</Plain>
+
+<style>
+  .status {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #0a5;
+    border-radius: 4px;
+  }
+  .status.off {
+    border-color: #666;
+  }
+  .contacts {
+    list-style: none;
+    padding: 0;
+  }
+  .contacts li {
+    padding: 1rem 0;
+    border-bottom: 1px solid #ddd;
+  }
+  .who {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .phone {
+    margin: 0.2rem 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .spoken {
+    margin: 0.3rem 0;
+  }
+  .tag {
+    display: inline-block;
+    margin-right: 0.35rem;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.85rem;
+    border: 1px solid #999;
+    border-radius: 999px;
+  }
+  .actions {
+    margin: 0.4rem 0 0.6rem;
+  }
+  .danger {
+    background: #fff;
+    color: #7a0000;
+    border-color: #a00;
+    font-weight: 500;
+    margin-top: 0;
+  }
+  .notice {
+    padding: 0.7rem 0.8rem;
+    border: 2px solid #0a5;
+    border-radius: 4px;
+    color: #064;
+  }
+</style>
