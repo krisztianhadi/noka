@@ -2,6 +2,7 @@
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
+import MenuBehavior from '@/components/MenuBehavior.astro';
 import Plain from '@/layouts/Plain.astro';
 import { MESSAGES } from '@/i18n/catalogue';
 import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
@@ -43,6 +44,7 @@ const DELETE_CARD_WARNING =
 
 <Plain title="Your noka" theme={theme}>
   <ConfirmDialog />
+  <MenuBehavior />
   <header class="top">
     <a class="brand" href="/dashboard">noka</a>
     <details class="menu">
@@ -233,6 +235,7 @@ const DELETE_CARD_WARNING =
       )
     }
   </section>
+
 
 
   <style>

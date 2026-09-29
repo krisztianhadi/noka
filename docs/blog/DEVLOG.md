@@ -341,3 +341,23 @@ pinned" is supposed to mean.
 **And one process failure, twice.** Playwright reused the dev server I had running, so two
 full test runs reported failures that the new build did not have. The fix is boring: stop the
 server before the suite, not after it fails.
+
+## 2026-09-29 — The menu that would not close, and the script that never ran
+
+**His bug report.** "kebab and hamburger menu doesn't close if i click away." Correct: a
+`<details>` element has no idea what an outside click is, so it stays open over the page until
+it is clicked again. Fixed with a small listener that closes any open menu on an outside click
+or Escape, and leaves a click *inside* the menu alone.
+
+**Why it took two attempts.** I first wrote that listener inline in the dashboard page, ran the
+build, and found no JavaScript emitted at all. Astro does not process `<script>` tags that
+arrive through a slot — the component's slot content is copied through, scripts and all,
+without bundling. So the fix was silent: the code was there in the source and absent from the
+page. The modal and the phone mask work because they are component-level scripts, and the menu
+now is one too. Worth remembering: in Astro, where a script *lives* decides whether it runs.
+
+**Two things this says about my process.** The dev server on :3200 kept serving a build from
+before the change, so my own check said "not present" and was right about the wrong thing —
+rebuild and restart together, or the verification lies. And the test that clicks "away" cannot
+click an element the open panel covers, which is exactly the behaviour a dropdown should have;
+the corner of the page is the honest way to express "away".

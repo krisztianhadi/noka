@@ -156,6 +156,54 @@ test.describe('the dashboard', () => {
     await expect(page.locator('.pin')).toBeVisible();
   });
 
+  test('menus close when you click away or press Escape', async ({ page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    await addContact(page, { name: 'Ana Hadi', phone: '912 345 678' });
+
+    const account = page.locator('header .menu');
+    const first = page.locator('.contacts > li').first().locator('.kebab');
+    const second = page.locator('.contacts > li').nth(1).locator('.kebab');
+    const isOpen = (locator: ReturnType<typeof page.locator>) =>
+      locator.evaluate((element) => (element as HTMLDetailsElement).open);
+
+    // The account menu closes on a click anywhere else. (A raw click at the top-left
+    // corner: the open panel overlaps the heading, and clicking *through* it is
+    // exactly what a dropdown must not allow.)
+    await account.locator('> summary').click();
+    expect(await isOpen(account)).toBe(true);
+    await page.mouse.click(5, 5);
+    expect(await isOpen(account)).toBe(false);
+
+    // A click inside the menu keeps it open — the links have to be clickable.
+    await account.locator('> summary').click();
+    await account.locator('.panel').click({ position: { x: 5, y: 5 } });
+    expect(await isOpen(account)).toBe(true);
+    await page.keyboard.press('Escape');
+    expect(await isOpen(account)).toBe(false);
+
+    // Opening one kebab closes the other, exactly as a menu should behave.
+    await first.locator('> summary').click();
+    expect(await isOpen(first)).toBe(true);
+    await second.locator('> summary').click();
+    expect(await isOpen(first)).toBe(false);
+    expect(await isOpen(second)).toBe(true);
+
+    // Clicking away closes it, and what was typed into the form survives.
+    await second.locator('.menu-item').first().click();
+    await second.locator('input[name="name"]').fill('Renamed');
+    // A menu panel overlaps whatever is under it, so "away" means a corner of the
+    // page rather than an element the panel happens to cover.
+    await page.mouse.click(5, 5);
+    expect(await isOpen(second)).toBe(false);
+    await second.locator('> summary').click();
+    await expect(second.locator('input[name="name"]')).toHaveValue('Renamed');
+
+    // Escape from the keyboard closes it too.
+    await page.keyboard.press('Escape');
+    expect(await isOpen(second)).toBe(false);
+  });
+
   test('the confirmation is a real modal, not a native dialog', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
