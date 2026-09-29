@@ -3,9 +3,13 @@ import Button from '@/components/Button.astro';
 import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
+import { t } from '@/i18n/catalogue';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
 
-let error = '';
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+
+let errorKey: Parameters<typeof t>[1] | null = null;
 let email = '';
 let name = '';
 
@@ -22,7 +26,7 @@ if (Astro.request.method === 'POST') {
   // Industry standard for a reason: a typo in a password field locks the account
   // out of its own recovery flow.
   if (password !== confirmation) {
-    error = 'The two passwords do not match.';
+    errorKey = 'error.password-mismatch';
   } else {
     const response = await getAuth().api.signUpEmail({
     body: { email, password, name },
@@ -30,39 +34,42 @@ if (Astro.request.method === 'POST') {
   });
 
     if (response.ok) return redirectWithCookies('/dashboard', response);
-    error = await errorMessage(response, 'Could not create the account.');
+    void (await errorMessage(response, ''));
+    errorKey = 'error.signup-failed';
   }
 }
 ---
 
-<Plain title="Create your noka account">
-  <h1 class="text-xl font-semibold tracking-tight">Create your account</h1>
+<Plain title={label('head.signup')}>
+  <h1 class="text-xl font-semibold tracking-tight">{label('auth.signup.title')}</h1>
 
   {
-    error && (
-      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">{error}</p>
+    errorKey && (
+      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">
+        {label(errorKey)}
+      </p>
     )
   }
 
   <form method="post" class="mt-6 space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="name">First name</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="name">{label('auth.signup.name')}</label>
       <input id="name" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="name" type="text" required autocomplete="given-name" value={name} />
-      <p class="mt-1.5 text-xs leading-5 text-fg-muted">This is what a responder sees on your card.</p>
+      <p class="mt-1.5 text-xs leading-5 text-fg-muted">{label('auth.signup.nameHint')}</p>
     </div>
 
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="email">Email</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="email">{label('auth.signup.email')}</label>
       <input id="email" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="email" type="email" required autocomplete="email" value={email} />
     </div>
 
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="password">Password</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="password">{label('auth.signup.password')}</label>
       <input id="password" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="password" type="password" required minlength="10" autocomplete="new-password" />
     </div>
 
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="password_confirm">Password again</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="password_confirm">{label('auth.signup.passwordAgain')}</label>
       <input
         id="password_confirm"
         class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none"
@@ -72,15 +79,15 @@ if (Astro.request.method === 'POST') {
         minlength="10"
         autocomplete="new-password"
       />
-      <p class="mt-1.5 text-xs leading-5 text-fg-muted">At least 10 characters. This guards your account; the card is guarded by its PIN.</p>
+      <p class="mt-1.5 text-xs leading-5 text-fg-muted">{label('auth.signup.passwordHint')}</p>
     </div>
 
     <div class="flex justify-end">
-      <Button type="submit"><Icon name="plus" size={16} /> Create account</Button>
+      <Button type="submit"><Icon name="plus" size={16} /> {label('auth.signup.submit')}</Button>
     </div>
   </form>
 
   <p class="mt-4 text-sm text-fg-muted">
-    Already have an account? <a class="text-fg" href="/login">Sign in</a>
+    {label('auth.signup.have')} <a class="text-fg" href="/login">{label('auth.login.link')}</a>
   </p>
 </Plain>

@@ -1,33 +1,79 @@
 ---
 import Icon from '@/components/Icon.astro';
+import { t } from '@/i18n/catalogue';
+import { LANGUAGE_INFO, type CardLanguage } from '@/i18n/languages';
 
 /**
- * The owner-plane footer: who made this, and where the legal text lives.
+ * The owner-plane footer: who made this, the legal links, and the language choice.
  *
  * It is deliberately **not** on the responder plane. `/c/*` is a page a stranger opens
  * once in an emergency: it shows the people to call and nothing else — no maker, no
  * marketing, no links away from the card (ADR-026).
  *
  * Same shape as the sibling project's footer (made-by line, legal nav), expressed in this
- * project's tokens.
+ * project's tokens. The language switcher lives here because it is the one setting that
+ * belongs to every owner page — including the ones before signing in, where a person who
+ * cannot read English needs it most.
  */
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+const languages = Object.keys(LANGUAGE_INFO) as CardLanguage[];
+// Back to the page the choice was made on, so switching does not move anyone.
+const next = Astro.url.pathname + Astro.url.search;
+// One sentence with a placeholder, so a translator puts the studio wherever their
+// language wants it instead of inheriting English word order.
+const madeBy = label('footer.madeBy').split('{studio}');
 ---
 
 <footer class="mt-12 border-t border-line pt-5">
   <div class="flex flex-col items-center gap-3 text-xs text-fg-muted sm:flex-row sm:justify-between">
     <p class="flex flex-wrap items-center justify-center gap-1.5">
-      Made with
-      <span class="text-danger" aria-hidden="true">♥</span>
-      by
-      <a class="whitespace-nowrap text-fg underline underline-offset-2" href="https://lostsignals.studio">Lost Signals Studio</a>
+      {madeBy[0]}<a
+        class="whitespace-nowrap text-fg underline underline-offset-2"
+        href="https://lostsignals.studio">Lost Signals Studio</a>{madeBy[1]}
     </p>
-    <nav aria-label="Legal" class="flex flex-wrap justify-center gap-x-4 gap-y-1">
-      <a class="whitespace-nowrap hover:text-fg" href="/privacy">Privacy</a>
-      <a class="whitespace-nowrap hover:text-fg" href="/terms">Terms</a>
-      <a class="whitespace-nowrap hover:text-fg" href="/imprint">Imprint</a>
-      <a class="inline-flex items-center gap-1 hover:text-fg" href="https://github.com/krisztianhadi/noka">
-        <Icon name="link" size={12} /> Source
+    <nav
+      aria-label={label('footer.legal')}
+      class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1"
+    >
+      <a class="whitespace-nowrap hover:text-fg" href="/privacy">{label('footer.privacy')}</a>
+      <a class="whitespace-nowrap hover:text-fg" href="/terms">{label('footer.terms')}</a>
+      <a class="whitespace-nowrap hover:text-fg" href="/imprint">{label('footer.imprint')}</a>
+      <a
+        class="inline-flex items-center gap-1 whitespace-nowrap hover:text-fg"
+        href="https://github.com/krisztianhadi/noka"
+      >
+        <Icon name="link" size={12} /> {label('footer.source')}
       </a>
+
+      <details class="languages relative">
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1 whitespace-nowrap marker:content-none hover:text-fg"
+        >
+          <Icon name="globe" size={12} />
+          {LANGUAGE_INFO[locale].endonym}
+        </summary>
+        <form
+          method="post"
+          action="/language"
+          class="panel absolute right-0 z-20 mt-1 min-w-44 rounded-lg border border-line bg-surface p-1 shadow-float"
+        >
+          <input type="hidden" name="next" value={next} />
+          {
+            languages.map((code) => (
+              <button
+                class="menu-item flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-fg no-underline hover:bg-muted"
+                type="submit"
+                name="lang"
+                value={code}
+                aria-current={code === locale}
+              >
+                {LANGUAGE_INFO[code].endonym}
+              </button>
+            ))
+          }
+        </form>
+      </details>
     </nav>
   </div>
 </footer>

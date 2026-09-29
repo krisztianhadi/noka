@@ -289,6 +289,38 @@ not something the owner subscribes to. The responder-facing sentence is translat
 card languages (`view.text_only`), the dashboard shows a `Text only` tag, and the integration
 suite round-trips the flag.
 
+### ADR-032 — One catalogue, one file per language, keys everywhere
+
+**Context.** The owner plane was English-only by decision (§13, D13). He asked for everything
+translated, in a way that is easy to extend and open to community contributions.
+
+**Decision.**
+
+1. **One message catalogue for both planes.** The responder pages and the owner plane share the
+   same five languages and the same files, so a translator fills one file and covers everything a
+   person can read. `CARD_LANGUAGES` remains the single ordered list that drives the printed card,
+   the responder pages and the owner plane together.
+2. **`src/i18n/locales/<code>.ts`, one file per language**, each typed
+   `Record<MessageKey, string>` where `MessageKey` is derived from `en.ts`. A missing key is a
+   compile error naming the key; an invented key fails the same check.
+3. **No user-facing English outside the locale files.** `src/lib/dashboard.ts` now returns message
+   *keys* rather than sentences, so a page physically cannot ship an untranslated string.
+4. **Placeholders, not concatenation**: `t(locale, key, { name })` fills `{name}`. Word order is
+   not universal, so a translator must be able to move the placeholder.
+5. **The owner plane's language is a cookie** (`noka_lang`), resolved by the middleware before the
+   first paint: cookie → `Accept-Language` → English. It is a display preference, it must survive
+   a signed-out visit to the landing page, and losing it costs nothing — hence a cookie and not a
+   column. `POST /language` validates the target path, because a language switcher that accepts a
+   full URL is an open redirect.
+6. **`/c/*` keeps its own fallback rule** (ADR-031 amendment below): device language, else English,
+   else the owner's first choice.
+
+**Superseded:** D13/§13 (owner plane English-only).
+
+**Consequences.** Adding a language is one file, one import and one registry line — documented in
+`docs/I18N.md` and reported by `pnpm i18n:report`. The suite enforces parity, placeholders and
+non-empty values, which is what makes an untrusted contribution safe to merge.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

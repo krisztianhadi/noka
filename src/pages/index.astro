@@ -1,6 +1,8 @@
 ---
 import Footer from '@/components/Footer.astro';
 import Icon from '@/components/Icon.astro';
+import { t } from '@/i18n/catalogue';
+import { LANGUAGE_INFO } from '@/i18n/languages';
 import '@/styles/app.css';
 // Inlined, not an <img>: the wordmark is drawn with `currentColor`, and as an
 // external image that resolves to the SVG's own default (black) — invisible on a
@@ -9,52 +11,47 @@ import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
 
 // Landing page. Same token scale as the owner plane (ADR-028); no tracking, and no
 // sponsor content until there is a sponsor (PLAN §18).
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={LANGUAGE_INFO[locale].htmlLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>noka — emergency contacts in your wallet</title>
-    <meta
-      name="description"
-      content="A printed card with a QR code and a PIN. Anyone who finds it can reach your emergency contacts in seconds."
-    />
+    <title>{label('head.landing')}</title>
+    <meta name="description" content={label('landing.metaDescription')} />
     <link rel="icon" href="data:," />
   </head>
   <body class="min-h-dvh">
     <main class="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
       <div class="space-y-3">
         <h1 class="w-52 text-fg [&_svg]:h-auto [&_svg]:w-full" set:html={wordmark} />
-        <p class="text-sm tracking-wide text-fg-muted">next of kin access</p>
+        <p class="text-sm tracking-wide text-fg-muted">{label('landing.tagline')}</p>
       </div>
 
-      <p class="text-base leading-7 text-fg">
-        A card the size of a bank card, carrying a QR code and a six-digit PIN. Someone helping you scans
-        it, enters the PIN, and sees the people to call — with tap-to-call buttons — in under a second, on
-        any phone, without JavaScript and without an app.
-      </p>
+      <p class="text-base leading-7 text-fg">{label('landing.intro')}</p>
 
       <ul class="space-y-3 text-sm leading-6">
         <li class="flex gap-3">
           <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="lock" size={18} /></span>
-          <span>Your contacts are encrypted; the key is not in the database.</span>
+          <span>{label('landing.point.encrypted')}</span>
         </li>
         <li class="flex gap-3">
           <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="bars" size={18} /></span>
-          <span>The page works on a bad mobile connection and asks for nothing.</span>
+          <span>{label('landing.point.offline')}</span>
         </li>
         <li class="flex gap-3">
           <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="eye-off" size={18} /></span>
-          <span>No tracking on the card page, and no data sold, ever.</span>
+          <span>{label('landing.point.noTracking')}</span>
         </li>
       </ul>
 
       {
         Astro.url.searchParams.get('deleted') === '1' && (
           <p class="rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
-            Your account and everything in it has been deleted.
+            {label('landing.deleted')}
           </p>
         )
       }
@@ -63,15 +60,15 @@ import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
         <a
           class="inline-flex h-9 items-center rounded-md border border-accent bg-accent px-3.5 text-sm font-medium text-accent-fg no-underline hover:opacity-90"
           href="/signup"
-          ><span class="inline-flex items-center gap-2"><Icon name="plus" size={16} /> Create an account</span></a
+          ><span class="inline-flex items-center gap-2"><Icon name="plus" size={16} /> {label('landing.create')}</span></a
         >
         <a
           class="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
           href="/login"
-          ><span class="inline-flex items-center gap-2"><Icon name="logout" size={16} /> Sign in</span></a
+          ><span class="inline-flex items-center gap-2"><Icon name="logout" size={16} /> {label('landing.signIn')}</span></a
         >
         <p class="w-full text-xs text-fg-muted sm:w-auto sm:pl-2">
-          Cards and printing are being built; accounts work today.
+          {label('landing.wip')}
         </p>
       </div>
 

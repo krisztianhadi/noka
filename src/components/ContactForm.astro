@@ -1,6 +1,6 @@
 ---
 import { COUNTRIES, DEFAULT_COUNTRY, flagFor } from '@/lib/countries';
-import { MESSAGES } from '@/i18n/catalogue';
+import { t } from '@/i18n/catalogue';
 import type { ContactView } from '@/lib/contacts';
 import { RELATIONS } from '@/lib/relations';
 import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
@@ -42,9 +42,13 @@ const DEFAULT_RELATION = 'partner';
 const selectedChannels = new Set(contact?.channels ?? ['call']);
 const textOnly = contact?.textOnly ?? false;
 const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
-const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
-const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
-const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
+// The form reads the locale from the request like every other owner surface, so it can be
+// dropped into a page without a language prop drilled through it.
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+const relationLabel = (relation: string) => label(`relation.${relation}` as 'relation.spouse');
+const channelLabel = (channel: string) => label(`channel.${channel}` as 'channel.call');
+const spokenLabel = (code: string) => label(`spoken.${code}` as 'spoken.en');
 
 /**
  * A stored number is split back into country + national part where the dial code
@@ -88,7 +92,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
 <form method="post" action={action} class="contact-form space-y-4">
   <div class="grid gap-4 sm:grid-cols-2">
     <div>
-      <label class={labelClass} for={`name-${uid}`}>Name</label>
+      <label class={labelClass} for={`name-${uid}`}>{label('form.name')}</label>
       <input
         id={`name-${uid}`}
         class={`${fieldClass} w-full`}
@@ -100,7 +104,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       />
     </div>
     <div>
-      <label class={labelClass} for={`relation-${uid}`}>Relation</label>
+      <label class={labelClass} for={`relation-${uid}`}>{label('form.relation')}</label>
       <div class="relative">
         <select id={`relation-${uid}`} class={`${selectClass} w-full`} name="relation" required>
           {
@@ -120,7 +124,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
   </div>
 
   <div>
-    <label class={labelClass} for={`phone-${uid}`}>Phone</label>
+    <label class={labelClass} for={`phone-${uid}`}>{label('form.phone')}</label>
     {/* Stacked on a phone so the country name is not clipped and the number gets a
         full-width field; side by side from `sm` up. */}
     <div class="flex flex-col gap-2 sm:flex-row">
@@ -129,7 +133,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
           class={`${selectClass} w-full`}
           name="country"
           id={`country-${uid}`}
-          aria-label="Country calling code"
+          aria-label={label('form.countryCode')}
         >
           {
             COUNTRIES.map((entry) => (
@@ -150,18 +154,15 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
         autocomplete="tel-national"
         inputmode="tel"
         data-phone
-        placeholder="81 234 5678"
+        aria-label={label('form.phoneLocal')}
         value={national}
       />
     </div>
-    <p class={hintClass}>
-      Pick the country and type the local number — a leading zero is dropped for you. A full
-      international number typed with <code class="font-mono">+</code> is used exactly as typed.
-    </p>
+    <p class={hintClass}>{label('form.phoneHint')}</p>
   </div>
 
   <fieldset class="rounded-md border border-line p-3">
-    <legend class="px-1 text-sm font-medium">Services</legend>
+    <legend class="px-1 text-sm font-medium">{label('form.services')}</legend>
     <div class="flex flex-wrap gap-x-4 gap-y-2">
       {
         SERVICE_CHANNELS.map((channel) => (
@@ -180,8 +181,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       }
     </div>
     <p class={hintClass}>
-      Every one of these becomes a button on the card page. A plain phone call is always an
-      option, so it starts checked.
+      {label('form.servicesHint')}
     </p>
 
     <label class={`${chipClass} mt-3 border-t border-line pt-3`}>
@@ -194,14 +194,14 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       />
       <Icon name="sms" size={16} />
       <span>
-        <span class="font-medium">Text message only</span>
-        <span class="block text-xs text-fg-muted">This person cannot speak or hear.</span>
+        <span class="font-medium">{label('form.textOnly')}</span>
+        <span class="block text-xs text-fg-muted">{label('form.textOnlyHint')}</span>
       </span>
     </label>
   </fieldset>
 
   <fieldset class="rounded-md border border-line p-3">
-    <legend class="px-1 text-sm font-medium">Spoken languages</legend>
+    <legend class="px-1 text-sm font-medium">{label('form.spokenLanguages')}</legend>
     <div class="flex flex-wrap gap-x-4 gap-y-2">
       {
         SPOKEN_LANGUAGES.map((code) => (
@@ -227,7 +227,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       href="/dashboard"
       data-cancel
     >
-      Cancel
+      {label('form.cancel')}
     </a>
     <Button type="submit">
       <Icon name={contact ? 'check' : 'plus'} size={16} />

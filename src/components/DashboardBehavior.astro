@@ -12,7 +12,7 @@
 <script>
   // 1. Menus close on an outside click and on Escape. A click inside stays inside.
   //    (Hiding a `<details>` does not clear its inputs, so a half-typed edit survives.)
-  const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.menu'));
+  const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.menu, details.languages'));
 
   document.addEventListener('click', (event) => {
     const target = event.target as Node | null;

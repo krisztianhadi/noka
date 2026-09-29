@@ -6,11 +6,11 @@ import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
 import DashboardBehavior from '@/components/DashboardBehavior.astro';
 import Plain from '@/layouts/Plain.astro';
-import { MESSAGES } from '@/i18n/catalogue';
+import { t } from '@/i18n/catalogue';
 import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
 import { channelHref, type Channel } from '@/lib/channels';
 import { getNotes, listContacts } from '@/lib/contacts';
-import { errorMessage, noticeMessage } from '@/lib/dashboard';
+import { errorKey, noticeKey } from '@/lib/dashboard';
 import { toggleTarget, type Theme } from '@/lib/theme';
 import { flagForLanguage } from '@/lib/flags';
 
@@ -24,28 +24,29 @@ import { flagForLanguage } from '@/lib/flags';
  */
 const owner = Astro.locals.owner!;
 const theme = Astro.locals.theme;
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1], values?: Record<string, string | number>) =>
+  t(locale, key, values);
 
 const contacts = await listContacts(owner.id);
 const notes = await getNotes(owner.id);
 const card = await getCardForOwner(owner.id);
 const count = await countContacts(owner.id);
 
-const notice = noticeMessage(Astro.url.searchParams.get('notice'));
-const error = errorMessage(Astro.url.searchParams.get('error'));
+// Keys, not sentences: the catalogue renders them in the owner's language.
+const notice = noticeKey(Astro.url.searchParams.get('notice'));
+const error = errorKey(Astro.url.searchParams.get('error'));
 
-const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
-const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
-const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
+const relationLabel = (relation: string) => label(`relation.${relation}` as 'relation.spouse');
+const channelLabel = (channel: string) => label(`channel.${channel}` as 'channel.call');
+const spokenLabel = (code: string) => label(`spoken.${code}` as 'spoken.en');
 
 const nextTheme: Theme = toggleTarget(theme);
 
-const LAST_CONTACT_WARNING =
-  'This is your last contact, so deleting it will also delete your card and its link. ' +
-  'Anyone holding the printed card will find nothing until you add a contact and make a new card. Delete both?';
-const NEW_CARD_WARNING =
-  'A new card gets a new link and a new PIN. Anything already printed stops working immediately. Continue?';
-const DELETE_CARD_WARNING =
-  'Delete the card and its link? Your contacts and notes are kept, and you can make a new card later.';
+// The confirmation copy the modal shows, translated at render.
+const LAST_CONTACT_WARNING = label('owner.contacts.deleteLastConfirm');
+const NEW_CARD_WARNING = label('owner.card.newConfirm');
+const DELETE_CARD_WARNING = label('owner.card.deleteConfirm');
 
 // No colour in the shared string: `text-fg` here beat the destructive item's
 // `text-danger` because both are one cascade layer and order decides, so "Delete
@@ -60,7 +61,7 @@ const panelClass =
   'panel absolute right-0 z-20 mt-1 min-w-52 rounded-lg border border-line bg-surface p-1 shadow-float';
 ---
 
-<Plain title="Your noka" theme={theme} wide>
+<Plain title={label('head.dashboard')} theme={theme} wide>
   <ConfirmDialog />
   <DashboardBehavior />
 
@@ -71,7 +72,7 @@ const panelClass =
     <details class="menu relative">
       <summary
         class="flex size-9 cursor-pointer list-none items-center justify-center rounded-md border border-line bg-surface text-fg marker:content-none hover:bg-muted"
-        aria-label="Menu"
+        aria-label={label('owner.menu')}
       >
         <Icon name="menu" size={20} />
       </summary>
@@ -80,16 +81,16 @@ const panelClass =
           <span class="block text-sm font-medium">{owner.name}</span>
           <span class="block text-xs break-all text-fg-muted">{owner.email}</span>
         </p>
-        <a class={`${menuItem} text-fg`} href="/dashboard/settings"><Icon name="settings" size={16} /> Settings</a>
+        <a class={`${menuItem} text-fg`} href="/dashboard/settings"><Icon name="settings" size={16} /> {label('owner.settings')}</a>
         <form method="post" action="/dashboard/theme">
           <input type="hidden" name="theme" value={nextTheme} />
           <button class={`${menuItem} text-fg`} type="submit">
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            {theme === 'dark' ? label('owner.lightMode') : label('owner.darkMode')}
           </button>
         </form>
         <form method="post" action="/logout">
-          <button class={`${menuItem} text-fg`} type="submit"><Icon name="logout" size={16} /> Sign out</button>
+          <button class={`${menuItem} text-fg`} type="submit"><Icon name="logout" size={16} /> {label('owner.signOut')}</button>
         </form>
       </div>
     </details>
@@ -98,25 +99,25 @@ const panelClass =
   {
     notice && (
       <p class="notice mb-6 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
-        {notice}
+        {label(notice)}
       </p>
     )
   }
   {
     error && (
       <p class="error mb-6 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
-        {error}
+        {label(error)}
       </p>
     )
   }
 
   <section id="contacts" class="space-y-4">
     <div class="flex items-baseline justify-between gap-3">
-      <h1 class="text-xl font-semibold tracking-tight">Emergency contacts</h1>
+      <h1 class="text-xl font-semibold tracking-tight">{label('owner.contacts.title')}</h1>
       {
         contacts.length > 0 && (
           <span class="text-xs text-fg-muted">
-            {contacts.length === 1 ? '1 person' : `${contacts.length} people`}
+            {label(contacts.length === 1 ? 'owner.contacts.one' : 'owner.contacts.many', { count: contacts.length })}
           </span>
         )
       }
@@ -126,7 +127,7 @@ const panelClass =
       contacts.length === 0 ? (
         <div class={cardClass}>
           <p class="text-sm text-fg-muted">
-            Nobody yet. Add the person a responder should call — a card cannot exist until one does.
+            {label('owner.contacts.empty')}
           </p>
         </div>
       ) : (
@@ -152,26 +153,28 @@ const panelClass =
                   <button
                     class="edit-trigger flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-fg-muted hover:bg-muted hover:text-fg"
                     type="button"
-                    aria-label={`Edit ${contact.name}`}
+                    aria-label={label('owner.contacts.edit', { name: contact.name })}
                     data-edit-trigger
                   >
                     <Icon name="edit" size={16} />
                   </button>
 
                   <details class="menu kebab relative">
-                    <summary class={summaryIcon} aria-label={`Actions for ${contact.name}`}>
+                    <summary class={summaryIcon} aria-label={label('owner.contacts.actions', { name: contact.name })}>
                       <Icon name="dots" size={18} />
                     </summary>
                     <div class={panelClass}>
                       <form
                         method="post"
                         action={`/dashboard/contacts/${contact.id}/delete`}
-                        data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : 'Delete this contact?'}
-                        data-confirm-title={contacts.length === 1 ? 'Delete contact and card?' : 'Delete contact?'}
-                        data-confirm-ok="Delete"
+                        data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : label('owner.contacts.deleteConfirm')}
+                        data-confirm-title={contacts.length === 1
+                          ? label('owner.contacts.deleteLastTitle')
+                          : label('owner.contacts.deleteTitle')}
+                        data-confirm-ok={label('owner.contacts.deleteOk')}
                       >
                         <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
-                          <Icon name="trash" size={16} /> Delete contact
+                          <Icon name="trash" size={16} /> {label('owner.contacts.delete')}
                         </button>
                       </form>
                     </div>
@@ -181,7 +184,7 @@ const panelClass =
 
               <dl class="mt-3 space-y-1.5 text-sm">
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">Services</dt>
+                  <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.contacts.services')}</dt>
                   <dd class="tags flex flex-wrap gap-1">
                     {contact.channels.map((channel: Channel) => (
                       <span class="tag inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
@@ -191,14 +194,14 @@ const panelClass =
                     ))}
                     {contact.textOnly && (
                       <span class="tag text-only inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
-                        <Icon name="sms" size={13} /> Text only
+                        <Icon name="sms" size={13} /> {label('owner.contacts.textOnly')}
                       </span>
                     )}
                   </dd>
                 </div>
                 {contact.spokenLanguages.length > 0 && (
                   <div class="flex flex-wrap items-center gap-1.5">
-                    <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">Spoken</dt>
+                    <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.contacts.spoken')}</dt>
                     <dd class="speaks flex flex-wrap gap-1">
                       {contact.spokenLanguages.map((code) => (
                         <span class="tag inline-flex items-center gap-1 rounded-full border border-dashed border-line px-2 py-0.5 text-xs text-fg-muted">
@@ -214,12 +217,12 @@ const panelClass =
               <details class="edit-form mt-3">
                 {/* One edit affordance, the pencil in the row: this summary exists so
                     the form stays keyboard-reachable, but it is not a second button. */}
-                <summary class="sr-only">Edit {contact.name}</summary>
+                <summary class="sr-only">{label('owner.contacts.edit', { name: contact.name })}</summary>
                 <div class="mt-3 border-t border-line pt-4">
                   <ContactForm
                     action={`/dashboard/contacts/${contact.id}/edit`}
                     contact={contact}
-                    submitLabel="Save changes"
+                    submitLabel={label('owner.contacts.saveSubmit')}
                   />
                 </div>
               </details>
@@ -232,16 +235,16 @@ const panelClass =
     {
       contacts.length === 0 ? (
         <div class={cardClass}>
-          <h2 class={`${sectionTitle} mb-4`}>Add a contact</h2>
-          <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+          <h2 class={`${sectionTitle} mb-4`}>{label('owner.contacts.addTitle')}</h2>
+          <ContactForm action="/dashboard/contacts/new" submitLabel={label('owner.contacts.addSubmit')} />
         </div>
       ) : (
         <details class="add-more overflow-hidden rounded-lg border border-line bg-surface">
           <summary class="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-medium marker:content-none hover:bg-muted">
-            <Icon name="plus" size={16} /> Add another contact
+            <Icon name="plus" size={16} /> {label('owner.contacts.addAnother')}
           </summary>
           <div class="border-t border-line p-4">
-            <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+            <ContactForm action="/dashboard/contacts/new" submitLabel={label('owner.contacts.addSubmit')} />
           </div>
         </details>
       )
@@ -250,10 +253,10 @@ const panelClass =
 
   <section id="notes-section" class="mt-6">
     <div class={cardClass}>
-      <h2 class={`${sectionTitle} mb-4`}>Notes for a responder</h2>
+      <h2 class={`${sectionTitle} mb-4`}>{label('owner.notes.title')}</h2>
       <form method="post" action="/dashboard/notes" class="space-y-3">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-fg" for="notes">Notes</label>
+          <label class="mb-1.5 block text-sm font-medium text-fg" for="notes">{label('owner.notes.label')}</label>
           <textarea
             id="notes"
             class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
@@ -261,12 +264,11 @@ const panelClass =
             rows="4"
             maxlength="2000">{notes}</textarea>
           <p class="mt-1.5 text-xs leading-5 text-fg-muted">
-            Shown under the contacts on the card page. Where the medication is, who to call first. Do not
-            enter anyone else's data.
+            {label('owner.notes.hint')}
           </p>
         </div>
         <div class="flex justify-end">
-          <Button type="submit"><Icon name="check" size={16} /> Save notes</Button>
+          <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
         </div>
       </form>
     </div>
@@ -275,11 +277,11 @@ const panelClass =
   <section id="card" class="mt-6">
     <div class={cardClass}>
       <div class="section-head mb-4 flex items-center justify-between gap-3">
-        <h2 class={sectionTitle}>Your card</h2>
+        <h2 class={sectionTitle}>{label('owner.card.title')}</h2>
         {
           card && (
             <details class="menu kebab relative">
-              <summary class={summaryIcon} aria-label="Card actions">
+              <summary class={summaryIcon} aria-label={label('owner.card.actions')}>
                 <Icon name="dots" size={18} />
               </summary>
               <div class={`${panelClass} min-w-56`}>
@@ -287,20 +289,20 @@ const panelClass =
                   method="post"
                   action="/dashboard/card/new"
                   data-confirm={NEW_CARD_WARNING}
-                  data-confirm-title="Make a new card?"
-                  data-confirm-ok="New card"
+                  data-confirm-title={label('owner.card.newTitle')}
+                  data-confirm-ok={label('owner.card.newOk')}
                 >
-                  <button class={`${menuItem} text-fg`} type="submit"><Icon name="refresh" size={16} /> New card</button>
+                  <button class={`${menuItem} text-fg`} type="submit"><Icon name="refresh" size={16} /> {label('owner.card.new')}</button>
                 </form>
                 <form
                   method="post"
                   action="/dashboard/card/delete"
                   data-confirm={DELETE_CARD_WARNING}
-                  data-confirm-title="Delete this card?"
-                  data-confirm-ok="Delete card"
+                  data-confirm-title={label('owner.card.deleteTitle')}
+                  data-confirm-ok={label('owner.card.deleteOk')}
                 >
                   <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
-                    <Icon name="trash" size={16} /> Delete card
+                    <Icon name="trash" size={16} /> {label('owner.card.delete')}
                   </button>
                 </form>
               </div>
@@ -313,13 +315,11 @@ const panelClass =
         !card && (
           <div class="space-y-4">
             <p class="text-sm text-fg-muted">
-              {count === 0
-                ? 'A card needs at least one contact behind it. Add someone above, then come back.'
-                : 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.'}
+              {count === 0 ? label('owner.card.needsContact') : label('owner.card.ready')}
             </p>
             <form method="post" action="/dashboard/card/create">
               <Button type="submit" disabled={count === 0}>
-                <Icon name="card" size={16} /> Make my card
+                <Icon name="card" size={16} /> {label('owner.card.make')}
               </Button>
             </form>
           </div>
@@ -332,23 +332,23 @@ const panelClass =
             <img
               class="preview w-full max-w-[13rem] shrink-0 rounded-md border border-line"
               src="/dashboard/card/card.jpg"
-              alt="Your card: the five-language heading, a QR code, the PIN and the noka wordmark"
+              alt={label('owner.card.imageAlt')}
               width="638"
               height="1011"
             />
             <div class="min-w-0 flex-1 space-y-3">
               <div>
-                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">PIN</p>
+                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.card.pin')}</p>
                 <p class="pin font-mono text-3xl font-semibold tracking-[0.18em]">{revealPin(card)}</p>
               </div>
               <div>
-                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">Link</p>
+                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.card.link')}</p>
                 <p class="url truncate font-mono text-sm">
                   <a class="text-fg underline underline-offset-2" href={cardUrl(card)}>{cardUrl(card)}</a>
                 </p>
               </div>
               <p class="text-xs leading-5 text-fg-muted">
-                Print the image, or copy the link and PIN by hand. The QR points at the link.
+                {label('owner.card.printHint')}
               </p>
               <a
                 class="inline-flex h-9 items-center gap-2 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
@@ -356,7 +356,7 @@ const panelClass =
                 target="_blank"
                 rel="noopener"
               >
-                <Icon name="print" size={16} /> Open the card image
+                <Icon name="print" size={16} /> {label('owner.card.openImage')}
               </a>
             </div>
           </div>

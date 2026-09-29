@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getAuth } from '@/lib/auth';
+import { resolveOwnerLocale, LOCALE_COOKIE } from '@/lib/locale';
 import { readTheme, THEME_COOKIE } from '@/lib/theme';
 
 /**
@@ -29,6 +30,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Read before anything renders: the theme must be right in the first paint.
   context.locals.theme = readTheme(context.cookies.get(THEME_COOKIE)?.value);
+  // Same for the language: a page that renders English first and Spanish a moment later
+  // is worse than either.
+  context.locals.locale = resolveOwnerLocale(
+    context.cookies.get(LOCALE_COOKIE)?.value,
+    context.request.headers.get('accept-language'),
+  );
 
   if (path.startsWith('/dashboard')) {
     const session = await getAuth().api.getSession({ headers: context.request.headers });

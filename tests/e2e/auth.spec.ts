@@ -62,6 +62,34 @@ test.describe('owner plane', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
+  test('the owner plane speaks the device language, and remembers a choice', async ({ browser }) => {
+    // A Spanish phone: no cookie, nothing chosen — the page should already be Spanish.
+    const spanish = await browser.newContext({ locale: 'es-ES' });
+    const page = await spanish.newPage();
+    await page.goto('/signup');
+    await expect(page.getByRole('heading')).toHaveText('Crea tu cuenta');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    // The responder catalogue and the owner plane share one set of languages: the switcher
+    // offers exactly what the card pages offer.
+    await expect(page.locator('footer .languages summary')).toContainText('Español');
+
+    // A language the app does not have falls back to English, not to the first entry.
+    const thai = await browser.newContext({ locale: 'th-TH' });
+    const other = await thai.newPage();
+    await other.goto('/signup');
+    await expect(other.getByRole('heading')).toHaveText('Create your account');
+
+    // Choosing overrides the device from then on, including after a sign-in redirect.
+    await page.locator('footer .languages summary').click();
+    await page.locator('footer .languages button[value="fr"]').click();
+    await expect(page.getByRole('heading')).toHaveText('Créez votre compte');
+    await page.goto('/login');
+    await expect(page.getByRole('heading')).toHaveText('Se connecter');
+
+    await spanish.close();
+    await thai.close();
+  });
+
   test('signup, login and the legal pages are accessible', async ({ page }) => {
     for (const path of ['/signup', '/login', '/privacy', '/terms', '/imprint']) {
       await page.goto(path);

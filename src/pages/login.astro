@@ -3,12 +3,18 @@ import Button from '@/components/Button.astro';
 import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
-import { noticeMessage } from '@/lib/dashboard';
+import { t } from '@/i18n/catalogue';
+import { noticeKey } from '@/lib/dashboard';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
 
-let error = '';
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1], values?: Record<string, string | number>) =>
+  t(locale, key, values);
+
+// Errors in this block are message **keys**; they are translated once, at render.
+let errorKey: Parameters<typeof t>[1] | null = null;
 // A password change redirects here, so the reason for the sign-out is on the page.
-const notice = noticeMessage(Astro.url.searchParams.get('notice'));
+const notice = noticeKey(Astro.url.searchParams.get('notice'));
 let email = '';
 
 if (Astro.request.method === 'POST') {
@@ -26,39 +32,46 @@ if (Astro.request.method === 'POST') {
 
   if (response.ok) return redirectWithCookies('/dashboard', response);
   // One message for every failure: no account-existence oracle (§6 layer 0).
-  error = (await errorMessage(response, '')) || 'That email and password do not match.';
+  void (await errorMessage(response, ''));
+  errorKey = 'error.credentials';
 }
 ---
 
-<Plain title="Sign in to noka">
-  <h1 class="text-xl font-semibold tracking-tight">Sign in</h1>
+<Plain title={label('head.login')}>
+  <h1 class="text-xl font-semibold tracking-tight">{label('auth.login.title')}</h1>
 
   {
     notice && (
-      <p class="notice mt-4 rounded-md border px-3 py-2 text-sm border-success/40 bg-success/10 text-success" role="status">{notice}</p>
+      <p class="notice mt-4 rounded-md border px-3 py-2 text-sm border-success/40 bg-success/10 text-success" role="status">
+        {label(notice)}
+      </p>
     )
   }
   {
-    error && (
-      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">{error}</p>
+    errorKey && (
+      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">
+        {label(errorKey)}
+      </p>
     )
   }
 
   <form method="post" class="mt-6 space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="email">Email</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="email">{label('auth.login.email')}</label>
       <input id="email" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="email" type="email" required autocomplete="email" value={email} />
     </div>
 
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-fg" for="password">Password</label>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="password">{label('auth.login.password')}</label>
       <input id="password" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="password" type="password" required autocomplete="current-password" />
     </div>
 
     <div class="flex justify-end">
-      <Button type="submit"><Icon name="logout" size={16} /> Sign in</Button>
+      <Button type="submit"><Icon name="logout" size={16} /> {label('auth.login.submit')}</Button>
     </div>
   </form>
 
-  <p class="mt-4 text-sm text-fg-muted">No account yet? <a class="text-fg" href="/signup">Create one</a></p>
+  <p class="mt-4 text-sm text-fg-muted">
+    {label('auth.login.need')} <a class="text-fg" href="/signup">{label('auth.signup.link')}</a>
+  </p>
 </Plain>

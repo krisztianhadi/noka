@@ -1,79 +1,77 @@
+import type { MessageKey } from '@/i18n/catalogue';
 import type { ContactError } from '@/lib/contacts';
 
 /**
- * English copy for the owner plane. The dashboard is English-only (§13), so these
- * strings live here rather than in the responder catalogue, which must exist in
- * five languages.
+ * Result and error **keys** for the owner plane (ADR-032).
+ *
+ * These used to be English sentences, which was fine while the dashboard was English-only
+ * (§13, now superseded). Returning keys keeps one rule: no user-facing English outside
+ * `src/i18n/locales/`, so a page cannot accidentally ship an untranslated sentence.
  */
-const CONTACT_ERRORS: Record<ContactError, string> = {
-  'name-required': 'Give the contact a name.',
-  'relation-invalid': 'Pick a relation from the list.',
-  empty: 'Enter a phone number.',
-  'missing-country-code': 'Start with a country code, e.g. +66 for Thailand.',
-  'too-short': 'That number is too short.',
-  'too-long': 'That number is too long.',
-  invalid: 'That number does not look right.',
-  'not-found': 'That contact no longer exists.',
+const CONTACT_ERRORS: Record<ContactError, MessageKey> = {
+  'name-required': 'error.name-required',
+  'relation-invalid': 'error.relation-invalid',
+  empty: 'error.phone-empty',
+  'missing-country-code': 'error.missing-country-code',
+  'too-short': 'error.too-short',
+  'too-long': 'error.too-long',
+  invalid: 'error.invalid-number',
+  'not-found': 'error.contact-not-found',
 };
 
-export function contactErrorMessage(error: string): string {
-  return CONTACT_ERRORS[error as ContactError] ?? 'Something went wrong with that contact.';
-}
-
-const DELETE_ERRORS: Record<string, string> = {
-  'not-found': 'That contact no longer exists.',
-  'no-card': 'There is no card to delete.',
+const DELETE_ERRORS: Record<string, MessageKey> = {
+  'not-found': 'error.contact-not-found',
+  'no-card': 'error.no-card',
 };
 
-export function deleteErrorMessage(error: string): string {
-  return DELETE_ERRORS[error] ?? 'Could not delete that contact.';
-}
-
-const CARD_ERRORS: Record<string, string> = {
-  'no-contacts': 'Add at least one contact before making a card.',
-  'no-card': 'Make a card first.',
+const CARD_ERRORS: Record<string, MessageKey> = {
+  'no-contacts': 'error.card-no-contacts',
+  'no-card': 'error.card-none',
 };
 
-export function cardErrorMessage(error: string): string {
-  return CARD_ERRORS[error] ?? 'Something went wrong with the card.';
-}
-
-const SETTINGS_ERRORS: Record<string, string> = {
-  'not-signed-in': 'Your session expired. Sign in again.',
-  'email-invalid': 'That does not look like an email address.',
-  'email-taken': 'That email is already in use, or the change was refused.',
-  'password-too-short': 'The new password needs at least 10 characters.',
-  'password-mismatch': 'The two new passwords do not match.',
-  'password-wrong': 'The current password is not right.',
+const SETTINGS_ERRORS: Record<string, MessageKey> = {
+  'not-signed-in': 'error.session-expired',
+  'email-invalid': 'error.email-invalid',
+  'email-taken': 'error.email-taken',
+  'password-too-short': 'error.password-too-short',
+  'password-mismatch': 'error.password-mismatch',
+  'password-wrong': 'error.password-wrong',
 };
 
-const NOTICES: Record<string, string> = {
-  'contact-added': 'Contact added.',
-  'contact-updated': 'Contact updated.',
-  'contact-deleted': 'Contact deleted.',
-  'contact-and-card-deleted':
-    'Contact and card deleted. Add a contact and make a new card when you are ready.',
-  'notes-saved': 'Notes saved.',
-  'card-made': 'Card made. Print it, or copy the link and PIN.',
-  'card-renewed': 'New card. The previous one stopped working immediately.',
-  'card-deleted': 'Card deleted. Your contacts and notes are untouched. A new card can be made any time.',
-  'email-changed': 'Email updated.',
-  'email-unchanged': 'That is already your email.',
-  'password-changed': 'Password updated, and every session was signed out. Sign in with the new password.',
+const NOTICES: Record<string, MessageKey> = {
+  'contact-added': 'notice.contact-added',
+  'contact-updated': 'notice.contact-updated',
+  'contact-deleted': 'notice.contact-deleted',
+  'contact-and-card-deleted': 'notice.contact-and-card-deleted',
+  'notes-saved': 'notice.notes-saved',
+  'card-made': 'notice.card-made',
+  'card-renewed': 'notice.card-renewed',
+  'card-deleted': 'notice.card-deleted',
+  'email-changed': 'notice.email-changed',
+  'email-unchanged': 'notice.email-unchanged',
+  'password-changed': 'notice.password-changed',
 };
 
-export function noticeMessage(notice: string | null): string {
-  return NOTICES[notice ?? ''] ?? '';
+/** The key for a notice the dashboard sent back, or null when there is none. */
+export function noticeKey(notice: string | null): MessageKey | null {
+  if (!notice) return null;
+  return NOTICES[notice] ?? null;
 }
 
 /** One resolver for the dashboard, whatever produced the key. */
-export function errorMessage(error: string | null): string {
-  if (!error) return '';
-  for (const map of [CONTACT_ERRORS, DELETE_ERRORS, CARD_ERRORS, SETTINGS_ERRORS]) {
-    const message = (map as Record<string, string>)[error];
-    if (message) return message;
+export function errorKey(error: string | null): MessageKey | null {
+  if (!error) return null;
+  const maps: Array<Record<string, MessageKey>> = [
+    CONTACT_ERRORS,
+    DELETE_ERRORS,
+    CARD_ERRORS,
+    SETTINGS_ERRORS,
+  ];
+  for (const map of maps) {
+    const key = map[error];
+    if (key) return key;
   }
-  return 'Something went wrong.';
+  return 'error.generic';
 }
 
 export function ownerRedirect(location: string): Response {

@@ -16,6 +16,7 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 | [PLAN.md](PLAN.md) | The build contract — decisions D1–D31, threat model, schema, phases, endpoint contract, environment. **Start here.** |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
+- [Adding a language](I18N.md) — the three-file recipe for a new locale, and the rules the build enforces.
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
 | [DECISIONS.md](DECISIONS.md) | The ADRs: 19 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |

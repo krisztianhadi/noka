@@ -13,5 +13,7 @@ declare namespace App {
     };
     /** The owner's theme choice, read from the cookie during rendering (src/lib/theme.ts). */
     theme: 'light' | 'dark' | null;
+    /** The owner plane's language: cookie, else the device, else English (src/lib/locale.ts). */
+    locale: import('@/i18n/languages').CardLanguage;
   }
 }

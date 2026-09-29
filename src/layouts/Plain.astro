@@ -1,5 +1,6 @@
 ---
 import Footer from '@/components/Footer.astro';
+import { LANGUAGE_INFO } from '@/i18n/languages';
 import '@/styles/app.css';
 
 /**
@@ -12,14 +13,16 @@ import '@/styles/app.css';
  */
 interface Props {
   title: string;
-  lang?: string;
   /** Omitted on pages that always follow the system preference. */
   theme?: 'light' | 'dark' | null;
   /** Wider shell for the dashboard, which lays out cards rather than a form. */
   wide?: boolean;
 }
 
-const { title, lang = 'en', theme = null, wide = false } = Astro.props;
+const { title, theme = null, wide = false } = Astro.props;
+// The <html lang> comes from the resolved locale, not from the page: a Spanish page marked
+// `lang="en"` makes screen readers read Spanish with English pronunciation rules.
+const lang = LANGUAGE_INFO[Astro.locals.locale].htmlLang;
 const dataTheme = theme ?? undefined;
 ---
 

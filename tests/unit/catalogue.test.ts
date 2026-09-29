@@ -26,7 +26,9 @@ describe('message catalogue', () => {
       for (const key of Object.keys(MESSAGES.en) as MessageKey[]) {
         const value = MESSAGES[language][key];
         expect(value.trim().length).toBeGreaterThan(0);
-        expect(value).not.toMatch(/^(TODO|FIXME|XXX|\?\?\?)/i);
+        // A marker token, not a word that merely starts with those letters: Spanish
+        // "Todo listo" is finished copy, not a TODO. Markers are uppercase and stand alone.
+        expect(value).not.toMatch(/^(TODO|FIXME|XXX|\?\?\?)(?![\p{Ll}])/u);
       }
     }
   });

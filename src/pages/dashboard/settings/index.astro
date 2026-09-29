@@ -3,15 +3,18 @@ import Button from '@/components/Button.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
-import { errorMessage, noticeMessage } from '@/lib/dashboard';
+import { t } from '@/i18n/catalogue';
+import { errorKey, noticeKey } from '@/lib/dashboard';
 
 /**
  * Settings: the account itself, nothing about the card. Reached from the top menu,
  * and deliberately small — email and password are the two things an owner can change.
  */
 const owner = Astro.locals.owner!;
-const notice = noticeMessage(Astro.url.searchParams.get('notice'));
-const error = errorMessage(Astro.url.searchParams.get('error'));
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+const notice = noticeKey(Astro.url.searchParams.get('notice'));
+const error = errorKey(Astro.url.searchParams.get('error'));
 
 const cardClass = 'rounded-lg border border-line bg-surface p-4 sm:p-5';
 const labelClass = 'mb-1.5 block text-sm font-medium text-fg';
@@ -20,28 +23,28 @@ const fieldClass =
 const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
 ---
 
-<Plain title="Settings" theme={Astro.locals.theme}>
+<Plain title={label('head.settings')} theme={Astro.locals.theme}>
   <ConfirmDialog />
 
   <header class="mb-6 flex items-center justify-between gap-3">
     <a class="flex items-center gap-2 text-sm text-fg-muted no-underline hover:text-fg" href="/dashboard">
-      ← Back to your card
+      ← {label('settings.back')}
     </a>
   </header>
 
-  <h1 class="text-xl font-semibold tracking-tight">Settings</h1>
+  <h1 class="text-xl font-semibold tracking-tight">{label('settings.title')}</h1>
 
   {
     notice && (
       <p class="notice mt-4 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
-        {notice}
+        {label(notice)}
       </p>
     )
   }
   {
     error && (
       <p class="error mt-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
-        {error}
+        {label(error)}
       </p>
     )
   }
@@ -49,34 +52,34 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
   <div class="mt-6 space-y-4">
     <section class={cardClass}>
       <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
-        <Icon name="mail" size={16} /> Email
+        <Icon name="mail" size={16} /> {label('settings.email.title')}
       </h2>
       <form method="post" action="/dashboard/settings/email" class="space-y-3">
         <div>
-          <label class={labelClass} for="email">Email</label>
+          <label class={labelClass} for="email">{label('settings.email.label')}</label>
           <input id="email" class={fieldClass} name="email" type="email" required autocomplete="email" value={owner.email} />
-          <p class={hintClass}>Used to sign in, and the one field stored in plain text (ADR-004).</p>
+          <p class={hintClass}>{label('settings.email.hint')}</p>
         </div>
         <div class="flex justify-end">
-          <Button type="submit"><Icon name="mail" size={16} /> Update email</Button>
+          <Button type="submit"><Icon name="mail" size={16} /> {label('settings.email.submit')}</Button>
         </div>
       </form>
     </section>
 
     <section class={cardClass}>
       <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
-        <Icon name="key" size={16} /> Password
+        <Icon name="key" size={16} /> {label('settings.password.title')}
       </h2>
       <form
         method="post"
         action="/dashboard/settings/password"
         class="space-y-3"
-        data-confirm="Changing your password signs you out of every device, this one included. You will sign in again with the new password."
-        data-confirm-title="Change your password?"
-        data-confirm-ok="Change and sign out"
+        data-confirm={label('settings.password.confirm')}
+        data-confirm-title={label('settings.password.confirmTitle')}
+        data-confirm-ok={label('settings.password.confirmOk')}
       >
         <div>
-          <label class={labelClass} for="current_password">Current password</label>
+          <label class={labelClass} for="current_password">{label('settings.password.current')}</label>
           <input
             id="current_password"
             class={fieldClass}
@@ -87,7 +90,7 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
           />
         </div>
         <div>
-          <label class={labelClass} for="new_password">New password</label>
+          <label class={labelClass} for="new_password">{label('settings.password.new')}</label>
           <input
             id="new_password"
             class={fieldClass}
@@ -99,7 +102,7 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
           />
         </div>
         <div>
-          <label class={labelClass} for="new_password_confirm">New password again</label>
+          <label class={labelClass} for="new_password_confirm">{label('settings.password.again')}</label>
           <input
             id="new_password_confirm"
             class={fieldClass}
@@ -109,23 +112,22 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
             minlength="10"
             autocomplete="new-password"
           />
-          <p class={hintClass}>At least 10 characters. Changing it signs out every other session.</p>
+          <p class={hintClass}>{label('settings.password.hint')}</p>
         </div>
         <div class="flex justify-end">
-          <Button type="submit" variant="danger"><Icon name="key" size={16} /> Update password</Button>
+          <Button type="submit" variant="danger"><Icon name="key" size={16} /> {label('settings.password.submit')}</Button>
         </div>
       </form>
     </section>
     <section class={cardClass}>
       <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
-        <Icon name="download" size={16} /> Your data
+        <Icon name="download" size={16} /> {label('settings.data.title')}
       </h2>
 
       <div class="space-y-4">
         <div>
           <p class="text-sm">
-            Everything this account holds — your contacts decrypted, your notes, your card and its
-            PIN — as one JSON file. No email needed, no waiting.
+            {label('settings.data.intro')}
           </p>
           <div class="mt-3">
             <a
@@ -133,26 +135,25 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
               href="/dashboard/settings/export"
               download
             >
-              <Icon name="download" size={16} /> Download my data
+              <Icon name="download" size={16} /> {label('settings.data.download')}
             </a>
           </div>
         </div>
 
         <div class="border-t border-line pt-4">
-          <p class="text-sm font-medium text-danger">Delete this account</p>
+          <p class="text-sm font-medium text-danger">{label('settings.data.deleteTitle')}</p>
           <p class="mt-1 text-xs leading-5 text-fg-muted">
-            Erases the account, the contacts, the notes and the card immediately and permanently.
-            The printed card stops working at once. There is no undo and no grace period.
+            {label('settings.data.deleteHint')}
           </p>
           <form
             class="mt-3"
             method="post"
             action="/dashboard/settings/delete"
-            data-confirm="This erases your account, your contacts, your notes and your card — permanently, with no way back. The printed card stops working immediately."
-            data-confirm-title="Delete everything?"
-            data-confirm-ok="Delete my account"
+            data-confirm={label('settings.data.deleteConfirm')}
+            data-confirm-title={label('settings.data.deleteTitleConfirm')}
+            data-confirm-ok={label('settings.data.deleteOk')}
           >
-            <Button type="submit" variant="danger"><Icon name="trash" size={16} /> Delete account</Button>
+            <Button type="submit" variant="danger"><Icon name="trash" size={16} /> {label('settings.data.delete')}</Button>
           </form>
         </div>
       </div>
