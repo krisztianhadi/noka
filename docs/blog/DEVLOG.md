@@ -329,10 +329,14 @@ a giant 'n': `SVGPathPen` already flips y for SVG, and my bounds only measured o
 instead of the laid-out word. Both were visible in one render — which is the argument for
 looking at the output rather than trusting the transform.
 
-**Verified inside the image, not just here.** Built the container and ran a render in it —
-Alpine has no fonts whatsoever, and the Cyrillic, Chinese and mono text all drew from
-`assets/fonts`. That is the check that matters for a card: a print job that turns into empty
-boxes is only discoverable by looking at the output.
+**Verified inside the image, not just here.** First attempt was a throwaway SVG with
+careless geometry: it proved the fonts resolve, and it looked like a fumbled card, which is
+worse than no evidence. So I ran the actual thing instead — the image built, the container
+started against Postgres, signed up, added a contact, made a card and fetched
+`/dashboard/card/card.jpg`. That is the card, drawn by the production code path inside
+`node:22-alpine`, which has no fonts of its own. The Chinese heading crop is pixel-identical
+to the same card rendered locally (mean difference 0.00/255), which is what "the font is
+pinned" is supposed to mean.
 
 **And one process failure, twice.** Playwright reused the dev server I had running, so two
 full test runs reported failures that the new build did not have. The fix is boring: stop the
