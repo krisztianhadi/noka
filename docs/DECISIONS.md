@@ -25,20 +25,20 @@ later reversed.
 | 015 | The responder plane is one request, one language, no oracle | locked |
 | 016 | The rate limiter's store, and what its counter counts | locked |
 | 017 | The printed card can be byte-deterministic | locked |
+| 018 | MIT — the licence, with the reasoning written down | locked |
 
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.
 
-- **Licence.** None chosen. It is the first thing a reader of a public repo looks
-  for and the last thing this project has thought about. (Ghosted, the sibling
-  project, is MIT.)
 - **`PUBLIC_CARD_ORIGIN`** — the production origin, which is baked into every
   printed QR. Short domain, decided before the first card is printed (PLAN §14.2).
 - **Card visual identity** (D30) — one design, agreed as an image before the
   print pipeline is written.
 - **The rate-limit ladder's exact numbers** (PLAN §6) — the shape is decided
   (exponential backoff, no permanent lock); the constants are Phase 6.
+- **Where the devlog gets published** — the drafts follow the txt.krisztian.wtf
+  post format; the destination is chosen when there is a post worth shipping.
 
 ### ADR-001 — Postgres 16 on port 5433, dev server on port 3200
 
@@ -285,3 +285,23 @@ Phase 0 spike, run by `scripts/spike-pdf.mjs`, with the hermetic half kept as
   is a constant, so it threatens nothing — but the printed PDF will advertise
   pdf-lib.
 
+### ADR-018 — MIT
+
+An emergency card that only works on my server is a worse product than one that
+can be run anywhere, and the whole idea is small enough that someone else hosting
+it costs me nothing. MIT is the licence that asks the least of the person who
+wants to fork it, print their own cards and never talk to me: a friend with a
+printer, a clinic, a small NGO.
+
+What it gives up, knowingly: anyone may host a modified noka commercially without
+contributing back. For a product whose entire value is a wallet-sized piece of
+paper, network-effect protection is not worth the friction — and AGPL would have
+made the code harder to reuse for exactly the people this is for.
+
+The alternatives were considered and rejected in one line each: **AGPL** for the
+same reason above; **no licence at all**, which is the worst option because it
+means nobody may legally use it; **a source-available licence**, which reads as a
+trap to a reviewer and buys nothing here.
+
+Consistency mattered too: Ghosted, the sibling project, is MIT, so a reader
+moving between the two repositories does not have to think about licensing.

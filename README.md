@@ -172,8 +172,10 @@ stored an Argon2id hash — which is what proves the native module works on musl
 
 ## Licence
 
-Not chosen yet — and deliberately named here rather than left implicit. See
-[DECISIONS.md → Open decisions](docs/DECISIONS.md).
+MIT — [LICENSE](LICENSE). Chosen because the useful version of this idea is one
+other people can self-host, fork and print without asking me: an emergency card
+that only works on my server is a worse product than one that can be run
+anywhere. The reasoning is ADR-018 in [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Built with AI
 

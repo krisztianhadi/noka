@@ -7,6 +7,13 @@ decided, and the numbers that prove it. Entries are deliberately blunt — the
 polished version comes later, and a post is only worth writing if the entry
 already contains something a reader would not have guessed.
 
+**Where the posts come from.** Drafts are written in the txt.krisztian.wtf post
+format (Jekyll frontmatter, `title` + `date` with `+0700`, no headings in the
+body) because that is where they will go — the destination is decided later, the
+format is already settled. Drafts live here until then, and this log stays the
+raw material: if an entry ever stops being useful, the draft built on it was
+probably padding.
+
 **Post ideas so far**
 
 - I wrote the spec before the code, and it saved me twice.
@@ -14,6 +21,12 @@ already contains something a reader would not have guessed.
 - Two bugs my own tests found that a demo would have shipped.
 - Making a PDF byte-identical is harder than it looks.
 - Designing for a stranger who is having the worst day of their week.
+- The licence decision nobody makes until a stranger asks to use the code.
+
+**Drafts**
+
+- [2026-09-29-the-post-it-in-my-wallet.md](2026-09-29-the-post-it-in-my-wallet.md)
+  — the opening post, unpublished.
 
 ---
 

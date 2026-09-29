@@ -4,6 +4,17 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — MIT licence, and the ADR that explains it
+
+- `LICENSE` (MIT, Copyright (c) 2026 Krisztian Hadi) and `"license": "MIT"` in
+  package.json, so GitHub detects it. README and DECISIONS.md updated; it is no
+  longer an open decision. ADR-018 records the reasoning, including what MIT
+  knowingly gives up and why AGPL and source-available were rejected.
+- The blog drafts now follow the txt.krisztian.wtf post format — Jekyll
+  frontmatter with `title` and a `+0700` date, no headings in the body and no
+  bullet lists — because that is where they will be published once there is a
+  post worth shipping.
+
 ### Feature — documentation restructured for readers
 
 - **README rewritten to tell the story** instead of only explaining setup: why
@@ -16,7 +27,7 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
   ADR-004 — the one decision the project reversed — kept in full.
 - **`docs/blog/` started**: `DEVLOG.md` (append-only raw material, one entry per
   work block, with what broke and what was decided) and
-  `2026-09-29-why-i-built-noka.md` (first post draft, marked unpublished).
+  `2026-09-29-the-post-it-in-my-wallet.md` (first post draft, marked unpublished).
 - ARCHITECTURE.md now links to the register instead of duplicating it, so there
   is one home for each decision.
 

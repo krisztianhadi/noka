@@ -2,8 +2,10 @@
   "name": "noka",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": "Krisztian Hadi",
+  "description": "noka \u2014 next of kin access. An emergency contact card: QR + PIN, zero-JS responder page.",
   "type": "module",
-  "description": "noka — next of kin access. An emergency contact card: QR + PIN, zero-JS responder page.",
   "engines": {
     "node": ">=22.0.0"
   },
