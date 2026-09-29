@@ -65,6 +65,10 @@ test.describe('the responder page', () => {
 
     await expect(ana.locator('.alert')).toContainText('cannot speak or hear');
     await expect(ana.locator('a.call'), 'a call is useless to her').toHaveCount(0);
+    // The number itself must not be a dialler either: the earlier version of this test
+    // checked only the button row and let a tappable tel: link ship under the alert.
+    await expect(ana.locator('.phone a'), 'no dialler hidden in the number').toHaveCount(0);
+    await expect(ana.locator('.phone')).toHaveText('+36 301 234 567');
     // Text first, so the responder reaches for the thing that works.
     await expect(ana.locator('.actions a').first()).toHaveText(/Text message/);
     await expect(ana.locator('a.sms')).toHaveAttribute('href', 'sms:+36301234567');

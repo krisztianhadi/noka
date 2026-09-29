@@ -840,6 +840,25 @@ double-click path to a bad state. This is tomorrow's first job, in this order.
 | 4 | `src/lib/responder.ts:93-114` | The audit insert and the `scanCount` update are separate writes: an interruption logs a success but leaves the counter behind, or a valid PIN 500s | one transaction, and decide whether audit is allowed to block emergency access (it should not) |
 | 5 | `src/lib/account.ts:49-108` | The export is assembled from independent queries: rotating a card or editing a contact mid-export yields a file describing a state that never existed | one repeatable-read transaction |
 
+### 1b. Found by Claude's review, and fixed the same evening
+
+- **A text-only contact still had a tappable `tel:` link on the number itself**
+  (`src/pages/c/[slug]/view.astro`). `offeredChannels()` correctly dropped Call from the button
+  row, but the `.phone` div rendered a dialler unconditionally — so the page said "cannot speak or
+  hear" directly above a button that calls them. The e2e test missed it because it asserted
+  `.actions a.call` and the hidden link had no such class. Fixed (the number is now text for that
+  contact), and the assertion was added *and proven to fail on the old code* before landing.
+
+Two of Claude's findings are behaviour changes rather than bugs, so they belong to tomorrow with
+tests rather than to a late-evening commit:
+
+- **Email change needs re-authentication** (`src/pages/dashboard/settings/email.ts`): it currently
+  accepts a new address with no password and no notice to the old one, so a stolen session can
+  redirect the account's only recovery channel. Require the current password, as the password form
+  already does.
+- **`isSameOrigin` returns 403 when `Origin` is absent** (`src/lib/http.ts:13-18`): every dashboard
+  POST then fails for a client that omits it. Fall back to `Referer`, and test an Origin-less POST.
+
 ### 2. Server-side limits and layout robustness
 
 - **No service-layer length limits** (`src/lib/contacts.ts:91,190-207`): `maxlength` exists only in
@@ -885,6 +904,14 @@ response comparison, because the README claims byte-identical and the test only 
   `scan_attempts` instead, or accept it and stop maintaining two counters.
 - **The dashboard runs `countContacts()` after `listContacts()`** (`src/pages/dashboard/index.astro:31-34`)
   — an extra query and a count that can disagree with the list beside it. Use `contacts.length`.
+- **`cards.active` is dead optionality** (`src/db/schema.ts`, ADR-020): nothing ever sets it false,
+  the partial unique index does the real work, and the branches that check it are unreachable. Either
+  drop the column or give the owner a "pause this card" action — a boolean that is always true is the
+  unused flexibility the rest of this project correctly refuses.
+- **`scanSummary()` is two `count()` queries** (`src/lib/account.ts:49-65`) where one filtered
+  aggregate would do; combine it while the export moves into a transaction.
+- **`prettyPhone`'s per-length grouping table** (`src/lib/phone.ts:55-71`) is ~20 lines of cosmetic
+  guesswork for five length buckets. `+CC rest` would be simpler and no less correct.
 - **The documentation needs a stale-claims pass.** The README quotes fixed test counts and still lists
   export/deletion as pending (they shipped today); `docs/PLAN.md` reads as pre-code in places and
   describes endpoints that no longer exist. Historical spec is fine, but it must be marked as history.
