@@ -7,12 +7,16 @@ decided, and the numbers that prove it. Entries are deliberately blunt — the
 polished version comes later, and a post is only worth writing if the entry
 already contains something a reader would not have guessed.
 
-**Where the posts come from.** Drafts are written in the txt.krisztian.wtf post
-format (Jekyll frontmatter, `title` + `date` with `+0700`, no headings in the
-body) because that is where they will go — the destination is decided later, the
-format is already settled. Drafts live here until then, and this log stays the
-raw material: if an entry ever stops being useful, the draft built on it was
-probably padding.
+**Where the posts come from.** **Post drafts are written only on request, after a
+milestone — never at the end of every work block.** This log is the raw material
+and it stays cheap; turning it into a piece is a deliberate step, taken when he
+asks for it and for something worth writing about. If an entry never becomes
+useful, that is the log working as intended, not a gap.
+
+When a draft is asked for, it is written in the txt.krisztian.wtf post format
+(Jekyll frontmatter, `title` + `date` with `+0700`, no headings in the body),
+because that is where it will go — the destination is decided later, the format is
+already settled.
 
 **Post ideas so far**
 
