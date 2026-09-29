@@ -329,6 +329,11 @@ a giant 'n': `SVGPathPen` already flips y for SVG, and my bounds only measured o
 instead of the laid-out word. Both were visible in one render — which is the argument for
 looking at the output rather than trusting the transform.
 
+**Verified inside the image, not just here.** Built the container and ran a render in it —
+Alpine has no fonts whatsoever, and the Cyrillic, Chinese and mono text all drew from
+`assets/fonts`. That is the check that matters for a card: a print job that turns into empty
+boxes is only discoverable by looking at the output.
+
 **And one process failure, twice.** Playwright reused the dev server I had running, so two
 full test runs reported failures that the new build did not have. The fix is boring: stop the
 server before the suite, not after it fails.

@@ -80,8 +80,8 @@ address. A scan is not an alert, and nothing tells the owner in real time.
 - **No mobile app** — a wallet card and a web page; nothing to install.
 - **No structured medical fields** — free-text notes, the owner's liability.
 - **No analytics on the responder page** — not a pixel, not a beacon.
-- **No sponsor content on `/c/*` or `/dashboard`.** Sponsor logos are static,
-  self-hosted, and live on the landing and auth pages only.
+- **No sponsor content on `/c/*` or `/dashboard`.** Logos are static, self-hosted,
+  and live on the landing and auth pages only.
 - **One card per account** — no public profiles, no sharing, no discovery.
 - **The dashboard and the landing are English only**; the responder page and the
   printed card are in five languages.
@@ -142,9 +142,9 @@ The dev server binds on all interfaces, so a phone on the same network can open 
 | `pnpm test` | Vitest unit + integration (needs Postgres) |
 | `pnpm test:e2e` | Playwright against the built server, axe included |
 
-The browser tests need a Chromium build; if `ms-playwright` lives in the project's
-`.tmp` rather than the home cache, run them as
-`PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright pnpm test:e2e`.
+The browser tests need a Chromium build: run them as
+`PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright pnpm test:e2e` if `ms-playwright` lives
+in the project's `.tmp` rather than the home cache.
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle migrations |
 
 ## Tests, and what they prove
@@ -183,15 +183,14 @@ Postgres, signup included — proof the Argon2id module works on musl.
   [SETUP.md](docs/SETUP.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [COSTS.md](docs/COSTS.md)
   — the shape, the routes, the services, the history, the bill.
 - [docs/blog/](docs/blog/) — the development log, and the post drafts built on it.
-- [docs/ORIGINAL_BRIEF.md](docs/ORIGINAL_BRIEF.md) — the first spec, kept because the
-  plan later disagreed with it.
+- [docs/ORIGINAL_BRIEF.md](docs/ORIGINAL_BRIEF.md) — the first spec, kept because the plan
+  later disagreed with it.
 
 ## Licence
 
-MIT — [LICENSE](LICENSE). Chosen because the useful version of this idea is one
-other people can self-host, fork and print without asking me: an emergency card
-that only works on my server is a worse product than one that can be run
-anywhere. The reasoning is ADR-018 in [docs/DECISIONS.md](docs/DECISIONS.md).
+MIT — [LICENSE](LICENSE). The useful version of this idea is one other people can
+self-host, fork and print without asking: a card that only works on my server is a
+worse product than one that runs anywhere. Reasoning: ADR-018.
 
 ## Built with AI
 
