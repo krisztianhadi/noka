@@ -1,8 +1,9 @@
 import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
+import tailwindcss from '@tailwindcss/vite';
 
-// noka — next of kin access. Functionality first: no client framework, no
-// design pass, no scripts on the responder pages.
+// noka — next of kin access. Functionality first: no client framework, and no
+// scripts, fonts or third-party requests on the responder pages.
 export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
@@ -23,6 +24,13 @@ export default defineConfig({
     // §9: one request to render the responder page. A separate stylesheet would
     // also be blocked by the responder plane's own CSP (style-src 'unsafe-inline').
     inlineStylesheets: 'always',
+  },
+  vite: {
+    // Tailwind styles the owner plane (ADR-028). It is imported by the owner
+    // layout only, so the responder page never carries a utility framework —
+    // Tailwind emits just the utilities a page actually uses, and that page
+    // uses none.
+    plugins: [tailwindcss()],
   },
   server: {
     // 3200 keeps clear of ghosted (:3000) and kaja (:3100).

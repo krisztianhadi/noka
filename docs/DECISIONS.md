@@ -175,6 +175,42 @@ OFL, which permits it.
 directory is missing, `ensureFonts()` leaves the system alone rather than crashing, and the
 render falls back to whatever fontconfig finds — degraded, not broken.
 
+### ADR-028 — Tailwind and one token scale on the owner plane; no component framework
+
+**Context.** After the second pass he reported the real problem: "text is all around the place, UI
+element sizes are off, random shadows". He asked whether shadcn/ui for Astro or plain Tailwind
+would make it cleaner.
+
+**Decision.** **Tailwind v4** (`@tailwindcss/vite`), imported by the owner layout only, with the
+whole palette, radius and the single floating shadow defined as CSS custom properties in
+`src/styles/app.css` and exposed to Tailwind through `@theme inline` as semantic names
+(`bg-surface`, `text-fg-muted`, `border-line`, `shadow-float`). Owner-plane components are built
+from three shared pieces: `Button.astro`, the field classes in `ContactForm.astro`, and the card
+(`rounded-lg border border-line bg-surface p-4`).
+
+**No shadcn/ui, and no React.** shadcn's components are React; adding a React runtime and island
+hydration to a form-driven Astro app to get buttons and a dialog is a large dependency for
+markup that already exists here. The interaction it would buy (a modal, a menu) is already built
+natively with `<dialog>` and `<details>`.
+
+**Rules that follow, and they are what fixed the report:**
+
+1. Sections are cards on a tinted page; only things that actually float — menus and the modal —
+   carry `shadow-float`. There is no second shadow in the project.
+2. Type comes from four steps: `text-xl` page title, `text-sm uppercase tracking-wide text-fg-muted`
+   section label, `text-base` for contact names, `text-sm`/`text-xs` for everything else.
+3. Controls are `h-9`/`h-8` for buttons and `h-10` for inputs and selects, always `rounded-md`.
+4. Links inside a sentence are underlined, not colour-only — axe flags colour-only links below
+   3:1 against surrounding text, which "Sign in" in a muted paragraph was.
+5. Semantic class hooks used by the test suite (`menu`, `kebab`, `panel`, `menu-item`, `danger`,
+   `pin`, `url`, `preview`, `contacts`, `add-more`, `error`, `notice`, `tag`, `name`, `meta`,
+   `phone`) are kept alongside the utilities, so tests target behaviour rather than styling.
+
+**Consequences.** The responder page imports none of this: it keeps its own hand-written CSS and
+its zero-script, zero-request guarantees. Tailwind emits only the utilities a page uses, and that
+page uses none. `Button.astro` spreads unknown attributes through to the element — dropping them
+silently broke the confirmation dialog once, which is why the spread is documented in the file.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

@@ -4,21 +4,23 @@ import { MESSAGES } from '@/i18n/catalogue';
 import type { ContactView } from '@/lib/contacts';
 import { RELATIONS } from '@/lib/relations';
 import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
+import Button from '@/components/Button.astro';
 
 /**
- * The one contact form, used inline for adding and editing.
+ * One form for adding and editing a contact.
  *
- * Order and defaults are his (2026-09-29): **call comes first** in the channel list
- * and is on by default; the spoken languages are visible rather than folded away;
- * the country is a flag picker so the number ends up in E.164 without anyone having
- * to know what E.164 means.
+ * Order and defaults are his: **call first** among the channels and on by default,
+ * the spoken languages visible rather than folded away, and the country a flag
+ * picker so the number ends up in E.164 without anyone knowing what E.164 means.
+ *
+ * Field, label and hint styling is defined once here, so every form on every owner
+ * page looks like the same form (ADR-028).
  */
 interface Props {
   action: string;
   contact?: ContactView | null;
   error?: string;
   submitLabel?: string;
-  /** Which country the picker starts on, when the contact has no stored number yet. */
   defaultCountry?: string;
 }
 
@@ -39,30 +41,51 @@ const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en
 
 /**
  * A stored number is split back into country + national part where the dial code
- * matches the list, so editing never double-prefixes it.
+ * matches the list, so editing never double-prefixes it. Grouping matches the input
+ * mask exactly, so an edit shows what typing produces.
  */
 const stored = contact?.phoneE164 ?? '';
 const matched = COUNTRIES.filter((country) => stored.startsWith(`+${country.dial}`)).sort(
   (a, b) => b.dial.length - a.dial.length,
 )[0];
 const country = matched?.code ?? defaultCountry;
-const nationalRaw = matched ? stored.slice(matched.dial.length + 1) : stored.replace(/^\+/, '');
-// Grouped exactly as the input mask does, so an edit shows what typing produces.
-const national = nationalRaw.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+const national = (matched ? stored.slice(matched.dial.length + 1) : stored.replace(/^\+/, ''))
+  .replace(/(\d{3})(?=\d)/g, '$1 ')
+  .trim();
 const uid = contact?.id ?? 'new';
+
+const labelClass = 'mb-1.5 block text-sm font-medium text-fg';
+const fieldClass =
+  'h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none';
+const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
+const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
 ---
 
-{error && <p class="error" role="alert">{error}</p>}
+{
+  error && (
+    <p class="error mb-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+      {error}
+    </p>
+  )
+}
 
-<form method="post" action={action} class="contact-form">
-  <div class="row">
+<form method="post" action={action} class="contact-form space-y-4">
+  <div class="grid gap-4 sm:grid-cols-2">
     <div>
-      <label for={`name-${uid}`}>Name</label>
-      <input id={`name-${uid}`} name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
+      <label class={labelClass} for={`name-${uid}`}>Name</label>
+      <input
+        id={`name-${uid}`}
+        class={fieldClass}
+        name="name"
+        type="text"
+        required
+        maxlength="80"
+        value={contact?.name ?? ''}
+      />
     </div>
     <div>
-      <label for={`relation-${uid}`}>Relation</label>
-      <select id={`relation-${uid}`} name="relation" required>
+      <label class={labelClass} for={`relation-${uid}`}>Relation</label>
+      <select id={`relation-${uid}`} class={fieldClass} name="relation" required>
         {
           RELATIONS.map((relation) => (
             <option value={relation} selected={contact?.relation === relation}>
@@ -74,59 +97,79 @@ const uid = contact?.id ?? 'new';
     </div>
   </div>
 
-  <label for={`phone-${uid}`}>Phone</label>
-  <div class="phone-row">
-    <select name="country" id={`country-${uid}`} aria-label="Country calling code">
-      {
-        COUNTRIES.map((entry) => (
-          <option value={entry.code} selected={entry.code === country}>
-            {flagFor(entry.code)} +{entry.dial} {entry.name}
-          </option>
-        ))
-      }
-    </select>
-    <input
-      id={`phone-${uid}`}
-      name="phone"
-      type="tel"
-      required
-      autocomplete="tel-national"
-      inputmode="tel"
-      data-phone
-      placeholder="81 234 5678"
-      value={national}
-    />
+  <div>
+    <label class={labelClass} for={`phone-${uid}`}>Phone</label>
+    <div class="flex gap-2">
+      <select
+        class={`${fieldClass} w-[10rem] shrink-0`}
+        name="country"
+        id={`country-${uid}`}
+        aria-label="Country calling code"
+      >
+        {
+          COUNTRIES.map((entry) => (
+            <option value={entry.code} selected={entry.code === country}>
+              {flagFor(entry.code)} +{entry.dial} {entry.name}
+            </option>
+          ))
+        }
+      </select>
+      <input
+        id={`phone-${uid}`}
+        class={fieldClass}
+        name="phone"
+        type="tel"
+        required
+        autocomplete="tel-national"
+        inputmode="tel"
+        data-phone
+        placeholder="81 234 5678"
+        value={national}
+      />
+    </div>
+    <p class={hintClass}>
+      Pick the country and type the local number — a leading zero is dropped for you. A full
+      international number typed with <code class="font-mono">+</code> is used exactly as typed.
+    </p>
   </div>
-  <p class="note">
-    Pick the country and type the local number — a leading zero is dropped for you. A full
-    international number typed with <code>+</code> is used exactly as typed.
-  </p>
 
-  <fieldset>
-    <legend>How can they be reached?</legend>
-    <div class="chips">
+  <fieldset class="rounded-md border border-line p-3">
+    <legend class="px-1 text-sm font-medium">How can they be reached?</legend>
+    <div class="flex flex-wrap gap-x-4 gap-y-2">
       {
         CHANNEL_ORDER.map((channel) => (
-          <label class="chip">
-            <input type="checkbox" name="channels" value={channel} checked={selectedChannels.has(channel)} />
+          <label class={chipClass}>
+            <input
+              class="size-4 accent-[var(--noka-accent)]"
+              type="checkbox"
+              name="channels"
+              value={channel}
+              checked={selectedChannels.has(channel)}
+            />
             <span>{channelLabel(channel)}</span>
           </label>
         ))
       }
     </div>
-    <p class="note">
-      Every one of these becomes a button on the card page. Text message matters: it is what
-      works when someone cannot speak or hear.
+    <p class={hintClass}>
+      Every one of these becomes a button on the card page. Text message matters: it is what works
+      when someone cannot speak or hear.
     </p>
   </fieldset>
 
-  <fieldset>
-    <legend>Languages this contact speaks</legend>
-    <div class="chips">
+  <fieldset class="rounded-md border border-line p-3">
+    <legend class="px-1 text-sm font-medium">Languages this contact speaks</legend>
+    <div class="flex flex-wrap gap-x-4 gap-y-2">
       {
         SPOKEN_LANGUAGES.map((code) => (
-          <label class="chip">
-            <input type="checkbox" name="spoken" value={code} checked={selectedSpoken.has(code)} />
+          <label class={chipClass}>
+            <input
+              class="size-4 accent-[var(--noka-accent)]"
+              type="checkbox"
+              name="spoken"
+              value={code}
+              checked={selectedSpoken.has(code)}
+            />
             <span>{spokenLabel(code)}</span>
           </label>
         ))
@@ -134,7 +177,9 @@ const uid = contact?.id ?? 'new';
     </div>
   </fieldset>
 
-  <button type="submit">{submitLabel}</button>
+  <div class="flex justify-end pt-1">
+    <Button type="submit">{submitLabel}</Button>
+  </div>
 </form>
 
 <script>
@@ -148,69 +193,3 @@ const uid = contact?.id ?? 'new';
     });
   }
 </script>
-
-<style>
-  input[type='text'],
-  input[type='tel'],
-  select {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.6rem 0.7rem;
-    font: inherit;
-    color: var(--fg);
-    background: var(--bg-raised);
-    border: 1px solid var(--line-strong);
-    border-radius: 4px;
-  }
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 1rem;
-  }
-  .row > div {
-    flex: 1 1 12rem;
-  }
-  .phone-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-  .phone-row select {
-    flex: 0 0 auto;
-    max-width: 15rem;
-  }
-  .phone-row input {
-    flex: 1 1 auto;
-  }
-  fieldset {
-    margin-top: 1rem;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-  }
-  legend {
-    font-weight: 600;
-  }
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 0.9rem;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-weight: 400;
-    margin: 0;
-  }
-  .chip input {
-    width: auto;
-  }
-  @media (max-width: 30rem) {
-    .phone-row {
-      flex-direction: column;
-    }
-    .phone-row select {
-      max-width: none;
-    }
-  }
-</style>

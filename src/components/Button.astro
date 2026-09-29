@@ -1,0 +1,57 @@
+---
+/**
+ * The one button in the project's owner plane, so size, radius and weight come from a
+ * single place (ADR-028).
+ *
+ * Every other attribute is passed straight through — `data-*` hooks included, which
+ * is how the confirmation dialog finds its own buttons. Dropping them silently broke
+ * the modal once; the spread is not optional.
+ */
+interface Props {
+  variant?: 'primary' | 'secondary' | 'danger' | 'danger-solid';
+  size?: 'md' | 'sm';
+  type?: 'button' | 'submit';
+  disabled?: boolean;
+  name?: string;
+  value?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  type = 'submit',
+  disabled = false,
+  name,
+  value,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const VARIANTS: Record<NonNullable<Props['variant']>, string> = {
+  primary: 'bg-accent text-accent-fg border-accent hover:opacity-90',
+  secondary: 'bg-surface text-fg border-line-strong hover:bg-muted',
+  danger: 'bg-transparent text-danger border-danger/40 hover:bg-danger/10',
+  'danger-solid': 'bg-danger text-danger-fg border-danger hover:opacity-90',
+};
+---
+
+<button
+  {...rest}
+  type={type}
+  id={id}
+  name={name}
+  value={value}
+  disabled={disabled}
+  class:list={[
+    'inline-flex shrink-0 items-center justify-center gap-2 rounded-md border font-medium transition-colors',
+    size === 'sm' ? 'h-8 px-2.5 text-xs' : 'h-9 px-3.5 text-sm',
+    VARIANTS[variant],
+    'disabled:cursor-not-allowed disabled:opacity-45',
+    className,
+  ]}
+>
+  <slot />
+</button>

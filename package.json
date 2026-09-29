@@ -27,6 +27,7 @@
   "dependencies": {
     "@astrojs/node": "^11.1.6",
     "@node-rs/argon2": "^2.2.1",
+    "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
     "better-auth": "^1.7.6",
     "drizzle-orm": "^0.45.3",
@@ -35,6 +36,7 @@
     "qrcode": "^1.5.4",
     "rate-limiter-flexible": "^11.2.1",
     "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
     "zod": "^4.6.5"
   },
   "devDependencies": {

@@ -1,16 +1,25 @@
 ---
-import { toggleTarget } from '@/lib/theme';
+import '@/styles/app.css';
 
+/**
+ * The owner plane's shell: landing, auth, dashboard and settings.
+ *
+ * All styling comes from the token scale in `src/styles/app.css` (ADR-028) — Tailwind
+ * utilities over semantic names, so a component cannot invent its own type size,
+ * radius or shadow. The responder page has its own layout and never imports this,
+ * which is why `/c/*` still carries no utility framework and no third-party anything.
+ */
 interface Props {
   title: string;
   lang?: string;
-  /** Omitted on the responder page: a stranger always gets the light card. */
+  /** Omitted on pages that always follow the system preference. */
   theme?: 'light' | 'dark' | null;
+  /** Wider shell for the dashboard, which lays out cards rather than a form. */
+  wide?: boolean;
 }
 
-const { title, lang = 'en', theme = null } = Astro.props;
+const { title, lang = 'en', theme = null, wide = false } = Astro.props;
 const dataTheme = theme ?? undefined;
-void toggleTarget;
 ---
 
 <!doctype html>
@@ -21,149 +30,9 @@ void toggleTarget;
     <title>{title}</title>
     <link rel="icon" href="data:," />
   </head>
-  <body>
-    <main>
+  <body class="min-h-dvh">
+    <main class:list={['mx-auto w-full px-4 py-8 sm:px-6 sm:py-10', wide ? 'max-w-3xl' : 'max-w-lg']}>
       <slot />
     </main>
   </body>
 </html>
-
-<style is:global>
-  /* Tokens first, so every component can be written against them. Light is the
-     default; `data-theme` wins over the system, and no attribute follows it. */
-  :root {
-    color-scheme: light;
-    --bg: #fff;
-    --bg-raised: #fff;
-    --fg: #111;
-    --fg-muted: #555;
-    --line: #e5e5e5;
-    --line-strong: #666;
-    --notice: #064;
-    --notice-line: #0a5;
-    --danger: #7a0000;
-    --danger-line: #a00;
-    --accent: #111;
-  }
-  :root[data-theme='dark'] {
-    color-scheme: dark;
-    --bg: #14161a;
-    --bg-raised: #1c1f24;
-    --fg: #ecedef;
-    --fg-muted: #a6abb3;
-    --line: #2b2f36;
-    --line-strong: #4a5058;
-    --notice: #7fe0b0;
-    --notice-line: #1d7a52;
-    --danger: #ff9c9c;
-    --danger-line: #b4463f;
-    --accent: #ecedef;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) {
-      color-scheme: dark;
-      --bg: #14161a;
-      --bg-raised: #1c1f24;
-      --fg: #ecedef;
-      --fg-muted: #a6abb3;
-      --line: #2b2f36;
-      --line-strong: #4a5058;
-      --notice: #7fe0b0;
-      --notice-line: #1d7a52;
-      --danger: #ff9c9c;
-      --danger-line: #b4463f;
-      --accent: #ecedef;
-    }
-  }
-  body {
-    margin: 0 auto;
-    max-width: 34rem;
-    padding: 2rem 1.25rem 4rem;
-    font: 1.125rem/1.6 system-ui, sans-serif;
-    color: var(--fg);
-    background: var(--bg);
-  }
-  h1 {
-    font-size: 1.6rem;
-    margin-top: 0;
-  }
-  a {
-    color: inherit;
-  }
-  label {
-    display: block;
-    margin: 1rem 0 0.25rem;
-    font-weight: 600;
-  }
-  input[type='text'],
-  input[type='email'],
-  input[type='password'],
-  input[type='tel'],
-  textarea,
-  select {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.6rem 0.7rem;
-    font: inherit;
-    color: var(--fg);
-    background: var(--bg-raised);
-    border: 1px solid var(--line-strong);
-    border-radius: 4px;
-  }
-  .note {
-    margin: 0.35rem 0 0;
-    color: var(--fg-muted);
-    font-size: 0.95rem;
-  }
-  .notice {
-    padding: 0.7rem 0.8rem;
-    border: 2px solid var(--notice-line);
-    border-radius: 4px;
-    color: var(--notice);
-  }
-  button,
-  .button {
-    display: inline-block;
-    margin-top: 1.25rem;
-    padding: 0.6rem 1.1rem;
-    font: inherit;
-    font-weight: 600;
-    color: var(--bg);
-    background: var(--accent);
-    border: 2px solid var(--accent);
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-  }
-  button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-  button.secondary,
-  .button.secondary {
-    color: var(--fg);
-    background: transparent;
-    border-color: var(--line-strong);
-  }
-  button.danger,
-  .button.danger {
-    color: var(--danger);
-    background: transparent;
-    border-color: var(--danger-line);
-  }
-  button.danger.solid {
-    color: var(--bg);
-    background: var(--danger-line);
-    border-color: var(--danger-line);
-  }
-  .error {
-    padding: 0.7rem 0.8rem;
-    border: 2px solid var(--danger-line);
-    border-radius: 4px;
-    color: var(--danger);
-  }
-  code {
-    font-size: 0.95em;
-  }
-</style>

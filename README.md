@@ -36,8 +36,8 @@ Two planes that never mix ([PLAN.md](docs/PLAN.md) §3).
   zero third-party requests, no fonts, no query strings.
 - **Owner plane** — `/dashboard`. One page in the order the work happens:
   **contacts, then notes, then the card**, all belonging to the owner rather than
-  the card. Icons, dark mode and confirmation modals live here; the account menu
-  holds settings, theme and sign out. A card is live as soon as it is made, with a
+  the card. Styled with Tailwind over one token scale (ADR-028); dark mode and
+  confirmation modals live here; the account menu holds settings, theme and sign out. A card is live as soon as it is made, with a
   printable image, a link and a six-digit PIN; *New card* replaces link and PIN
   together, which is how a lost card is retired.
 

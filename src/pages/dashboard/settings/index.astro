@@ -1,4 +1,5 @@
 ---
+import Button from '@/components/Button.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
@@ -6,91 +7,114 @@ import { errorMessage, noticeMessage } from '@/lib/dashboard';
 
 /**
  * Settings: the account itself, nothing about the card. Reached from the top menu,
- * and kept deliberately small — email and password are the two things an owner can
- * actually change today.
+ * and deliberately small — email and password are the two things an owner can change.
  */
 const owner = Astro.locals.owner!;
 const notice = noticeMessage(Astro.url.searchParams.get('notice'));
 const error = errorMessage(Astro.url.searchParams.get('error'));
+
+const cardClass = 'rounded-lg border border-line bg-surface p-4 sm:p-5';
+const labelClass = 'mb-1.5 block text-sm font-medium text-fg';
+const fieldClass =
+  'h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none';
+const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
 ---
 
 <Plain title="Settings" theme={Astro.locals.theme}>
   <ConfirmDialog />
-  <p class="back"><a href="/dashboard">← Back to your card</a></p>
-  <h1>Settings</h1>
 
-  {notice && <p class="notice" role="status">{notice}</p>}
-  {error && <p class="error" role="alert">{error}</p>}
+  <header class="mb-6 flex items-center justify-between gap-3">
+    <a class="flex items-center gap-2 text-sm text-fg-muted no-underline hover:text-fg" href="/dashboard">
+      ← Back to your card
+    </a>
+  </header>
 
-  <section>
-    <h2><Icon name="mail" size={18} /> Email</h2>
-    <form method="post" action="/dashboard/settings/email">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required autocomplete="email" value={owner.email} />
-      <p class="note">Used to sign in, and the one field stored in plain text (ADR-004).</p>
-      <button type="submit">Update email</button>
-    </form>
-  </section>
+  <h1 class="text-xl font-semibold tracking-tight">Settings</h1>
 
-  <section>
-    <h2><Icon name="key" size={18} /> Password</h2>
-    <form
-      method="post"
-      action="/dashboard/settings/password"
-      data-confirm="Changing your password signs you out of every device, this one included. You will sign in again with the new password."
-      data-confirm-title="Change your password?"
-      data-confirm-ok="Change and sign out"
-    >
-      <label for="current_password">Current password</label>
-      <input
-        id="current_password"
-        name="current_password"
-        type="password"
-        required
-        autocomplete="current-password"
-      />
+  {
+    notice && (
+      <p class="notice mt-4 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
+        {notice}
+      </p>
+    )
+  }
+  {
+    error && (
+      <p class="error mt-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+        {error}
+      </p>
+    )
+  }
 
-      <label for="new_password">New password</label>
-      <input
-        id="new_password"
-        name="new_password"
-        type="password"
-        required
-        minlength="10"
-        autocomplete="new-password"
-      />
+  <div class="mt-6 space-y-4">
+    <section class={cardClass}>
+      <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+        <Icon name="mail" size={16} /> Email
+      </h2>
+      <form method="post" action="/dashboard/settings/email" class="space-y-3">
+        <div>
+          <label class={labelClass} for="email">Email</label>
+          <input id="email" class={fieldClass} name="email" type="email" required autocomplete="email" value={owner.email} />
+          <p class={hintClass}>Used to sign in, and the one field stored in plain text (ADR-004).</p>
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit">Update email</Button>
+        </div>
+      </form>
+    </section>
 
-      <label for="new_password_confirm">New password again</label>
-      <input
-        id="new_password_confirm"
-        name="new_password_confirm"
-        type="password"
-        required
-        minlength="10"
-        autocomplete="new-password"
-      />
-      <p class="note">At least 10 characters. Changing it signs out every other session.</p>
-      <button type="submit">Update password</button>
-    </form>
-  </section>
-
-  <p class="back"><a href="/logout">Sign out</a></p>
+    <section class={cardClass}>
+      <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+        <Icon name="key" size={16} /> Password
+      </h2>
+      <form
+        method="post"
+        action="/dashboard/settings/password"
+        class="space-y-3"
+        data-confirm="Changing your password signs you out of every device, this one included. You will sign in again with the new password."
+        data-confirm-title="Change your password?"
+        data-confirm-ok="Change and sign out"
+      >
+        <div>
+          <label class={labelClass} for="current_password">Current password</label>
+          <input
+            id="current_password"
+            class={fieldClass}
+            name="current_password"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <div>
+          <label class={labelClass} for="new_password">New password</label>
+          <input
+            id="new_password"
+            class={fieldClass}
+            name="new_password"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+          />
+        </div>
+        <div>
+          <label class={labelClass} for="new_password_confirm">New password again</label>
+          <input
+            id="new_password_confirm"
+            class={fieldClass}
+            name="new_password_confirm"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+          />
+          <p class={hintClass}>At least 10 characters. Changing it signs out every other session.</p>
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit" variant="danger">Update password</Button>
+        </div>
+      </form>
+    </section>
+  </div>
 </Plain>
-
-<style>
-  .back {
-    margin: 0 0 1rem;
-  }
-  section {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--line);
-  }
-  h2 {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 1.2rem;
-    margin-top: 0;
-  }
-</style>

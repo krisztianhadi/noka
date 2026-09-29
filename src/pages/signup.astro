@@ -1,4 +1,5 @@
 ---
+import Button from '@/components/Button.astro';
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
@@ -34,34 +35,51 @@ if (Astro.request.method === 'POST') {
 ---
 
 <Plain title="Create your noka account">
-  <h1>Create your account</h1>
+  <h1 class="text-xl font-semibold tracking-tight">Create your account</h1>
 
-  {error && <p class="error" role="alert">{error}</p>}
+  {
+    error && (
+      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">{error}</p>
+    )
+  }
 
-  <form method="post">
-    <label for="name">First name</label>
-    <input id="name" name="name" type="text" required autocomplete="given-name" value={name} />
-    <p class="note">This is what a responder sees on your card.</p>
+  <form method="post" class="mt-6 space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="name">First name</label>
+      <input id="name" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="name" type="text" required autocomplete="given-name" value={name} />
+      <p class="mt-1.5 text-xs leading-5 text-fg-muted">This is what a responder sees on your card.</p>
+    </div>
 
-    <label for="email">Email</label>
-    <input id="email" name="email" type="email" required autocomplete="email" value={email} />
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="email">Email</label>
+      <input id="email" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="email" type="email" required autocomplete="email" value={email} />
+    </div>
 
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password" />
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="password">Password</label>
+      <input id="password" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="password" type="password" required minlength="10" autocomplete="new-password" />
+    </div>
 
-    <label for="password_confirm">Password again</label>
-    <input
-      id="password_confirm"
-      name="password_confirm"
-      type="password"
-      required
-      minlength="10"
-      autocomplete="new-password"
-    />
-    <p class="note">At least 10 characters. This guards your account; the card is guarded by its PIN.</p>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-fg" for="password_confirm">Password again</label>
+      <input
+        id="password_confirm"
+        class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none"
+        name="password_confirm"
+        type="password"
+        required
+        minlength="10"
+        autocomplete="new-password"
+      />
+      <p class="mt-1.5 text-xs leading-5 text-fg-muted">At least 10 characters. This guards your account; the card is guarded by its PIN.</p>
+    </div>
 
-    <button type="submit">Create account</button>
+    <div class="flex justify-end">
+      <Button type="submit">Create account</Button>
+    </div>
   </form>
 
-  <p class="note">Already have an account? <a href="/login">Sign in</a></p>
+  <p class="mt-4 text-sm text-fg-muted">
+    Already have an account? <a class="text-fg" href="/login">Sign in</a>
+  </p>
 </Plain>

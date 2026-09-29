@@ -1,9 +1,9 @@
 ---
 import Icon from '@/components/Icon.astro';
+import '@/styles/app.css';
 
-// Landing page. Functionality first: no design pass yet, no tracking, no scripts.
-// Icons and the wordmark are allowed here (the card page is the one that stays bare).
-// Sponsor logos (D18) and the auth links land with their phases.
+// Landing page. Same token scale as the owner plane (ADR-028); no tracking, and no
+// sponsor content until there is a sponsor (PLAN §18).
 ---
 
 <!doctype html>
@@ -18,66 +18,49 @@ import Icon from '@/components/Icon.astro';
     />
     <link rel="icon" href="data:," />
   </head>
-  <body>
-    <main>
-      <h1>
-        <img src="/noka-wordmark.svg" alt="noka" width="210" height="77" />
-      </h1>
-      <p><em>next of kin access</em></p>
+  <body class="min-h-dvh">
+    <main class="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
+      <div class="space-y-3">
+        <h1>
+          <img class="h-auto w-52" src="/noka-wordmark.svg" alt="noka" width="210" height="77" />
+        </h1>
+        <p class="text-sm tracking-wide text-fg-muted">next of kin access</p>
+      </div>
 
-      <p>
-        A card the size of a bank card, carrying a QR code and a six-digit PIN. Someone helping you scans it,
-        enters the PIN, and sees the people to call — with tap-to-call buttons — in under a second, on any
-        phone, without JavaScript and without an app.
+      <p class="text-base leading-7 text-fg">
+        A card the size of a bank card, carrying a QR code and a six-digit PIN. Someone helping you scans
+        it, enters the PIN, and sees the people to call — with tap-to-call buttons — in under a second, on
+        any phone, without JavaScript and without an app.
       </p>
 
-      <ul class="points">
-        <li><Icon name="lock" /> Your contacts are encrypted; the key is not in the database.</li>
-        <li><Icon name="signal" /> The page works on a bad mobile connection and asks for nothing.</li>
-        <li><Icon name="eye-off" /> No tracking on the card page, and no data sold, ever.</li>
+      <ul class="space-y-3 text-sm leading-6">
+        <li class="flex gap-3">
+          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="lock" size={18} /></span>
+          <span>Your contacts are encrypted; the key is not in the database.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="signal" size={18} /></span>
+          <span>The page works on a bad mobile connection and asks for nothing.</span>
+        </li>
+        <li class="flex gap-3">
+          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="eye-off" size={18} /></span>
+          <span>No tracking on the card page, and no data sold, ever.</span>
+        </li>
       </ul>
 
-      <p><a href="/signup">Create an account</a> · <a href="/login">Sign in</a></p>
-
-      <p><small>Cards and printing are being built; accounts work today.</small></p>
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-4">
+        <a
+          class="inline-flex h-9 items-center rounded-md border border-accent bg-accent px-3.5 text-sm font-medium text-accent-fg no-underline hover:opacity-90"
+          href="/signup">Create an account</a
+        >
+        <a
+          class="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
+          href="/login">Sign in</a
+        >
+        <p class="w-full text-xs text-fg-muted sm:w-auto sm:pl-2">
+          Cards and printing are being built; accounts work today.
+        </p>
+      </div>
     </main>
   </body>
 </html>
-
-<style>
-  :root {
-    color-scheme: light;
-  }
-  body {
-    margin: 0 auto;
-    max-width: 44rem;
-    padding: 2rem 1.25rem 4rem;
-    font: 1.125rem/1.6 system-ui, sans-serif;
-    color: #111;
-    background: #fff;
-  }
-  h1 {
-    margin-bottom: 0;
-    font-size: 2rem;
-  }
-  .points {
-    padding-left: 0;
-    list-style: none;
-  }
-  .points li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
-    margin-bottom: 0.5rem;
-  }
-  .points :global(svg) {
-    flex: 0 0 auto;
-    margin-top: 0.35rem;
-    color: #555;
-  }
-  h1 img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-  }
-</style>

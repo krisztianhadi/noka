@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+/*
+ * One scale for the owner plane (ADR-028).
+ *
+ * Everything visible comes from a token here: colour, type, radius, shadow, spacing
+ * steps. That is the fix for "text all over the place, sizes off, random shadows" —
+ * a component cannot invent a value, because there is nowhere to invent it from.
+ *
+ * Tailwind's preflight is kept: the owner plane is a normal app surface. The
+ * responder page does not import this file at all.
+ */
+@layer theme {
+  :root {
+    /* Surfaces and ink. Dark is a cookie on the server and a media query for
+       everyone who has not chosen — both paths land on the same variables. */
+    --noka-bg: #f6f7f9;
+    --noka-surface: #ffffff;
+    --noka-surface-muted: #f0f1f4;
+    --noka-fg: #14161a;
+    --noka-fg-muted: #5b6270;
+    --noka-line: #e2e5ea;
+    --noka-line-strong: #c3c8d2;
+    --noka-accent: #14161a;
+    --noka-accent-fg: #ffffff;
+    --noka-danger: #b4241f;
+    --noka-danger-fg: #ffffff;
+    --noka-success: #0a6039;
+    --noka-focus: #2563eb;
+
+    /* One shadow, used by things that actually float (menus, modals). */
+    --noka-shadow: 0 10px 30px -12px rgb(16 20 28 / 28%);
+
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'] {
+    --noka-bg: #101216;
+    --noka-surface: #181b21;
+    --noka-surface-muted: #1f232b;
+    --noka-fg: #ecedef;
+    --noka-fg-muted: #9aa1ad;
+    --noka-line: #2a2f38;
+    --noka-line-strong: #3d4550;
+    --noka-accent: #ecedef;
+    --noka-accent-fg: #14161a;
+    --noka-danger: #f87171;
+    --noka-danger-fg: #2a0d0c;
+    --noka-success: #4ade80;
+    --noka-focus: #60a5fa;
+
+    --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
+
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --noka-bg: #101216;
+      --noka-surface: #181b21;
+      --noka-surface-muted: #1f232b;
+      --noka-fg: #ecedef;
+      --noka-fg-muted: #9aa1ad;
+      --noka-line: #2a2f38;
+      --noka-line-strong: #3d4550;
+      --noka-accent: #ecedef;
+      --noka-accent-fg: #14161a;
+      --noka-danger: #f87171;
+      --noka-danger-fg: #2a0d0c;
+      --noka-success: #4ade80;
+      --noka-focus: #60a5fa;
+      --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
+      color-scheme: dark;
+    }
+  }
+
+  /* Semantic names, so a component says `bg-surface` rather than a hex value. */
+  @theme inline {
+    --color-bg: var(--noka-bg);
+    --color-surface: var(--noka-surface);
+    --color-muted: var(--noka-surface-muted);
+    --color-fg: var(--noka-fg);
+    --color-fg-muted: var(--noka-fg-muted);
+    --color-line: var(--noka-line);
+    --color-line-strong: var(--noka-line-strong);
+    --color-accent: var(--noka-accent);
+    --color-accent-fg: var(--noka-accent-fg);
+    --color-danger: var(--noka-danger);
+    --color-danger-fg: var(--noka-danger-fg);
+    --color-success: var(--noka-success);
+    --color-focus: var(--noka-focus);
+
+    --shadow-float: var(--noka-shadow);
+
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+}
+
+@layer base {
+  body {
+    background: var(--noka-bg);
+    color: var(--noka-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One focus treatment, everywhere, including inside dialogs and menus. */
+  :focus-visible {
+    outline: 2px solid var(--noka-focus);
+    outline-offset: 2px;
+  }
+
+  /*
+   * Links inside a sentence carry an underline, not just a colour: axe flags
+   * colour-only links below 3:1 against the surrounding text, and "Sign in" inside
+   * a muted paragraph is exactly that case. Nav and menu links opt out with
+   * `no-underline`.
+   */
+  a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}

@@ -1,56 +1,27 @@
 ---
+import Button from '@/components/Button.astro';
+
 /**
- * A real modal for destructive actions, on the owner platform only.
+ * A real modal for destructive actions, on the owner platform only (ADR-026).
  *
- * Uses `<dialog>.showModal()`, so focus is trapped, Escape closes it and the rest of
- * the page is inert while it is open — no native `confirm()`, and no library.
- *
- * Progressive: every form still carries its plain action and method, so with
- * JavaScript disabled the action simply happens without the extra question. The
- * dialog is the confirmation, not the mechanism.
+ * `<dialog>.showModal()` gives focus trapping, Escape, and an inert page behind it.
+ * Everything still submits without JavaScript: the dialog is the confirmation, not
+ * the mechanism.
  */
 ---
 
-<dialog id="confirm-dialog" class="modal" aria-labelledby="confirm-title">
-  <h2 id="confirm-title" data-confirm-title>Are you sure?</h2>
-  <p data-confirm-message></p>
-  <div class="modal-actions">
-    <button type="button" class="secondary" data-confirm-cancel>Cancel</button>
-    <button type="button" class="danger solid" data-confirm-ok>Confirm</button>
+<dialog
+  id="confirm-dialog"
+  class="m-auto w-[min(30rem,calc(100vw-2rem))] rounded-lg border border-line bg-surface p-5 text-fg shadow-float backdrop:bg-black/55"
+  aria-labelledby="confirm-title"
+>
+  <h2 id="confirm-title" class="text-base font-semibold" data-confirm-title>Are you sure?</h2>
+  <p class="mt-2 text-sm leading-6 text-fg-muted" data-confirm-message></p>
+  <div class="mt-5 flex justify-end gap-2">
+    <Button variant="secondary" type="button" data-confirm-cancel>Cancel</Button>
+    <Button variant="danger-solid" type="button" data-confirm-ok>Confirm</Button>
   </div>
 </dialog>
-
-<style>
-  .modal {
-    width: min(30rem, calc(100vw - 2rem));
-    padding: 1.25rem;
-    color: var(--fg);
-    background: var(--bg-raised);
-    border: 1px solid var(--line-strong);
-    border-radius: 8px;
-    box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
-  }
-  .modal::backdrop {
-    background: rgb(0 0 0 / 55%);
-  }
-  .modal h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.15rem;
-  }
-  .modal p {
-    margin: 0;
-    color: var(--fg-muted);
-  }
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 1.25rem;
-  }
-  .modal-actions button {
-    margin-top: 0;
-  }
-</style>
 
 <script>
   const dialog = document.getElementById('confirm-dialog') as HTMLDialogElement | null;

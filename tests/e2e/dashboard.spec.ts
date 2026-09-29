@@ -321,8 +321,17 @@ test.describe('the account menu', () => {
     // Server-rendered from the cookie, so a reload is already dark.
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-    const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(background).toBe('rgb(20, 22, 26)');
+    // Compare the rendered background with the token itself, so a palette change does
+    // not break the test — and so it proves the token is what reaches the page.
+    const [background, token] = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.color = 'var(--noka-bg)';
+      document.body.append(probe);
+      const resolved = getComputedStyle(probe).color;
+      probe.remove();
+      return [getComputedStyle(document.body).backgroundColor, resolved];
+    });
+    expect(background).toBe(token);
   });
 
   test('changes the email and the password from settings', async ({ page }) => {

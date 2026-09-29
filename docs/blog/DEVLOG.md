@@ -361,3 +361,31 @@ before the change, so my own check said "not present" and was right about the wr
 rebuild and restart together, or the verification lies. And the test that clicks "away" cannot
 click an element the open panel covers, which is exactly the behaviour a dropdown should have;
 the corner of the page is the honest way to express "away".
+
+## 2026-09-29 — One scale, and the honest answer about shadcn
+
+**His report.** "Text is all around the place, UI element sizes are off, random shadows." That is
+what happens when every component carries its own CSS: nine type sizes, three radii and a shadow on
+things that do not float, because nothing stops them.
+
+**The answer on shadcn/ui.** No, and not because of taste: shadcn's components are React. Adding a
+React runtime and island hydration to a form-driven Astro app, to get buttons and a dialog that
+already exist as `<dialog>` and `<details>`, is a large dependency for markup I have already
+written. Tailwind is the useful half of that suggestion, and it is now in — owner layout only, so
+the responder page still ships nothing.
+
+**How it is structured.** The palette, the radius and the one floating shadow are CSS custom
+properties; Tailwind sees them as semantic names (`bg-surface`, `shadow-float`). Sections are cards
+on a tinted page, only menus and the modal float, type comes from four steps, controls are two
+heights. The rule is not "use Tailwind", it is "there is nowhere to invent a value from".
+
+**What axe caught that I did not.** Two things, both invisible to me: the success green failed
+contrast at 4.36:1 on its own tint, and "Sign in" inside a muted paragraph sat at 2.95:1 as a
+colour-only link. Underlining links in body text is the fix for the second, and it is a better
+default anyway.
+
+**The bug I caused with an abstraction.** `Button.astro` rendered only the props it knew about, so
+the confirmation dialog's `data-confirm-ok` never reached the DOM and its script threw on a null
+button — the modal silently stopped opening. Two of my own tests caught it, which is the argument
+for testing the interaction and not the markup. The component spreads unknown attributes now, and
+says why.

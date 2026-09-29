@@ -1,4 +1,5 @@
 ---
+import Button from '@/components/Button.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
@@ -14,7 +15,10 @@ import { toggleTarget, type Theme } from '@/lib/theme';
 /**
  * The whole owner plane on one page, in his order: contacts, then notes, then the
  * card. Everything else is a menu at the top (settings, dark mode, sign out) or a
- * kebab beside the thing it acts on, so nothing competes with the content.
+ * kebab beside the thing it acts on.
+ *
+ * Layout rule (ADR-028): sections are cards on the page background, and only things
+ * that actually float — menus and the modal — carry a shadow.
  */
 const owner = Astro.locals.owner!;
 const theme = Astro.locals.theme;
@@ -40,77 +44,127 @@ const NEW_CARD_WARNING =
   'A new card gets a new link and a new PIN. Anything already printed stops working immediately. Continue?';
 const DELETE_CARD_WARNING =
   'Delete the card and its link? Your contacts and notes are kept, and you can make a new card later.';
+
+const menuItem =
+  'menu-item flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-fg no-underline hover:bg-muted';
+const cardClass = 'rounded-lg border border-line bg-surface p-4 sm:p-5';
+const sectionTitle = 'text-sm font-semibold uppercase tracking-wide text-fg-muted';
+const summaryIcon =
+  'flex size-8 cursor-pointer list-none items-center justify-center rounded-md text-fg-muted marker:content-none hover:bg-muted hover:text-fg';
+const panelClass =
+  'panel absolute right-0 z-20 mt-1 min-w-52 rounded-lg border border-line bg-surface p-1 shadow-float';
 ---
 
-<Plain title="Your noka" theme={theme}>
+<Plain title="Your noka" theme={theme} wide>
   <ConfirmDialog />
   <MenuBehavior />
-  <header class="top">
-    <a class="brand" href="/dashboard">noka</a>
-    <details class="menu">
-      <summary aria-label="Menu"><Icon name="menu" size={22} /></summary>
-      <div class="panel">
-        <p class="who">
-          <strong>{owner.name}</strong>
-          <span class="muted">{owner.email}</span>
+
+  <header class="mb-6 flex items-center justify-between gap-3">
+    <a class="text-lg font-bold tracking-tight text-fg no-underline" href="/dashboard">noka</a>
+    <details class="menu relative">
+      <summary
+        class="flex size-9 cursor-pointer list-none items-center justify-center rounded-md border border-line bg-surface text-fg marker:content-none hover:bg-muted"
+        aria-label="Menu"
+      >
+        <Icon name="menu" size={20} />
+      </summary>
+      <div class={`${panelClass} min-w-56`}>
+        <p class="mb-1 border-b border-line px-2.5 pt-1.5 pb-2.5">
+          <span class="block text-sm font-medium">{owner.name}</span>
+          <span class="block text-xs break-all text-fg-muted">{owner.email}</span>
         </p>
-        <a href="/dashboard/settings"><Icon name="settings" /> Settings</a>
+        <a class={menuItem} href="/dashboard/settings"><Icon name="settings" size={16} /> Settings</a>
         <form method="post" action="/dashboard/theme">
           <input type="hidden" name="theme" value={nextTheme} />
-          <button type="submit" class="menu-item">
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+          <button class={menuItem} type="submit">
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </form>
         <form method="post" action="/logout">
-          <button type="submit" class="menu-item"><Icon name="logout" /> Sign out</button>
+          <button class={menuItem} type="submit"><Icon name="logout" size={16} /> Sign out</button>
         </form>
       </div>
     </details>
   </header>
 
-  {notice && <p class="notice" role="status">{notice}</p>}
-  {error && <p class="error" role="alert">{error}</p>}
+  {
+    notice && (
+      <p class="notice mb-6 rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
+        {notice}
+      </p>
+    )
+  }
+  {
+    error && (
+      <p class="error mb-6 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+        {error}
+      </p>
+    )
+  }
 
-  <section id="contacts">
-    <h1>Emergency contacts</h1>
+  <section id="contacts" class="space-y-4">
+    <div class="flex items-baseline justify-between gap-3">
+      <h1 class="text-xl font-semibold tracking-tight">Emergency contacts</h1>
+      {
+        contacts.length > 0 && (
+          <span class="text-xs text-fg-muted">
+            {contacts.length === 1 ? '1 person' : `${contacts.length} people`}
+          </span>
+        )
+      }
+    </div>
 
     {
       contacts.length === 0 ? (
-        <p>Nobody yet. Add the person a responder should call — a card cannot exist until one does.</p>
+        <div class={cardClass}>
+          <p class="text-sm text-fg-muted">
+            Nobody yet. Add the person a responder should call — a card cannot exist until one does.
+          </p>
+        </div>
       ) : (
-        <ul class="contacts">
+        <ul class="contacts divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
           {contacts.map((contact) => (
-            <li>
-              <div class="who-row">
-                <div>
-                  <p class="name">{contact.name}</p>
-                  <p class="meta">{relationLabel(contact.relation)}</p>
-                  <p class="meta">
-                    <a class="phone" href={channelHref('call', contact.phoneE164)}>
+            <li class="p-4">
+              <div class="who-row flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="name text-base font-semibold">{contact.name}</p>
+                  <p class="meta mt-0.5 text-sm text-fg-muted">{relationLabel(contact.relation)}</p>
+                  <p class="meta mt-0.5">
+                    <a class="phone font-mono text-sm text-fg" href={channelHref('call', contact.phoneE164)}>
                       {contact.phoneDisplay}
                     </a>
                   </p>
-                  <p class="tags">
+                  <p class="tags mt-2 flex flex-wrap gap-1">
                     {contact.channels.map((channel: Channel) => (
-                      <span class="tag">{channelLabel(channel)}</span>
+                      <span class="tag rounded-full border border-line px-2 py-0.5 text-xs">
+                        {channelLabel(channel)}
+                      </span>
                     ))}
                     {contact.spokenLanguages.map((code) => (
-                      <span class="tag muted">{spokenLabel(code)}</span>
+                      <span class="tag rounded-full border border-dashed border-line px-2 py-0.5 text-xs text-fg-muted">
+                        {spokenLabel(code)}
+                      </span>
                     ))}
                   </p>
                 </div>
 
-                <details class="menu kebab">
-                  <summary aria-label={`Actions for ${contact.name}`}><Icon name="dots" /></summary>
-                  <div class="panel">
+                <details class="menu kebab relative">
+                  <summary class={summaryIcon} aria-label={`Actions for ${contact.name}`}>
+                    <Icon name="dots" size={18} />
+                  </summary>
+                  <div class={panelClass}>
                     <details class="submenu">
-                      <summary class="menu-item"><Icon name="edit" /> Edit contact</summary>
-                      <ContactForm
-                        action={`/dashboard/contacts/${contact.id}/edit`}
-                        contact={contact}
-                        submitLabel="Save changes"
-                      />
+                      <summary class={`${menuItem} marker:content-none`}>
+                        <Icon name="edit" size={16} /> Edit contact
+                      </summary>
+                      <div class="border-t border-line p-3">
+                        <ContactForm
+                          action={`/dashboard/contacts/${contact.id}/edit`}
+                          contact={contact}
+                          submitLabel="Save changes"
+                        />
+                      </div>
                     </details>
                     <form
                       method="post"
@@ -119,8 +173,8 @@ const DELETE_CARD_WARNING =
                       data-confirm-title={contacts.length === 1 ? 'Delete contact and card?' : 'Delete contact?'}
                       data-confirm-ok="Delete"
                     >
-                      <button type="submit" class="menu-item danger">
-                        <Icon name="trash" /> Delete contact
+                      <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
+                        <Icon name="trash" size={16} /> Delete contact
                       </button>
                     </form>
                   </div>
@@ -134,303 +188,135 @@ const DELETE_CARD_WARNING =
 
     {
       contacts.length === 0 ? (
-        <>
-          <h2>Add a contact</h2>
+        <div class={cardClass}>
+          <h2 class={`${sectionTitle} mb-4`}>Add a contact</h2>
           <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
-        </>
+        </div>
       ) : (
-        <details class="add-more">
-          <summary class="button secondary">Add another contact</summary>
-          <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+        <details class="add-more overflow-hidden rounded-lg border border-line bg-surface">
+          <summary class="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-medium marker:content-none hover:bg-muted">
+            <Icon name="plus" size={16} /> Add another contact
+          </summary>
+          <div class="border-t border-line p-4">
+            <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+          </div>
         </details>
       )
     }
   </section>
 
-  <section id="notes-section">
-    <h2>Notes for a responder</h2>
-    <form method="post" action="/dashboard/notes">
-      <label for="notes">Notes</label>
-      <textarea id="notes" name="notes" rows="5" maxlength="2000">{notes}</textarea>
-      <p class="note">
-        Shown under the contacts on the card page. Where the medication is, who to call first. Do not
-        enter anyone else's data.
-      </p>
-      <button type="submit">Save notes</button>
-    </form>
+  <section id="notes-section" class="mt-6">
+    <div class={cardClass}>
+      <h2 class={`${sectionTitle} mb-4`}>Notes for a responder</h2>
+      <form method="post" action="/dashboard/notes" class="space-y-3">
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-fg" for="notes">Notes</label>
+          <textarea
+            id="notes"
+            class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
+            name="notes"
+            rows="4"
+            maxlength="2000">{notes}</textarea>
+          <p class="mt-1.5 text-xs leading-5 text-fg-muted">
+            Shown under the contacts on the card page. Where the medication is, who to call first. Do not
+            enter anyone else's data.
+          </p>
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit">Save notes</Button>
+        </div>
+      </form>
+    </div>
   </section>
 
-  <section id="card">
-    <div class="section-head">
-      <h2>Your card</h2>
+  <section id="card" class="mt-6">
+    <div class={cardClass}>
+      <div class="section-head mb-4 flex items-center justify-between gap-3">
+        <h2 class={sectionTitle}>Your card</h2>
+        {
+          card && (
+            <details class="menu kebab relative">
+              <summary class={summaryIcon} aria-label="Card actions">
+                <Icon name="dots" size={18} />
+              </summary>
+              <div class={`${panelClass} min-w-56`}>
+                <form
+                  method="post"
+                  action="/dashboard/card/new"
+                  data-confirm={NEW_CARD_WARNING}
+                  data-confirm-title="Make a new card?"
+                  data-confirm-ok="New card"
+                >
+                  <button class={menuItem} type="submit"><Icon name="refresh" size={16} /> New card</button>
+                </form>
+                <form
+                  method="post"
+                  action="/dashboard/card/delete"
+                  data-confirm={DELETE_CARD_WARNING}
+                  data-confirm-title="Delete this card?"
+                  data-confirm-ok="Delete card"
+                >
+                  <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
+                    <Icon name="trash" size={16} /> Delete card
+                  </button>
+                </form>
+              </div>
+            </details>
+          )
+        }
+      </div>
+
+      {
+        !card && (
+          <div class="space-y-4">
+            <p class="text-sm text-fg-muted">
+              {count === 0
+                ? 'A card needs at least one contact behind it. Add someone above, then come back.'
+                : 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.'}
+            </p>
+            <form method="post" action="/dashboard/card/create">
+              <Button type="submit" disabled={count === 0}>Make my card</Button>
+            </form>
+          </div>
+        )
+      }
+
       {
         card && (
-          <details class="menu kebab">
-            <summary aria-label="Card actions"><Icon name="dots" /></summary>
-            <div class="panel">
-              <form
-                method="post"
-                action="/dashboard/card/new"
-                data-confirm={NEW_CARD_WARNING}
-                data-confirm-title="Make a new card?"
-                data-confirm-ok="New card"
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+            <img
+              class="preview w-full max-w-[13rem] shrink-0 rounded-md border border-line"
+              src="/dashboard/card/card.jpg"
+              alt="Your card: the five-language heading, a QR code, the PIN and the noka wordmark"
+              width="638"
+              height="1011"
+            />
+            <div class="min-w-0 flex-1 space-y-3">
+              <div>
+                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">PIN</p>
+                <p class="pin font-mono text-3xl font-semibold tracking-[0.18em]">{revealPin(card)}</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">Link</p>
+                <p class="url truncate font-mono text-sm">
+                  <a class="text-fg underline underline-offset-2" href={cardUrl(card)}>{cardUrl(card)}</a>
+                </p>
+              </div>
+              <p class="text-xs leading-5 text-fg-muted">
+                Print the image, or copy the link and PIN by hand. The QR points at the link.
+              </p>
+              <a
+                class="inline-flex h-9 items-center gap-2 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
+                href="/dashboard/card/card.jpg"
+                target="_blank"
+                rel="noopener"
               >
-                <button type="submit" class="menu-item"><Icon name="refresh" /> New card</button>
-              </form>
-              <form
-                method="post"
-                action="/dashboard/card/delete"
-                data-confirm={DELETE_CARD_WARNING}
-                data-confirm-title="Delete this card?"
-                data-confirm-ok="Delete card"
-              >
-                <button type="submit" class="menu-item danger"><Icon name="trash" /> Delete card</button>
-              </form>
+                <Icon name="print" size={16} /> Open the card image
+              </a>
             </div>
-          </details>
+          </div>
         )
       }
     </div>
-
-    {
-      !card && (
-        <>
-          <p>
-            {count === 0
-              ? 'A card needs at least one contact behind it. Add someone above, then come back.'
-              : 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.'}
-          </p>
-          <form method="post" action="/dashboard/card/create">
-            <button type="submit" disabled={count === 0}>
-              Make my card
-            </button>
-          </form>
-        </>
-      )
-    }
-
-    {
-      card && (
-        <>
-          <img
-            class="preview"
-            src="/dashboard/card/card.jpg"
-            alt="Your card: the five-language heading, a QR code, the PIN and the noka wordmark"
-            width="638"
-            height="1011"
-          />
-          <p class="pin">{revealPin(card)}</p>
-          <p class="url">
-            <a href={cardUrl(card)}>{cardUrl(card)}</a>
-          </p>
-          <p class="note">
-            <a href="/dashboard/card/card.jpg" target="_blank" rel="noopener">
-              <Icon name="print" size={16} /> Open the card image in a new tab
-            </a>
-          </p>
-          <p class="note">
-            Print the image above, or copy the link and PIN by hand. The QR points at the link.
-          </p>
-        </>
-      )
-    }
   </section>
-
-
-
-  <style>
-    .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--line);
-    }
-    .brand {
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-decoration: none;
-    }
-    .menu {
-      position: relative;
-    }
-    .menu > summary {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      cursor: pointer;
-      list-style: none;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      color: var(--fg);
-    }
-    .menu > summary::-webkit-details-marker {
-      display: none;
-    }
-    .menu[open] > summary {
-      border-color: var(--line-strong);
-    }
-    .panel {
-      position: absolute;
-      right: 0;
-      z-index: 10;
-      min-width: 16rem;
-      margin-top: 0.35rem;
-      padding: 0.6rem;
-      background: var(--bg-raised);
-      border: 1px solid var(--line-strong);
-      border-radius: 6px;
-      box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
-    }
-    .panel .who {
-      display: flex;
-      flex-direction: column;
-      margin: 0 0 0.5rem;
-      padding: 0 0.5rem 0.5rem;
-      border-bottom: 1px solid var(--line);
-    }
-    .panel .muted {
-      color: var(--fg-muted);
-      font-size: 0.9rem;
-      word-break: break-all;
-    }
-    .panel a,
-    .menu-item {
-      display: block;
-      width: 100%;
-      margin: 0;
-      padding: 0.5rem;
-      font: inherit;
-      font-weight: 500;
-      text-align: left;
-      color: var(--fg);
-      background: none;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .panel a:hover,
-    .menu-item:hover {
-      background: var(--line);
-    }
-    .menu-item.danger {
-      color: var(--danger);
-    }
-    .submenu > summary {
-      list-style: none;
-    }
-    .submenu > summary::-webkit-details-marker {
-      display: none;
-    }
-    .submenu .contact-form {
-      padding: 0.5rem;
-    }
-    section {
-      margin-top: 2.5rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--line);
-    }
-    .section-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .section-head h2 {
-      margin: 0;
-    }
-    h1 {
-      font-size: 1.5rem;
-    }
-    h2 {
-      font-size: 1.25rem;
-    }
-    .contacts {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .contacts > li {
-      padding: 1rem 0;
-      border-bottom: 1px solid var(--line);
-    }
-    .who-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-    .name {
-      margin: 0;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-    .meta {
-      margin: 0.15rem 0;
-      color: var(--fg-muted);
-    }
-    .phone {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      color: var(--fg);
-    }
-    .tags {
-      margin: 0.4rem 0 0;
-    }
-    .tag {
-      display: inline-block;
-      margin: 0 0.3rem 0.3rem 0;
-      padding: 0.1rem 0.45rem;
-      font-size: 0.85rem;
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-    }
-    .tag.muted {
-      border-style: dashed;
-      color: var(--fg-muted);
-    }
-    .add-more {
-      margin-top: 1.25rem;
-    }
-    .add-more > summary {
-      list-style: none;
-      margin-top: 0;
-    }
-    .add-more > summary::-webkit-details-marker {
-      display: none;
-    }
-    .add-more[open] > summary {
-      margin-bottom: 0.5rem;
-    }
-    .preview {
-      display: block;
-      width: min(100%, 260px);
-      height: auto;
-      margin: 0.75rem 0 1rem;
-      border: 1px solid var(--line);
-    }
-    .pin {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 2rem;
-      letter-spacing: 0.12em;
-      margin: 0.25rem 0;
-    }
-    .url {
-      margin: 0.25rem 0;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      word-break: break-all;
-    }
-    .url a {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    @media (max-width: 30rem) {
-      .panel {
-        min-width: min(16rem, 80vw);
-      }
-    }
-  </style>
 </Plain>
