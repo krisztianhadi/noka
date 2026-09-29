@@ -18,6 +18,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     phone: composePhone(field(form, 'country'), field(form, 'phone')),
     spokenLanguages: form.getAll('spoken').map(String),
     channels: form.getAll('channels').map(String),
+    textOnly: form.get('text_only') === 'yes',
   });
 
   // The raw key travels in the URL; the dashboard resolves it to a sentence.

@@ -84,8 +84,10 @@ test.describe('things axe cannot see', () => {
       const country = form.locator('select[name="country"]');
       const number = form.locator('input[name="phone"]');
       const [countryBox, numberBox] = await Promise.all([country.boundingBox(), number.boundingBox()]);
+      // The select sits in a positioning wrapper inside the row, so the row is two
+      // levels up — measuring the wrapper compared a 168px box against a 979px edge.
       const row = await country.evaluate((element) => {
-        const box = element.parentElement!.getBoundingClientRect();
+        const box = element.parentElement!.parentElement!.getBoundingClientRect();
         return { x: box.x, width: box.width };
       });
 
@@ -134,13 +136,17 @@ test.describe('things axe cannot see', () => {
         const height = Math.round(element.getBoundingClientRect().height);
         // Checkboxes and the note textarea are their own shapes.
         if (['checkbox', 'radio', 'textarea'].includes(type)) continue;
-        const key = element.tagName.toLowerCase() === 'button' ? 'button' : 'field';
+        const tag = element.tagName.toLowerCase();
+        // An icon-only control is a different shape from a labelled one, on purpose.
+        const labelled = tag !== 'button' || element.textContent!.trim().length > 0;
+        const key = tag === 'select' || tag === 'input' ? 'field' : labelled ? 'button' : 'icon-button';
         byShape.set(key, (byShape.get(key) ?? new Set()).add(height));
       }
       return Object.fromEntries([...byShape].map(([key, value]) => [key, [...value]]));
     });
     // One height per shape across the whole page.
-    expect(heights.button ?? [], 'button heights').toHaveLength(1);
+    expect(heights.button ?? [], 'labelled button heights').toHaveLength(1);
+    expect(heights['icon-button'] ?? [], 'icon button heights').toHaveLength(1);
     expect(heights.field ?? [], 'field heights').toHaveLength(1);
 
     // Anything that floats wears the one shadow token, and nothing floats at rest.

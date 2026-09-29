@@ -46,7 +46,10 @@ export interface ContactSpec {
   country?: string;
   /** The national part only. */
   phone: string;
+  /** Services only: call, WhatsApp, Signal, Telegram, Viber. */
   channels?: string[];
+  /** "Cannot speak or hear": text is the only way in. */
+  textOnly?: boolean;
   spoken?: string[];
 }
 
@@ -69,6 +72,7 @@ export async function addContact(page: Page, spec: ContactSpec): Promise<void> {
   for (const channel of spec.channels ?? []) {
     await form.locator(`input[name="channels"][value="${channel}"]`).check();
   }
+  if (spec.textOnly) await form.locator('input[name="text_only"]').check();
   for (const code of spec.spoken ?? []) {
     await form.locator(`input[name="spoken"][value="${code}"]`).check();
   }

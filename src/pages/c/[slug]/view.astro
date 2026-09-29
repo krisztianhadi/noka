@@ -3,7 +3,8 @@ import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
 import ChannelIcon from '@/components/ChannelIcon.astro';
-import { channelHref } from '@/lib/channels';
+import type { ContactView } from '@/lib/contacts';
+import { channelHref, type Channel } from '@/lib/channels';
 import { flagForLanguage } from '@/lib/flags';
 import {
   cardLanguages,
@@ -21,6 +22,12 @@ import { LANG_COOKIE, VIEW_COOKIE, readViewToken } from '@/lib/view-cookie';
  * Without a valid cookie this is not an error — it is the PIN form, exactly as
  * if the URL had been opened for the first time.
  */
+/** The services to offer, plus text when this contact cannot speak or hear. */
+function offeredChannels(contact: ContactView): Channel[] {
+  if (!contact.textOnly || contact.channels.includes('sms')) return contact.channels;
+  return [...contact.channels, 'sms'];
+}
+
 const requestedSlug = Astro.params.slug ?? '';
 const card = await findCardBySlug(requestedSlug);
 const claims = readViewToken(Astro.cookies.get(VIEW_COOKIE)?.value);
@@ -59,10 +66,15 @@ const offered = cardLanguages(card);
         <div class="phone">
           <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
         </div>
+        {contact.textOnly && (
+          <div class="text-only">
+            <span aria-hidden="true">💬</span> {label('view.text_only')}
+          </div>
+        )}
         <div class="actions">
-          {contact.channels.map((channel) => (
+          {offeredChannels(contact).map((channel) => (
             <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
-              <span class="mark"><ChannelIcon channel={channel} size={20} branded /></span>
+              <ChannelIcon channel={channel} size={20} />
               <span>{label(`channel.${channel}` as MessageKey)}</span>
             </a>
           ))}

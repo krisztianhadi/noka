@@ -267,6 +267,28 @@ on the **unlocked** page — the one that actually carries the service links —
 PIN form. `externalResources()` and `unexpectedNavigations()` separate resource loads from
 navigations, which is the distinction the old check lacked.
 
+### ADR-031 — "Cannot speak or hear" is a fact about the person, not a service
+
+**Context.** The channel list had grown to six entries with `sms` sitting among the messengers,
+and the form explained text as a footnote. He asked for it to be its own checkbox, with the
+reason stated: *the receiver can't speak or hear*, and for that to show on the responder page.
+
+**Decision.** Text message leaves the service list. The owner ticks a separate checkbox, stored
+as **`text_only`** in the contact payload (schema 4, defaulting to false, older payloads read
+unchanged). The services the form offers are `SERVICE_CHANNELS` — call, WhatsApp, Signal,
+Telegram, Viber. When the flag is set, the responder page states it in plain words and offers a
+Text message button (`sms:`), because for that person a call is useless.
+
+**Why.** Two different things were sharing one list. A service is *where* a number can be
+reached; whether someone can hear a phone ring is *who they are*. Modelling them as one thing
+forced the owner to guess which service implied which capability, and it made the responder page
+unable to say the one sentence that matters most to that contact.
+
+**Consequences.** `sms` stays in the channel vocabulary — it is still a link to build — but it is
+not something the owner subscribes to. The responder-facing sentence is translated in all five
+card languages (`view.text_only`), the dashboard shows a `Text only` tag, and the integration
+suite round-trips the flag.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

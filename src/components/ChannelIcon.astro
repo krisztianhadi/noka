@@ -1,44 +1,42 @@
 ---
 import { brandIcon } from '@/lib/brand-icons';
-import { CHANNELS, type Channel } from '@/lib/channels';
+import type { Channel } from '@/lib/channels';
 
 /**
  * The mark for one reachability channel.
  *
- * Brand marks come from `src/lib/brand-icons.ts` (generated, CC0 path data) and keep
- * the brand's own colour; call and text use the project's own line icons. Everything is
- * inline SVG, so the responder page still fetches nothing.
+ * Four channels have a brand mark (`src/lib/brand-icons.ts`, generated from simple-icons'
+ * CC0 path data); call and text have project line icons. A brand mark can be drawn in two
+ * ways — the brand's colour on the owner plane, or plain `currentColor` on the responder
+ * page, where a stranger's page reads better in black on white than in five palettes.
  *
- * Decorative by default: the button beside it carries the visible label, and an
- * accessible name on the icon would only make a screen reader read the label twice.
- * Pass `label` when the icon is the only thing identifying the action.
+ * All inline SVG: the responder page fetches nothing (ADR-026, ADR-030).
+ *
+ * Decorative by default. Pass `label` only when the icon stands alone, otherwise a screen
+ * reader reads the same words twice.
  */
 interface Props {
   channel: Channel;
   size?: number;
-  /** Use the brand colour instead of `currentColor`. */
+  /** Draw a brand mark in the brand's own colour instead of `currentColor`. */
   branded?: boolean;
-  /** Accessible name, when the icon stands alone. */
   label?: string;
 }
 
 const { channel, size = 18, branded = false, label } = Astro.props;
 
 const brand = brandIcon(channel);
+// Call and text are not brands: a handset and a speech bubble, stroked.
 const LINE_ICONS: Partial<Record<Channel, string>> = {
-  // A handset, and a speech bubble with a line in it for a text message.
   call: '<path d="M6.5 3.5h3l1.3 3.2-1.9 1.4a11.5 11.5 0 0 0 5 5l1.4-1.9 3.2 1.3v3a1.8 1.8 0 0 1-2 1.8A15.5 15.5 0 0 1 4.7 5.5a1.8 1.8 0 0 1 1.8-2Z"/>',
   sms: '<path d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"/><path d="M8.5 10.5h7"/>',
 };
-
 const line = LINE_ICONS[channel];
-const usesBrand = branded && brand;
-
-void CHANNELS;
+const fill = branded && brand ? brand.hex : 'currentColor';
 ---
 
 {
-  usesBrand ? (
+  brand ? (
     <svg
       viewBox="0 0 24 24"
       width={size}
@@ -49,7 +47,7 @@ void CHANNELS;
       focusable="false"
       class="shrink-0"
     >
-      <path d={brand!.path} fill={brand!.hex} />
+      <path d={brand.path} fill={fill} />
     </svg>
   ) : (
     <svg

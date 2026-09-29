@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { channelHref, sanitizeChannels } from '@/lib/channels';
+import { channelHref, sanitizeChannels, SERVICE_CHANNELS } from '@/lib/channels';
 
 const PHONE = '+66812345678';
 
@@ -19,6 +19,12 @@ describe('channel links', () => {
     // Signal wants the literal plus: `%2B` opens no chat (Signal-Android #11627).
     expect(channelHref('signal', PHONE)).toBe('https://signal.me/#p/+66812345678');
     expect(channelHref('viber', PHONE)).toBe('viber://chat?number=%2B66812345678');
+  });
+
+  it('offers the services the form shows, and texting is not one of them', () => {
+    // Text is a fact about the person (`text_only`), not a service to subscribe to.
+    expect([...SERVICE_CHANNELS]).toEqual(['call', 'whatsapp', 'signal', 'telegram', 'viber']);
+    expect(SERVICE_CHANNELS).not.toContain('sms');
   });
 
   it('keeps only the channels it knows, in the vocabulary order, defaulting to a call', () => {

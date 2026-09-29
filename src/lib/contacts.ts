@@ -26,6 +26,8 @@ export interface ContactView {
   spokenLanguages: string[];
   /** How this number can be reached; `call` unless the owner changed it. */
   channels: Channel[];
+  /** Cannot speak or hear: text is the only way in, and the page says so. */
+  textOnly: boolean;
   sortOrder: number;
 }
 
@@ -35,6 +37,8 @@ export interface ContactInput {
   phone: string;
   spokenLanguages: readonly string[];
   channels: readonly string[];
+  /** From the "cannot speak or hear" checkbox. */
+  textOnly?: boolean;
 }
 
 export type PhoneError = Extract<PhoneResult, { ok: false }>['reason'];
@@ -61,6 +65,7 @@ function decode(row: ContactRow): ContactView {
     phoneDisplay: value.phone_display,
     spokenLanguages: value.spoken_languages,
     channels: sanitizeChannels(value.channels ?? ['call']),
+    textOnly: value.text_only ?? false,
     sortOrder: row.sortOrder,
   };
 }
@@ -76,6 +81,7 @@ function encode(input: ContactInput, phone: { e164: string; display: string }): 
     // An empty selection means "just call": a contact with no channel at all
     // would be invisible on the page a responder depends on.
     channels: sanitizeChannels(input.channels.length > 0 ? input.channels : ['call']),
+    text_only: input.textOnly ?? false,
   };
 }
 

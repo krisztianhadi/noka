@@ -69,8 +69,10 @@ test.describe('the dashboard', () => {
     // Country picker + national part become one E.164 number, shown grouped.
     await expect(contact.locator('.phone')).toHaveText('+66 812 345 678');
     await expect(contact.locator('.phone')).toHaveAttribute('href', 'tel:+66812345678');
-    // Call first, then the rest in the vocabulary's order.
-    await expect(contact.locator('.tag')).toHaveText(['Call', 'WhatsApp', 'Signal', 'English', 'Thai']);
+    // Services and spoken languages are separate labelled rows.
+    await expect(contact.locator('dt')).toHaveText(['Services', 'Spoken']);
+    await expect(contact.locator('.tags .tag')).toHaveText(['Call', 'WhatsApp', 'Signal']);
+    await expect(contact.locator('.speaks .tag')).toHaveText(['🇬🇧English', '🇹🇭Thai']);
   });
 
   test('drops the trunk zero of a national number', async ({ page }) => {
@@ -95,13 +97,16 @@ test.describe('the dashboard', () => {
     await expect(page.locator('.contacts > li').first().locator('.phone')).toHaveText('+36 301 234 567');
   });
 
-  test('edits a contact from its kebab menu', async ({ page }) => {
+  test('edits a contact from the row, never from inside the menu', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
-    await kebab(page, '.contacts > li').click();
-    await page.getByText('Edit contact').click();
-    const form = page.locator('form[action$="/edit"]');
+    await page.locator('[data-edit-trigger]').first().click();
+    const form = page.locator('details.edit-form form[action$="/edit"]');
+    await expect(form).toBeVisible();
+    // The form must not be inside a dropdown panel: that was the bug.
+    expect(await form.evaluate((element) => Boolean(element.closest('.panel, .kebab')))).toBe(false);
+
     await form.locator('input[name="name"]').fill('Joao Silva');
     await form.locator('input[name="phone"]').fill('912345678');
     await form.getByRole('button', { name: 'Save changes' }).click();
@@ -112,16 +117,31 @@ test.describe('the dashboard', () => {
     await expect(contact.locator('.phone')).toHaveText('+66 912 345 678');
 
     // Editing prefills the picker from the stored number instead of doubling it.
-    await kebab(page, '.contacts > li').click();
-    await page.getByText('Edit contact').click();
-    const editForm = page.locator('form[action$="/edit"]');
-    await expect(editForm.locator('select[name="country"]')).toHaveValue('TH');
-    await expect(editForm.locator('input[name="phone"]')).toHaveValue('912 345 678');
-    // A number typed with + keeps the plus through the input mask.
+    await page.locator('[data-edit-trigger]').first().click();
+    const reopened = page.locator('details.edit-form form[action$="/edit"]');
+    await expect(reopened.locator('select[name="country"]')).toHaveValue('TH');
+    await expect(reopened.locator('input[name="phone"]')).toHaveValue('912 345 678');
+  });
+
+  test('marks a contact who cannot speak or hear, and offers text for them', async ({ page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Ana Hadi', phone: '30 123 4567', channels: ['telegram'], textOnly: true });
+
+    const row = page.locator('.contacts > li').first();
+    await expect(row.locator('.text-only')).toHaveText('Text only');
+    await expect(row.locator('.tags .tag')).toHaveText(['Call', 'Telegram', 'Text only']);
   });
 
   test('saves notes for a responder', async ({ page }) => {
     await signUp(page);
+
+    // Nothing to save until something changed.
+    const save = page.locator('#notes-section button[type="submit"]');
+    await expect(save).toBeDisabled();
+    await page.fill('#notes', 'x');
+    await expect(save).toBeEnabled();
+    await page.fill('#notes', '');
+
     await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
     await page.reload();
     await expect(page.locator('#notes')).toHaveValue('Type 1 diabetic. Allergic to penicillin.');
@@ -189,15 +209,10 @@ test.describe('the dashboard', () => {
     expect(await isOpen(first)).toBe(false);
     expect(await isOpen(second)).toBe(true);
 
-    // Clicking away closes it, and what was typed into the form survives.
-    await second.locator('.menu-item').first().click();
-    await second.locator('input[name="name"]').fill('Renamed');
-    // A menu panel overlaps whatever is under it, so "away" means a corner of the
-    // page rather than an element the panel happens to cover.
+    // The kebab holds actions, not the edit form: editing happens in the row.
+    await expect(second.locator('form[action$="/edit"]')).toHaveCount(0);
     await page.mouse.click(5, 5);
     expect(await isOpen(second)).toBe(false);
-    await second.locator('> summary').click();
-    await expect(second.locator('input[name="name"]')).toHaveValue('Renamed');
 
     // Escape from the keyboard closes it too.
     await page.keyboard.press('Escape');
@@ -229,6 +244,20 @@ test.describe('the dashboard', () => {
     await expect(dialog).toBeVisible();
     const results = await new AxeBuilder({ page }).include('#confirm-dialog').analyze();
     expect(results.violations).toEqual([]);
+  });
+
+  test('cancel closes the add form and drops what was typed', async ({ page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+
+    await page.locator('.add-more > summary').click();
+    const form = page.locator('form[action="/dashboard/contacts/new"]');
+    await form.locator('input[name="name"]').fill('Discarded');
+    await form.locator('a[data-cancel]').click();
+
+    await expect(page.locator('.add-more')).not.toHaveAttribute('open', '');
+    await page.locator('.add-more > summary').click();
+    await expect(page.locator('form[action="/dashboard/contacts/new"] input[name="name"]')).toHaveValue('');
   });
 
   test('the dashboard is accessible', async ({ page }) => {

@@ -1,0 +1,76 @@
+---
+/**
+ * The dashboard's client behaviour, in one component.
+ *
+ * It lives here rather than inline in the page because **Astro does not process a
+ * `<script>` that arrives through a slot** — it is copied through unbundled and never
+ * runs. The menu would not close once; the notes button would not disable another time.
+ * Both were the same mistake, so all of the dashboard's behaviour lives in one place.
+ */
+---
+
+<script>
+  // 1. Menus close on an outside click and on Escape. A click inside stays inside.
+  //    (Hiding a `<details>` does not clear its inputs, so a half-typed edit survives.)
+  const menus = Array.from(document.querySelectorAll<HTMLDetailsElement>('details.menu'));
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Node | null;
+    for (const menu of menus) {
+      if (menu.open && target && !menu.contains(target)) menu.open = false;
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    // An open modal owns Escape.
+    if (document.querySelector('dialog[open]')) return;
+    for (const menu of menus) menu.open = false;
+  });
+
+  // 2. Edit opens the contact's own form, in the page — never inside a dropdown panel.
+  for (const trigger of document.querySelectorAll<HTMLButtonElement>('[data-edit-trigger]')) {
+    trigger.addEventListener('click', () => {
+      const form = trigger.closest('li')?.querySelector<HTMLDetailsElement>('details.edit-form');
+      if (!form) return;
+      form.open = true;
+      form.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      form.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+    });
+  }
+
+  // 3. Cancel closes the disclosure its form lives in and clears what was typed.
+  //    The link's href is the no-JavaScript fallback.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-cancel]')) {
+    link.addEventListener('click', (event) => {
+      const details = link.closest('details');
+      const form = link.closest('form');
+      if (!details || !form) return;
+      event.preventDefault();
+      form.reset();
+      details.open = false;
+    });
+  }
+
+  // 4. "Save notes" is meaningless until something changed.
+  const notes = document.getElementById('notes') as HTMLTextAreaElement | null;
+  const saveNotes = notes?.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]');
+  if (notes && saveNotes) {
+    const initial = notes.value;
+    const sync = () => {
+      saveNotes.disabled = notes.value === initial;
+    };
+    notes.addEventListener('input', sync);
+    sync();
+  }
+
+  // 5. Space a phone number as it is typed, and never eat a deliberate "+": a value that
+  //    starts with one is already international and is sent as typed.
+  for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {
+    input.addEventListener('input', () => {
+      const international = input.value.trimStart().startsWith('+');
+      const digits = input.value.replace(/[^\d]/g, '').slice(0, 15);
+      input.value = `${international ? '+' : ''}${digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()}`;
+    });
+  }
+</script>

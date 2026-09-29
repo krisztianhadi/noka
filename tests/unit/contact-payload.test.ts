@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SERVICE_CHANNELS } from '@/lib/channels';
 import { CONTACT_PAYLOAD_SCHEMA, parseContactPayload, readContactPayload } from '@/lib/contact-payload';
 
 const valid = {
@@ -9,6 +10,7 @@ const valid = {
   phone_display: '+66 81 234 5678',
   spoken_languages: ['en', 'th'],
   channels: ['call', 'whatsapp'],
+  text_only: false,
 };
 
 describe('contact payload (schema 3)', () => {
@@ -38,9 +40,15 @@ describe('contact payload (schema 3)', () => {
 
   it('hard-fails on an unknown schema version rather than rendering half a contact', () => {
     expect(() => readContactPayload({ ...valid, schema: 1 })).toThrow(/Unsupported contact payload schema: 1/);
-    expect(() => readContactPayload({ ...valid, schema: 4 })).toThrow(/schema: 4/);
+    expect(() => readContactPayload({ ...valid, schema: 5 })).toThrow(/schema: 5/);
     expect(() => readContactPayload(null)).toThrow(/Unsupported/);
     expect(readContactPayload(valid).name).toBe('Maria Silva');
+  });
+
+  it('reads a payload with no text-only flag as "can speak and hear"', () => {
+    const { text_only: _absent, ...older } = valid;
+    expect(parseContactPayload(older).text_only).toBe(false);
+    expect(parseContactPayload({ ...valid, text_only: true }).text_only).toBe(true);
   });
 
   it('still reads a schema-2 payload, defaulting the channels to a phone call', () => {
@@ -48,6 +56,12 @@ describe('contact payload (schema 3)', () => {
     const upgraded = readContactPayload({ ...v2, schema: 2 });
     expect(upgraded.schema).toBe(CONTACT_PAYLOAD_SCHEMA);
     expect(upgraded.channels).toEqual(['call']);
+  });
+
+  it('accepts the services the form offers, and keeps rejections for anything else', () => {
+    for (const channel of SERVICE_CHANNELS) {
+      expect(parseContactPayload({ ...valid, channels: [channel] }).channels).toEqual([channel]);
+    }
   });
 
   it('validates the channels against the vocabulary', () => {

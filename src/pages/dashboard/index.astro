@@ -4,7 +4,7 @@ import ChannelIcon from '@/components/ChannelIcon.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
-import MenuBehavior from '@/components/MenuBehavior.astro';
+import DashboardBehavior from '@/components/DashboardBehavior.astro';
 import Plain from '@/layouts/Plain.astro';
 import { MESSAGES } from '@/i18n/catalogue';
 import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
@@ -12,6 +12,7 @@ import { channelHref, type Channel } from '@/lib/channels';
 import { getNotes, listContacts } from '@/lib/contacts';
 import { errorMessage, noticeMessage } from '@/lib/dashboard';
 import { toggleTarget, type Theme } from '@/lib/theme';
+import { flagForLanguage } from '@/lib/flags';
 
 /**
  * The whole owner plane on one page, in his order: contacts, then notes, then the
@@ -61,9 +62,11 @@ const panelClass =
 
 <Plain title="Your noka" theme={theme} wide>
   <ConfirmDialog />
-  <MenuBehavior />
+  <DashboardBehavior />
 
-  <header class="mb-6 flex items-center justify-between gap-3">
+  <header
+    class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3"
+  >
     <a class="text-lg font-bold tracking-tight text-fg no-underline" href="/dashboard">noka</a>
     <details class="menu relative">
       <summary
@@ -131,10 +134,10 @@ const panelClass =
           {contacts.map((contact) => (
             <li class="p-4">
               <div class="who-row flex items-start justify-between gap-3">
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                   <p class="name text-base font-semibold">{contact.name}</p>
                   <p class="meta mt-0.5 text-sm text-fg-muted">{relationLabel(contact.relation)}</p>
-                  <p class="meta mt-0.5">
+                  <p class="meta mt-1">
                     <a
                       class="phone inline-flex items-center gap-1.5 font-mono text-sm text-fg"
                       href={channelHref('call', contact.phoneE164)}
@@ -143,52 +146,85 @@ const panelClass =
                       {contact.phoneDisplay}
                     </a>
                   </p>
-                  <p class="tags mt-2 flex flex-wrap gap-1">
+                </div>
+
+                <div class="flex shrink-0 items-center gap-1">
+                  <button
+                    class="edit-trigger flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-fg-muted hover:bg-muted hover:text-fg"
+                    type="button"
+                    aria-label={`Edit ${contact.name}`}
+                    data-edit-trigger
+                  >
+                    <Icon name="edit" size={16} />
+                  </button>
+
+                  <details class="menu kebab relative">
+                    <summary class={summaryIcon} aria-label={`Actions for ${contact.name}`}>
+                      <Icon name="dots" size={18} />
+                    </summary>
+                    <div class={panelClass}>
+                      <form
+                        method="post"
+                        action={`/dashboard/contacts/${contact.id}/delete`}
+                        data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : 'Delete this contact?'}
+                        data-confirm-title={contacts.length === 1 ? 'Delete contact and card?' : 'Delete contact?'}
+                        data-confirm-ok="Delete"
+                      >
+                        <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
+                          <Icon name="trash" size={16} /> Delete contact
+                        </button>
+                      </form>
+                    </div>
+                  </details>
+                </div>
+              </div>
+
+              <dl class="mt-3 space-y-1.5 text-sm">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">Services</dt>
+                  <dd class="tags flex flex-wrap gap-1">
                     {contact.channels.map((channel: Channel) => (
                       <span class="tag inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
                         <ChannelIcon channel={channel} size={13} branded />
                         {channelLabel(channel)}
                       </span>
                     ))}
-                    {contact.spokenLanguages.map((code) => (
-                      <span class="tag rounded-full border border-dashed border-line px-2 py-0.5 text-xs text-fg-muted">
-                        {spokenLabel(code)}
+                    {contact.textOnly && (
+                      <span class="tag text-only inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
+                        <Icon name="sms" size={13} /> Text only
                       </span>
-                    ))}
-                  </p>
+                    )}
+                  </dd>
                 </div>
-
-                <details class="menu kebab relative">
-                  <summary class={summaryIcon} aria-label={`Actions for ${contact.name}`}>
-                    <Icon name="dots" size={18} />
-                  </summary>
-                  <div class={panelClass}>
-                    <details class="submenu">
-                      <summary class={`${menuItem} text-fg marker:content-none`}>
-                        <Icon name="edit" size={16} /> Edit contact
-                      </summary>
-                      <div class="border-t border-line p-3">
-                        <ContactForm
-                          action={`/dashboard/contacts/${contact.id}/edit`}
-                          contact={contact}
-                          submitLabel="Save changes"
-                        />
-                      </div>
-                    </details>
-                    <form
-                      method="post"
-                      action={`/dashboard/contacts/${contact.id}/delete`}
-                      data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : 'Delete this contact?'}
-                      data-confirm-title={contacts.length === 1 ? 'Delete contact and card?' : 'Delete contact?'}
-                      data-confirm-ok="Delete"
-                    >
-                      <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
-                        <Icon name="trash" size={16} /> Delete contact
-                      </button>
-                    </form>
+                {contact.spokenLanguages.length > 0 && (
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">Spoken</dt>
+                    <dd class="speaks flex flex-wrap gap-1">
+                      {contact.spokenLanguages.map((code) => (
+                        <span class="tag inline-flex items-center gap-1 rounded-full border border-dashed border-line px-2 py-0.5 text-xs text-fg-muted">
+                          <span aria-hidden="true">{flagForLanguage(code)}</span>
+                          <span>{spokenLabel(code)}</span>
+                        </span>
+                      ))}
+                    </dd>
                   </div>
-                </details>
-              </div>
+                )}
+              </dl>
+
+              <details class="edit-form mt-3">
+                <summary
+                  class="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm text-fg-muted marker:content-none hover:text-fg"
+                >
+                  <Icon name="edit" size={14} /> Edit {contact.name}
+                </summary>
+                <div class="mt-3 border-t border-line pt-4">
+                  <ContactForm
+                    action={`/dashboard/contacts/${contact.id}/edit`}
+                    contact={contact}
+                    submitLabel="Save changes"
+                  />
+                </div>
+              </details>
             </li>
           ))}
         </ul>

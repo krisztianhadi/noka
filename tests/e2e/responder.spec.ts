@@ -14,7 +14,9 @@ async function owner(page: import('@playwright/test').Page): Promise<{ slug: str
     name: 'Maria Silva',
     country: 'TH',
     phone: '812 345 678',
-    channels: ['whatsapp', 'sms', 'signal'],
+    channels: ['whatsapp', 'signal'],
+    // Cannot speak or hear: the page says so and offers text.
+    textOnly: true,
     spoken: ['th', 'en'],
   });
   await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
@@ -55,6 +57,7 @@ test.describe('the responder page', () => {
     await expect(guest.locator('a.call')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('a.whatsapp')).toHaveAttribute('href', 'https://wa.me/66812345678');
     await expect(guest.locator('a.sms')).toHaveAttribute('href', 'sms:+66812345678');
+    await expect(guest.locator('.text-only')).toContainText('cannot speak or hear');
     // Every channel is a button, and the number itself is on the page.
     await expect(guest.locator('a.signal')).toContainText('Signal');
     await expect(guest.locator('.phone')).toHaveText('+66 812 345 678');

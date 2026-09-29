@@ -504,3 +504,31 @@ pairs, which is fine because the name is right there.
 would have rejected them anyway. The contract is now split the way the platform splits it: a
 **resource** is a `src` or a `<link href>` and must be local; a **navigation** is an `<a href>`
 and may dial a service. Ran on the unlocked view too, which is where the buttons are.
+
+## 2026-09-29 — Nine notes from a walkthrough, and three of my own silent mistakes
+
+**What he caught.** No icons in the service checkboxes. "Text message" sitting among the
+messengers instead of being its own statement about the person. A chevron in the wrong place. The
+edit form opening **inside the kebab menu** — his words, "epic bug", and he is right: a form in a
+dropdown is a form you fight with. Save notes that can be pressed when nothing changed. No way to
+cancel an add. A contact row that read like a pile. A header floating on the page. And responder
+buttons whose icons were misaligned and colourful for no reason.
+
+**The one that changed the model.** Text message was a service. It is not: a service is *where* a
+number can be reached, and "cannot speak or hear" is *who the person is*. Two different things
+were sharing one list, which meant the owner had to infer a capability from a subscription and the
+responder page could not say the sentence that matters most for that contact. It is now
+`text_only` in the payload (schema 4), its own checkbox with the reason written under it, stated on
+the card page in the contact's language, and the Text button appears because a call would be
+useless.
+
+**Three of my own mistakes, all silent.** An `str.replace` in an edit script matched nothing, so
+the dashboard behaviour was never added — the page simply did nothing, and only a probe that read
+the DOM caught it. The chevron CSS went into a component that has had no `<style>` block since the
+Tailwind rewrite. And `ChannelIcon` fell through to a line-icon branch for the four brand channels
+when `branded` was false, rendering empty `<svg>` elements: the screenshot looked *nearly* right,
+which is exactly why I measured `pathLen` instead of trusting my eyes.
+
+**The habit worth keeping.** Every one of those three was invisible in a diff and obvious in a
+measurement — a computed colour, a bounding box, a path length. Reviewing my own patch is not
+verification; running the thing and reading numbers is.

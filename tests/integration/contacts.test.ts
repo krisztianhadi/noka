@@ -34,6 +34,7 @@ function input(overrides: Partial<ContactInput> = {}): ContactInput {
     phone: SECRET_PHONE,
     spokenLanguages: ['en', 'th'],
     channels: ['call', 'whatsapp'],
+    textOnly: false,
     ...overrides,
   };
 }
@@ -70,6 +71,7 @@ describeDb('contacts and notes', () => {
       phoneDisplay: '+66 899 999 999',
       spokenLanguages: ['en', 'th'],
       channels: ['call', 'whatsapp'],
+      textOnly: false,
       sortOrder: 0,
     });
 
@@ -129,6 +131,17 @@ describeDb('contacts and notes', () => {
 
     const none = await createContact(owner, input({ channels: [] }));
     expect(none.ok && none.contact.channels).toEqual(['call']);
+  });
+
+  it('remembers that a contact cannot speak or hear', async () => {
+    const owner = await freshOwner();
+    const created = await createContact(owner, input({ textOnly: true }));
+    expect(created.ok && created.contact.textOnly).toBe(true);
+    // Only text is offered for that person, and it survives a read.
+    expect((await listContacts(owner))[0]?.textOnly).toBe(true);
+
+    const updated = await updateContact(owner, (created as { contact: { id: string } }).contact.id, input({ textOnly: false }));
+    expect(updated.ok && updated.contact.textOnly).toBe(false);
   });
 
   it('drops unknown spoken languages on write', async () => {

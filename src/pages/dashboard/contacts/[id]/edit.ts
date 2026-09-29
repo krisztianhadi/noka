@@ -20,6 +20,7 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
     phone: composePhone(field(form, 'country'), field(form, 'phone')),
     spokenLanguages: form.getAll('spoken').map(String),
     channels: form.getAll('channels').map(String),
+    textOnly: form.get('text_only') === 'yes',
   });
 
   return result.ok ? dashboardBack('notice', 'contact-updated') : dashboardBack('error', result.error);

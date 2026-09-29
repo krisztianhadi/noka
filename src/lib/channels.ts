@@ -15,6 +15,16 @@ export type Channel = (typeof CHANNELS)[number];
 
 export const DEFAULT_CHANNELS: readonly Channel[] = ['call'];
 
+/**
+ * What the owner picks: the services a number is actually on.
+ *
+ * `sms` is deliberately absent. Texting is not a service the contact subscribes to —
+ * it is a plain phone capability, and whether it is the only way in is a fact about
+ * the person (`text_only` in the payload). The responder page turns that flag into a
+ * Text message button.
+ */
+export const SERVICE_CHANNELS: readonly Channel[] = ['call', 'whatsapp', 'signal', 'telegram', 'viber'];
+
 export function isChannel(value: string): value is Channel {
   return (CHANNELS as readonly string[]).includes(value);
 }
