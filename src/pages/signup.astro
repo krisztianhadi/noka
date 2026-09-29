@@ -1,7 +1,7 @@
 ---
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
-import { errorMessage, field, forbidden, isSameOrigin, redirectWithCookies } from '@/lib/http';
+import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
 
 let error = '';
 let email = '';
@@ -10,7 +10,8 @@ let name = '';
 if (Astro.request.method === 'POST') {
   if (!isSameOrigin(Astro.request)) return forbidden();
 
-  const form = await Astro.request.formData();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
   email = field(form, 'email');
   name = field(form, 'name');
   const password = field(form, 'password');

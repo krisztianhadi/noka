@@ -209,6 +209,45 @@ bypassed by a new route: every contact query is scoped by `card_id` (a test
 asserts one account cannot read or delete another's contact), and the last
 contact on an active card cannot be deleted (D28).
 
+### ADR-014 — our own origin checks, not Astro's global one
+
+Astro's `security.checkOrigin` defaults to on and rejects a POST whose `Origin`
+does not match the host. That is fine for the owner plane and wrong for the
+responder plane: the emergency PIN form must not depend on a header that some
+webviews and privacy tools omit, and a 403 on a scanned card is a product
+failure. It is therefore off, and every owner-plane POST calls `isSameOrigin`
+(`src/lib/http.ts`) itself — signup, login, logout, card actions, contacts,
+notes. The guest plane never changes another party's state, so it needs no
+origin check at all.
+
+Related: `readForm()` replaces `request.formData()` everywhere. A POST with no
+body or an unknown content type makes `formData()` throw a `TypeError`, which
+turned a bodyless POST into a 500 on the PIN page. The responder plane now
+answers with its ordinary page.
+
+### ADR-015 — the responder plane is one request, one language, no oracle
+
+- **One request per page.** `build.inlineStylesheets: 'always'` keeps the CSS in
+  the HTML. This is not only a 3G optimisation: the responder CSP is
+  `style-src 'unsafe-inline'` with `default-src 'none'`, so an extracted
+  stylesheet would be blocked by our own header.
+- **The cookie is checked twice.** The HMAC proves we issued it; the database
+  check proves the card is still active and the `pin_version` still matches. A
+  rotated PIN or a deactivated card therefore takes effect on the next request,
+  not at cookie expiry.
+- **Nothing is an existence oracle.** An unknown slug renders the same page —
+  including the language switcher, which is why the default language set is used
+  when there is no card. Timings are padded to a 350 ms floor and an unknown slug
+  burns a decoy Argon2 verification. The only difference between the real card's
+  page and a made-up one is the slug echoed in its own form action, which the
+  responder supplied in the first place.
+- **The PIN is accepted as printed.** It is printed grouped (`123 456`), so
+  `normalizePinInput` strips any spacing before verification. Six digits are
+  still required; no entropy is lost.
+- **Language precedence:** the `lang` cookie, then `Accept-Language` ∩ the card's
+  set, then the card's first language. A stale cookie falls through rather than
+  erroring.
+
 ## What is deliberately absent
 
 No client framework, no analytics on `/c/*`, no sponsor markup on `/c/*` or

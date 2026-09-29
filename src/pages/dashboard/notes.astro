@@ -3,7 +3,7 @@ import Plain from '@/layouts/Plain.astro';
 import { getCardForOwner } from '@/lib/cards';
 import { getNotes, listContacts, setNotes } from '@/lib/contacts';
 import { ownerRedirect } from '@/lib/dashboard';
-import { field, forbidden, isSameOrigin } from '@/lib/http';
+import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
 
 const owner = Astro.locals.owner!;
 const card = await getCardForOwner(owner.id);
@@ -11,7 +11,8 @@ if (!card) return ownerRedirect('/dashboard/card');
 
 if (Astro.request.method === 'POST') {
   if (!isSameOrigin(Astro.request)) return forbidden();
-  const form = await Astro.request.formData();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
   await setNotes(card.id, field(form, 'notes'));
   return ownerRedirect('/dashboard/notes?notice=saved');
 }

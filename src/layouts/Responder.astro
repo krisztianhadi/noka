@@ -1,0 +1,190 @@
+---
+/**
+ * The responder plane's shell (§9): zero JavaScript, one request, no webfont,
+ * high contrast, nothing that identifies the owner before the PIN is accepted.
+ */
+interface Props {
+  lang: string;
+  title: string;
+}
+
+const { lang, title } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    color-scheme: light;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 1.25rem 1.25rem 3rem;
+    font: 1.1875rem/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #111;
+    background: #fff;
+  }
+  main {
+    max-width: 32rem;
+    margin: 0 auto;
+  }
+  h1 {
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+  p {
+    margin: 0.6rem 0;
+  }
+  label {
+    display: block;
+    margin: 1.5rem 0 0.4rem;
+    font-weight: 600;
+  }
+  input[type='text'],
+  input[type='tel'],
+  input[inputmode='numeric'] {
+    width: 100%;
+    padding: 0.85rem 0.9rem;
+    font: inherit;
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+    border: 2px solid #111;
+    border-radius: 6px;
+  }
+  button {
+    display: block;
+    width: 100%;
+    min-height: 3.25rem;
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    font: inherit;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #fff;
+    background: #111;
+    border: 2px solid #111;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .error {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    font-weight: 600;
+    color: #7a0000;
+    background: #fff;
+    border: 2px solid #a00;
+    border-radius: 6px;
+  }
+  .contact {
+    padding: 1.25rem 0;
+    border-bottom: 2px solid #e5e5e5;
+  }
+  .name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .relation {
+    margin-top: 0.15rem;
+    font-size: 1.0625rem;
+    color: #333;
+  }
+  .owner {
+    margin-top: -0.75rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333;
+  }
+  .notes-heading {
+    margin: 2rem 0 0.5rem;
+    font-size: 1.25rem;
+  }
+  .speaks {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    color: #333;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.85rem;
+  }
+  .actions a {
+    flex: 1 1 8rem;
+    min-height: 3.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 2px solid #111;
+    border-radius: 6px;
+  }
+  .call {
+    color: #fff;
+    background: #111;
+  }
+  .whatsapp {
+    color: #111;
+    background: #fff;
+  }
+  .notes {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f6f6f6;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    white-space: pre-wrap;
+  }
+  .langs {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e5e5;
+  }
+  .langs form {
+    display: inline-block;
+    margin: 0 0.4rem 0.4rem 0;
+  }
+  .langs button {
+    width: auto;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0.5rem 0.9rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    background: #fff;
+    border-width: 2px;
+  }
+  .langs button[aria-current='true'] {
+    color: #fff;
+    background: #111;
+  }
+  .hide {
+    margin-top: 1rem;
+    background: #fff;
+    color: #7a0000;
+    border-color: #a00;
+  }
+</style>

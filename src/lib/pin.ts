@@ -37,3 +37,14 @@ export async function decoyVerify(pin: string): Promise<void> {
 export function formatPin(pin: string): string {
   return pin.length === PIN_LENGTH ? `${pin.slice(0, 3)} ${pin.slice(3)}` : pin;
 }
+
+/**
+ * The PIN is printed grouped as "123 456", so a responder may well type or
+ * paste it with the space, a dash or a stray non-breaking space. Only digits
+ * survive; anything else becomes an empty string and simply fails to verify.
+ * This removes no entropy — the six digits are still required.
+ */
+export function normalizePinInput(input: string): string {
+  const digits = input.replace(/[^0-9]/g, '');
+  return digits.length === PIN_LENGTH ? digits : '';
+}

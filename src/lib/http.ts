@@ -36,6 +36,25 @@ export function field(form: FormData, name: string): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+/**
+ * Form parsing that cannot throw. `request.formData()` raises a TypeError when
+ * a POST arrives with no body or a content type it does not understand — a bot,
+ * a scanner, or a stale form. The responder plane must answer with its normal
+ * page, not a 500, so every caller goes through here.
+ */
+export async function readForm(request: Request): Promise<FormData | null> {
+  const contentType = request.headers.get('content-type') ?? '';
+  const acceptable =
+    contentType.startsWith('application/x-www-form-urlencoded') || contentType.startsWith('multipart/form-data');
+  if (!acceptable) return null;
+
+  try {
+    return await request.formData();
+  } catch {
+    return null;
+  }
+}
+
 /** Pulls the human-readable message out of a better-auth JSON error response. */
 export async function errorMessage(response: Response, fallback: string): Promise<string> {
   try {

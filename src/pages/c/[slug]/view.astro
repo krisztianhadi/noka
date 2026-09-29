@@ -1,0 +1,97 @@
+---
+import Responder from '@/layouts/Responder.astro';
+import { t, type MessageKey } from '@/i18n/catalogue';
+import { LANGUAGE_INFO } from '@/i18n/languages';
+import { whatsappHref, telHref } from '@/lib/contact-payload';
+import {
+  cardLanguages,
+  findCardBySlug,
+  loadResponderView,
+  resolveLanguage,
+  viewCookieStillValid,
+} from '@/lib/responder';
+import { LANG_COOKIE, VIEW_COOKIE, readViewToken } from '@/lib/view-cookie';
+
+/**
+ * The page the QR is for (§3, §9): contacts, notes, tap-to-call, in the card's
+ * own language, with zero JavaScript.
+ *
+ * Without a valid cookie this is not an error — it is the PIN form, exactly as
+ * if the URL had been opened for the first time.
+ */
+const requestedSlug = Astro.params.slug ?? '';
+const card = await findCardBySlug(requestedSlug);
+const claims = readViewToken(Astro.cookies.get(VIEW_COOKIE)?.value);
+
+if (!card || !viewCookieStillValid(claims, card)) {
+  return Astro.redirect(`/c/${requestedSlug}`, 303);
+}
+
+const language = resolveLanguage(
+  card,
+  Astro.cookies.get(LANG_COOKIE)?.value,
+  Astro.request.headers.get('accept-language'),
+);
+const label = (key: MessageKey) => t(language, key);
+const { ownerName, contacts, notes } = await loadResponderView(card);
+const offered = cardLanguages(card);
+---
+
+<Responder lang={LANGUAGE_INFO[language].htmlLang} title={label('view.heading')}>
+  <h1>{label('view.heading')}</h1>
+  {ownerName && <p class="owner">{ownerName}</p>}
+
+  {
+    contacts.map((contact) => (
+      <div class="contact">
+        <div class="name">{contact.name}</div>
+        <div class="relation">{label(`relation.${contact.relation}` as MessageKey)}</div>
+        {contact.spokenLanguages.length > 0 && (
+          <div class="speaks">
+            {label('view.speaks')}:{' '}
+            {contact.spokenLanguages
+              .map((code) => label(`spoken.${code}` as MessageKey))
+              .join(' · ')}
+          </div>
+        )}
+        <div class="actions">
+          <a class="call" href={telHref(contact.phoneE164)}>
+            {label('view.call')}
+          </a>
+          <a class="whatsapp" href={whatsappHref(contact.phoneE164)}>
+            {label('view.whatsapp')}
+          </a>
+        </div>
+      </div>
+    ))
+  }
+
+  {
+    notes.length > 0 && (
+      <>
+        <h2 class="notes-heading">{label('view.notes')}</h2>
+        <div class="notes">{notes}</div>
+      </>
+    )
+  }
+
+  <form method="post" action={`/c/${card.slug}/hide`}>
+    <button type="submit" class="hide">
+      {label('view.hide')}
+    </button>
+  </form>
+
+  {
+    offered.length > 1 && (
+      <div class="langs">
+        <form method="post" action={`/c/${card.slug}/lang`}>
+          {offered.map((code) => (
+            <button type="submit" name="lang" value={code} aria-current={code === language}>
+              {LANGUAGE_INFO[code].endonym}
+            </button>
+          ))}
+        </form>
+      </div>
+    )
+  }
+</Responder>

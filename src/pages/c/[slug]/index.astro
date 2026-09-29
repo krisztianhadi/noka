@@ -1,0 +1,118 @@
+---
+import Responder from '@/layouts/Responder.astro';
+import { t, type MessageKey } from '@/i18n/catalogue';
+import { LANGUAGE_INFO, DEFAULT_CARD_LANGUAGES } from '@/i18n/languages';
+import {
+  cardLanguages,
+  findCardBySlug,
+  padTo,
+  recordPinAttempt,
+  resolveLanguage,
+  verifyPinAgainst,
+  viewCookieStillValid,
+} from '@/lib/responder';
+import { readForm } from '@/lib/http';
+import { normalizePinInput } from '@/lib/pin';
+import { clientIp } from '@/lib/request-ip';
+import {
+  LANG_COOKIE,
+  VIEW_COOKIE,
+  VIEW_TTL_SECONDS,
+  cardCookiePath,
+  issueViewToken,
+  readViewToken,
+  serializeCookie,
+} from '@/lib/view-cookie';
+
+/**
+ * The PIN page (§3, §15). It never contains contact data, and an unknown slug,
+ * a revoked card and a deactivated card all produce this exact page.
+ */
+const startedAt = Date.now();
+
+const requestedSlug = Astro.params.slug ?? '';
+const card = await findCardBySlug(requestedSlug);
+const language = resolveLanguage(
+  card,
+  Astro.cookies.get(LANG_COOKIE)?.value,
+  Astro.request.headers.get('accept-language'),
+);
+const label = (key: MessageKey) => t(language, key);
+
+// Already unlocked: straight to the view, still without any data in this HTML.
+if (viewCookieStillValid(readViewToken(Astro.cookies.get(VIEW_COOKIE)?.value), card) && card) {
+  return Astro.redirect(`/c/${card.slug}/view`, 303);
+}
+
+let error = '';
+
+const submitted = Astro.request.method === 'POST' ? await readForm(Astro.request) : null;
+if (submitted) {
+  const form = submitted;
+  const pin = normalizePinInput(String(form.get('pin') ?? ''));
+
+  const success = await verifyPinAgainst(card, pin);
+  await recordPinAttempt({
+    cardId: card?.id ?? null,
+    success,
+    ip: clientIp(Astro.request, Astro.clientAddress),
+  });
+  // Layer 0 of §6: the response takes the same time whether or not the card
+  // exists, so timing is not an existence oracle either.
+  await padTo(startedAt);
+
+  if (success && card) {
+    const headers = new Headers({ location: `/c/${card.slug}/view`, 'cache-control': 'no-store' });
+    headers.append(
+      'set-cookie',
+      serializeCookie(VIEW_COOKIE, issueViewToken({ slug: card.slug, pinVersion: card.pinVersion }), {
+        path: cardCookiePath(card.slug),
+        maxAge: VIEW_TTL_SECONDS,
+      }),
+    );
+    return new Response(null, { status: 303, headers });
+  }
+
+  error = label('pin.error');
+}
+
+// The switcher renders from the default set when the card is unknown, so the
+// page is byte-identical for a real card and a made-up slug (§6 layer 0).
+const languages = card ? cardLanguages(card) : [...DEFAULT_CARD_LANGUAGES];
+---
+
+<Responder lang={LANGUAGE_INFO[language].htmlLang} title={label('pin.title')}>
+  <h1>{label('pin.title')}</h1>
+  <p>{label('pin.prompt')}</p>
+
+  {error && <p class="error" role="alert">{error}</p>}
+
+  <form method="post">
+    <label for="pin">{label('pin.label')}</label>
+    <input
+      id="pin"
+      name="pin"
+      type="text"
+      inputmode="numeric"
+      maxlength="7"
+      autocomplete="one-time-code"
+      required
+      autofocus
+    />
+    <button type="submit">{label('pin.submit')}</button>
+  </form>
+
+  {
+    languages.length > 1 && (
+      <div class="langs">
+        <form method="post" action={`/c/${requestedSlug}/lang`}>
+          {languages.map((code) => (
+            <button type="submit" name="lang" value={code} aria-current={code === language}>
+              {LANGUAGE_INFO[code].endonym}
+            </button>
+          ))}
+        </form>
+      </div>
+    )
+  }
+</Responder>

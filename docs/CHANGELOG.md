@@ -4,6 +4,39 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — Phase 5: the responder page
+
+The product works end to end locally: sign up → card → contacts → switch on →
+scan-equivalent URL → PIN → localised contacts, with zero JavaScript.
+
+- Guest plane: `/c/{slug}` (localised PIN form), `/c/{slug}/view`,
+  `POST /c/{slug}/hide`, `POST /c/{slug}/lang`. All four are plain form POSTs.
+- Signed 15-minute view cookie scoped to `Path=/c/{slug}`, validated against the
+  database on every view, so a rotated PIN or a deactivated card takes effect
+  immediately (ADR-015). An unrelated card's cookie cannot open it — verified.
+- Layer 0 of §6: unknown slugs and deactivated cards get a decoy Argon2
+  verification, a 350 ms response floor, and a page that is byte-identical to a
+  real card's apart from the slug the responder typed.
+- The card's language set drives the page: `lang` cookie → `Accept-Language` ∩
+  card set → card default. Verified in Russian in a real browser.
+- Audit rows and counters (D25): successes increment `scan_count` and set
+  `last_viewed_at`, failures only set `last_failed_at`; both write a
+  `scan_attempts` row with an HMAC'd IP prefix, never a raw address.
+- One request per page: CSS is inlined, no webfont, no image, no third-party
+  anything. The view renders in ~3.4 KB uncompressed.
+
+### Fix — two defects the responder work surfaced
+
+- A POST with no body or an unknown content type got a **500** out of the PIN
+  page: `request.formData()` throws. Every form now parses through `readForm()`
+  (ADR-014).
+- The PIN page rendered its language switcher only for a real card, so the page
+  **differed** for an unknown slug — an existence oracle. It now renders the
+  default set when there is no card.
+- Also: Astro's global `checkOrigin` 403'd the guest form whenever `Origin` was
+  absent, which is a real webview behaviour. It is off; our own same-origin
+  checks cover the owner plane (ADR-014).
+
 ### Feature — Phase 4: contacts and notes
 
 - Contact CRUD (`src/lib/contacts.ts`) with every value encrypted before it

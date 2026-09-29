@@ -10,10 +10,11 @@ pass has happened yet.
 
 ## Status
 
-Phase 4 — the owner side works end to end: signup, login, a card with a
-reprintable six-digit PIN, encrypted contacts with spoken languages, notes, and a
-card you can switch on. The responder page — what a stranger sees after scanning —
-is next. See [docs/CHANGELOG.md](docs/CHANGELOG.md) and [docs/PLAN.md](docs/PLAN.md).
+Phase 5 — the whole journey works locally: sign up, build a card, add encrypted
+contacts, switch it on, then open the card URL and enter the PIN. The responder
+page is localised into the card's own languages, renders in one request, and runs
+no JavaScript at all. Next: rate limiting on the PIN endpoint, then printing. See
+[docs/CHANGELOG.md](docs/CHANGELOG.md) and [docs/PLAN.md](docs/PLAN.md).
 
 ## How it works
 

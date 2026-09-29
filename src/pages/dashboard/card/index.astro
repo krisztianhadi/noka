@@ -2,13 +2,14 @@
 import Plain from '@/layouts/Plain.astro';
 import { cardUrl, contactCount, createCardForOwner, getCardForOwner, revealPin } from '@/lib/cards';
 import { ownerRedirect } from '@/lib/dashboard';
-import { field, forbidden, isSameOrigin } from '@/lib/http';
+import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
 
 const owner = Astro.locals.owner!;
 
 if (Astro.request.method === 'POST') {
   if (!isSameOrigin(Astro.request)) return forbidden();
-  const form = await Astro.request.formData();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
   if (field(form, 'action') === 'create') await createCardForOwner(owner.id);
   return ownerRedirect('/dashboard/card?notice=created');
 }

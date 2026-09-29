@@ -5,9 +5,11 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phase 4** — accounts, the card, contacts and notes all work, and a card
-can be switched on. The responder page (what a stranger sees after scanning) is
-next; see [CHANGELOG.md](CHANGELOG.md).
+Status: **Phase 5** — the product works end to end locally. Sign up, build a
+card, add contacts, switch it on, then open the card URL and enter the PIN: the
+responder page is localised, renders in one request and runs no JavaScript. Rate
+limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
+[CHANGELOG.md](CHANGELOG.md).
 
 | Document | What it is |
 |---|---|

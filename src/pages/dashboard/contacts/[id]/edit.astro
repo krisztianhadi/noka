@@ -4,7 +4,7 @@ import Plain from '@/layouts/Plain.astro';
 import { getCardForOwner } from '@/lib/cards';
 import { getContact, updateContact } from '@/lib/contacts';
 import { contactErrorMessage, ownerRedirect } from '@/lib/dashboard';
-import { field, forbidden, isSameOrigin } from '@/lib/http';
+import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
 
 const owner = Astro.locals.owner!;
 const card = await getCardForOwner(owner.id);
@@ -19,7 +19,8 @@ let error = '';
 if (Astro.request.method === 'POST') {
   if (!isSameOrigin(Astro.request)) return forbidden();
 
-  const form = await Astro.request.formData();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
   const result = await updateContact(card.id, id, {
     name: field(form, 'name'),
     relation: field(form, 'relation'),

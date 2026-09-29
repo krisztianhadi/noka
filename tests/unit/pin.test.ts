@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ARGON2_OPTIONS, PIN_LENGTH, decoyVerify, formatPin, generatePin, hashPin, verifyPin } from '@/lib/pin';
+import {
+  ARGON2_OPTIONS,
+  PIN_LENGTH,
+  decoyVerify,
+  formatPin,
+  generatePin,
+  hashPin,
+  normalizePinInput,
+  verifyPin,
+} from '@/lib/pin';
 
 describe('generatePin', () => {
   it('is exactly six digits', () => {
@@ -69,5 +78,21 @@ describe('formatPin', () => {
 
   it('leaves anything unexpected alone', () => {
     expect(formatPin('1234')).toBe('1234');
+  });
+});
+
+describe('normalizePinInput', () => {
+  it('accepts the PIN as it is printed, spacing and all', () => {
+    expect(normalizePinInput('123 456')).toBe('123456');
+    expect(normalizePinInput('123-456')).toBe('123456');
+    expect(normalizePinInput(' 123456 ')).toBe('123456');
+    expect(normalizePinInput('123\u00a0456')).toBe('123456');
+  });
+
+  it('rejects anything that is not six digits', () => {
+    expect(normalizePinInput('12345')).toBe('');
+    expect(normalizePinInput('1234567')).toBe('');
+    expect(normalizePinInput('abcdef')).toBe('');
+    expect(normalizePinInput('')).toBe('');
   });
 });
