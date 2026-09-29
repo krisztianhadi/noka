@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
 import { closeDb, getDb } from '@/db/client';
+import { createCardForOwner, getCardForOwner } from '@/lib/cards';
 import { users } from '@/db/auth-schema';
 import {
   createContact,
@@ -63,7 +64,7 @@ describeDb('contacts and notes', () => {
       name: SECRET_NAME,
       relation: 'spouse',
       phoneE164: SECRET_PHONE,
-      phoneDisplay: SECRET_PHONE,
+      phoneDisplay: '+66 899 999 999',
       spokenLanguages: ['en', 'th'],
       channels: ['call', 'whatsapp'],
       sortOrder: 0,
@@ -146,7 +147,7 @@ describeDb('contacts and notes', () => {
 
     expect(await getContact(second, created.contact.id)).toBeNull();
     expect(await listContacts(second)).toHaveLength(0);
-    await expect(deleteContact(second, created.contact.id, { hasCard: false })).resolves.toEqual({
+    await expect(deleteContact(second, created.contact.id)).resolves.toEqual({
       ok: false,
       error: 'not-found',
     });
@@ -166,27 +167,29 @@ describeDb('contacts and notes', () => {
     expect((await listContacts(owner)).map((contact) => contact.name)).toEqual(['Third', 'First', 'Second']);
   });
 
-  it('refuses to delete the last contact while a card exists', async () => {
+  it('deletes the card along with the last contact', async () => {
     const owner = await freshOwner();
     const solo = await createContact(owner, input());
     if (!solo.ok) return;
 
-    // No card yet: deleting the last one is allowed.
-    await expect(deleteContact(owner, solo.contact.id, { hasCard: true })).resolves.toEqual({
-      ok: false,
-      error: 'last-contact-while-card-exists',
-    });
-    await expect(deleteContact(owner, solo.contact.id, { hasCard: false })).resolves.toEqual({ ok: true });
+    // No card yet: nothing else to remove.
+    await expect(deleteContact(owner, solo.contact.id)).resolves.toEqual({ ok: true, cardDeleted: false });
 
-    // With a card and two contacts, deleting one is fine.
-    const a = await createContact(owner, input({ name: 'A' }));
-    const b = await createContact(owner, input({ name: 'B' }));
-    if (!a.ok || !b.ok) return;
-    await expect(deleteContact(owner, a.contact.id, { hasCard: true })).resolves.toEqual({ ok: true });
-    await expect(deleteContact(owner, b.contact.id, { hasCard: true })).resolves.toEqual({
-      ok: false,
-      error: 'last-contact-while-card-exists',
-    });
+    // With a card, deleting the last contact takes the card with it — a printed
+    // card behind an empty page is worse than no card (his call, 2026-09-29).
+    const first = await createContact(owner, input({ name: 'A' }));
+    const second = await createContact(owner, input({ name: 'B' }));
+    if (!first.ok || !second.ok) return;
+
+    const card = await createCardForOwner(owner);
+    expect(card.ok).toBe(true);
+
+    await expect(deleteContact(owner, first.contact.id)).resolves.toEqual({ ok: true, cardDeleted: false });
+    expect(await getCardForOwner(owner)).not.toBeNull();
+
+    await expect(deleteContact(owner, second.contact.id)).resolves.toEqual({ ok: true, cardDeleted: true });
+    expect(await getCardForOwner(owner)).toBeNull();
+    expect(await listContacts(owner)).toHaveLength(0);
   });
 
   it('round-trips the notes and stores them encrypted', async () => {

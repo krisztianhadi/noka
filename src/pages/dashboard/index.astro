@@ -3,18 +3,18 @@ import ContactForm from '@/components/ContactForm.astro';
 import Plain from '@/layouts/Plain.astro';
 import { MESSAGES } from '@/i18n/catalogue';
 import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
-import { channelHref, isButtonChannel, type Channel } from '@/lib/channels';
+import { channelHref, type Channel } from '@/lib/channels';
 import { getNotes, listContacts } from '@/lib/contacts';
 import { errorMessage, noticeMessage } from '@/lib/dashboard';
+import { toggleTarget, type Theme } from '@/lib/theme';
 
 /**
- * The whole owner plane on one page, in his order (2026-09-29): contacts, then
- * notes, then the card. Sub-pages are gone; editing happens inline.
- *
- * A card is the last thing, because it is the only thing that depends on the
- * others existing.
+ * The whole owner plane on one page, in his order: contacts, then notes, then the
+ * card. Everything else is a menu at the top (settings, dark mode, sign out) or a
+ * kebab beside the thing it acts on, so nothing competes with the content.
  */
 const owner = Astro.locals.owner!;
+const theme = Astro.locals.theme;
 
 const contacts = await listContacts(owner.id);
 const notes = await getNotes(owner.id);
@@ -27,99 +27,164 @@ const error = errorMessage(Astro.url.searchParams.get('error'));
 const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
 const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
 const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
-void isButtonChannel;
+
+const nextTheme: Theme = toggleTarget(theme);
+
+const LAST_CONTACT_WARNING =
+  'This is your last contact, so deleting it will also delete your card and its link. ' +
+  'Anyone holding the printed card will find nothing until you add a contact and make a new card. Delete both?';
+const NEW_CARD_WARNING =
+  'A new card gets a new link and a new PIN. Anything already printed stops working immediately. Continue?';
+const DELETE_CARD_WARNING =
+  'Delete the card and its link? Your contacts and notes are kept, and you can make a new card later.';
 ---
 
-<Plain title="Your noka">
-  <p class="brand"><a href="/">noka</a></p>
-  <h1>Hello, {owner.name}</h1>
-  <p class="account">Signed in as {owner.email}</p>
+<Plain title="Your noka" theme={theme}>
+  <header class="top">
+    <a class="brand" href="/dashboard">noka</a>
+    <details class="menu">
+      <summary aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+      </summary>
+      <div class="panel">
+        <p class="who">
+          <strong>{owner.name}</strong>
+          <span class="muted">{owner.email}</span>
+        </p>
+        <a href="/dashboard/settings">Settings</a>
+        <form method="post" action="/dashboard/theme">
+          <input type="hidden" name="theme" value={nextTheme} />
+          <button type="submit" class="menu-item">
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
+        </form>
+        <form method="post" action="/logout">
+          <button type="submit" class="menu-item">Sign out</button>
+        </form>
+      </div>
+    </details>
+  </header>
 
   {notice && <p class="notice" role="status">{notice}</p>}
   {error && <p class="error" role="alert">{error}</p>}
 
   <section id="contacts">
-    <h2>Emergency contacts</h2>
+    <h1>Emergency contacts</h1>
 
     {
       contacts.length === 0 ? (
-        <p>
-          Nobody yet. Add the person a responder should call — the card cannot exist until at least one
-          contact does.
-        </p>
+        <p>Nobody yet. Add the person a responder should call — a card cannot exist until one does.</p>
       ) : (
         <ul class="contacts">
           {contacts.map((contact) => (
             <li>
-              <p class="who">
-                <strong>{contact.name}</strong> — {relationLabel(contact.relation)}
-              </p>
-              <p class="phone">{contact.phoneDisplay}</p>
-              <p class="tags">
-                {contact.channels.map((channel: Channel) => (
-                  <span class="tag">{channelLabel(channel)}</span>
-                ))}
-                {contact.spokenLanguages.map((code) => (
-                  <span class="tag muted">{spokenLabel(code)}</span>
-                ))}
-              </p>
-              <p class="actions">
-                <a href={channelHref('call', contact.phoneE164)}>Call</a>
-                {contact.channels.includes('whatsapp') && (
-                  <>
-                    {' · '}
-                    <a href={channelHref('whatsapp', contact.phoneE164)}>WhatsApp</a>
-                  </>
-                )}
-                {contact.channels.includes('sms') && (
-                  <>
-                    {' · '}
-                    <a href={channelHref('sms', contact.phoneE164)}>Text</a>
-                  </>
-                )}
-              </p>
+              <div class="who-row">
+                <div>
+                  <p class="name">{contact.name}</p>
+                  <p class="meta">{relationLabel(contact.relation)}</p>
+                  <p class="meta">
+                    <a class="phone" href={channelHref('call', contact.phoneE164)}>
+                      {contact.phoneDisplay}
+                    </a>
+                  </p>
+                  <p class="tags">
+                    {contact.channels.map((channel: Channel) => (
+                      <span class="tag">{channelLabel(channel)}</span>
+                    ))}
+                    {contact.spokenLanguages.map((code) => (
+                      <span class="tag muted">{spokenLabel(code)}</span>
+                    ))}
+                  </p>
+                </div>
 
-              <details>
-                <summary>Edit {contact.name}</summary>
-                <ContactForm
-                  action={`/dashboard/contacts/${contact.id}/edit`}
-                  contact={contact}
-                  submitLabel="Save changes"
-                  compact
-                />
-              </details>
-
-              <form method="post" action={`/dashboard/contacts/${contact.id}/delete`}>
-                <button type="submit" class="danger">
-                  Delete
-                </button>
-              </form>
+                <details class="menu kebab">
+                  <summary aria-label={`Actions for ${contact.name}`}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                      <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
+                      <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+                      <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
+                    </svg>
+                  </summary>
+                  <div class="panel">
+                    <details class="submenu">
+                      <summary class="menu-item">Edit contact</summary>
+                      <ContactForm
+                        action={`/dashboard/contacts/${contact.id}/edit`}
+                        contact={contact}
+                        submitLabel="Save changes"
+                      />
+                    </details>
+                    <form
+                      method="post"
+                      action={`/dashboard/contacts/${contact.id}/delete`}
+                      data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : 'Delete this contact?'}
+                    >
+                      <button type="submit" class="menu-item danger">Delete contact</button>
+                    </form>
+                  </div>
+                </details>
+              </div>
             </li>
           ))}
         </ul>
       )
     }
 
-    <h3>Add a contact</h3>
-    <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+    {
+      contacts.length === 0 ? (
+        <>
+          <h2>Add a contact</h2>
+          <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+        </>
+      ) : (
+        <details class="add-more">
+          <summary class="button secondary">Add another contact</summary>
+          <ContactForm action="/dashboard/contacts/new" submitLabel="Add contact" />
+        </details>
+      )
+    }
   </section>
 
   <section id="notes-section">
     <h2>Notes for a responder</h2>
-    <p>Free text, shown under the contacts on the card page. Where the medication is, who to call first.</p>
     <form method="post" action="/dashboard/notes">
       <label for="notes">Notes</label>
       <textarea id="notes" name="notes" rows="5" maxlength="2000">{notes}</textarea>
       <p class="note">
-        Do not enter anyone else's data, and nothing you would not want a stranger holding your card to
-        read.
+        Shown under the contacts on the card page. Where the medication is, who to call first. Do not
+        enter anyone else's data.
       </p>
       <button type="submit">Save notes</button>
     </form>
   </section>
 
   <section id="card">
-    <h2>Your card</h2>
+    <div class="section-head">
+      <h2>Your card</h2>
+      {
+        card && (
+          <details class="menu kebab">
+            <summary aria-label="Card actions">
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
+                <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
+                <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
+              </svg>
+            </summary>
+            <div class="panel">
+              <form method="post" action="/dashboard/card/new" data-confirm={NEW_CARD_WARNING}>
+                <button type="submit" class="menu-item">New card</button>
+              </form>
+              <form method="post" action="/dashboard/card/delete" data-confirm={DELETE_CARD_WARNING}>
+                <button type="submit" class="menu-item danger">Delete card</button>
+              </form>
+            </div>
+          </details>
+        )
+      }
+    </div>
 
     {
       !card && (
@@ -144,127 +209,237 @@ void isButtonChannel;
           <img
             class="preview"
             src="/dashboard/card/card.jpg"
-            alt="Your card: name, QR code, PIN and instructions"
-            width="632"
+            alt="Your card: the five-language heading, a QR code, the PIN and the noka wordmark"
+            width="638"
             height="1011"
           />
           <p class="pin">{revealPin(card)}</p>
-          <p class="url">{cardUrl(card)}</p>
+          <p class="url">
+            <a href={cardUrl(card)}>{cardUrl(card)}</a>
+          </p>
           <p class="note">
             Print the image above, or copy the link and PIN by hand. The QR points at the link.
-          </p>
-
-          <form method="post" action="/dashboard/card/new">
-            <button type="submit">New card</button>
-          </form>
-          <p class="note">
-            A new card means a new link and a new PIN. Anything already printed stops working immediately.
           </p>
         </>
       )
     }
   </section>
 
-  <form method="post" action="/logout">
-    <button type="submit">Sign out</button>
-  </form>
-</Plain>
+  <script>
+    // Two things the browser does better than the server: confirm a destructive
+    // action, and space a phone number as it is typed. The dashboard may run
+    // JavaScript; the responder page never does (D6).
+    for (const form of document.querySelectorAll<HTMLFormElement>('form[data-confirm]')) {
+      form.addEventListener('submit', (event) => {
+        const message = form.dataset.confirm ?? 'Are you sure?';
+        if (!window.confirm(message)) event.preventDefault();
+      });
+    }
 
-<style>
-  .account {
-    margin: 0 0 1rem;
-    color: #555;
-    font-size: 0.95rem;
-  }
-  .brand {
-    margin: 0 0 0.5rem;
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
-  }
-  section {
-    margin-top: 2.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #ddd;
-  }
-  h2 {
-    margin-top: 0;
-    font-size: 1.35rem;
-  }
-  h3 {
-    margin-bottom: 0.25rem;
-    font-size: 1.1rem;
-  }
-  .contacts {
-    list-style: none;
-    padding: 0;
-  }
-  .contacts > li {
-    padding: 1rem 0;
-    border-bottom: 1px solid #eee;
-  }
-  .who {
-    margin: 0;
-    font-size: 1.15rem;
-  }
-  .phone {
-    margin: 0.2rem 0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .tags {
-    margin: 0.3rem 0;
-  }
-  .tag {
-    display: inline-block;
-    margin: 0 0.35rem 0.35rem 0;
-    padding: 0.1rem 0.45rem;
-    font-size: 0.85rem;
-    border: 1px solid #999;
-    border-radius: 999px;
-  }
-  .tag.muted {
-    border-style: dashed;
-    color: #555;
-  }
-  .actions {
-    margin: 0.4rem 0 0.6rem;
-  }
-  .danger {
-    background: #fff;
-    color: #7a0000;
-    border-color: #a00;
-    font-weight: 500;
-    margin-top: 0;
-  }
-  .notice {
-    padding: 0.7rem 0.8rem;
-    border: 2px solid #0a5;
-    border-radius: 4px;
-    color: #064;
-  }
-  .preview {
-    display: block;
-    width: min(100%, 260px);
-    height: auto;
-    margin: 0.5rem 0 1rem;
-    border: 1px solid #ccc;
-  }
-  .pin {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 2rem;
-    letter-spacing: 0.12em;
-    margin: 0.25rem 0;
-  }
-  .url {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    word-break: break-all;
-    margin: 0.25rem 0;
-  }
-  textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.7rem;
-    font: inherit;
-    border: 1px solid #666;
-    border-radius: 4px;
-  }
-</style>
+    for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {
+      input.addEventListener('input', () => {
+        // A leading "+" means the number is already international: keep it, because
+        // the server treats a full E.164 number as typed.
+        const international = input.value.trimStart().startsWith('+');
+        const digits = input.value.replace(/[^\d]/g, '').slice(0, 15);
+        input.value = `${international ? '+' : ''}${digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()}`;
+      });
+    }
+  </script>
+
+  <style>
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+    .menu {
+      position: relative;
+    }
+    .menu > summary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      cursor: pointer;
+      list-style: none;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--fg);
+    }
+    .menu > summary::-webkit-details-marker {
+      display: none;
+    }
+    .menu[open] > summary {
+      border-color: var(--line-strong);
+    }
+    .panel {
+      position: absolute;
+      right: 0;
+      z-index: 10;
+      min-width: 16rem;
+      margin-top: 0.35rem;
+      padding: 0.6rem;
+      background: var(--bg-raised);
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+    }
+    .panel .who {
+      display: flex;
+      flex-direction: column;
+      margin: 0 0 0.5rem;
+      padding: 0 0.5rem 0.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel .muted {
+      color: var(--fg-muted);
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+    .panel a,
+    .menu-item {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0.5rem;
+      font: inherit;
+      font-weight: 500;
+      text-align: left;
+      color: var(--fg);
+      background: none;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .panel a:hover,
+    .menu-item:hover {
+      background: var(--line);
+    }
+    .menu-item.danger {
+      color: var(--danger);
+    }
+    .submenu > summary {
+      list-style: none;
+    }
+    .submenu > summary::-webkit-details-marker {
+      display: none;
+    }
+    .submenu .contact-form {
+      padding: 0.5rem;
+    }
+    section {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-head h2 {
+      margin: 0;
+    }
+    h1 {
+      font-size: 1.5rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+    }
+    .contacts {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .contacts > li {
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .who-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .name {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .meta {
+      margin: 0.15rem 0;
+      color: var(--fg-muted);
+    }
+    .phone {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--fg);
+    }
+    .tags {
+      margin: 0.4rem 0 0;
+    }
+    .tag {
+      display: inline-block;
+      margin: 0 0.3rem 0.3rem 0;
+      padding: 0.1rem 0.45rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+    }
+    .tag.muted {
+      border-style: dashed;
+      color: var(--fg-muted);
+    }
+    .add-more {
+      margin-top: 1.25rem;
+    }
+    .add-more > summary {
+      list-style: none;
+      margin-top: 0;
+    }
+    .add-more > summary::-webkit-details-marker {
+      display: none;
+    }
+    .add-more[open] > summary {
+      margin-bottom: 0.5rem;
+    }
+    .preview {
+      display: block;
+      width: min(100%, 260px);
+      height: auto;
+      margin: 0.75rem 0 1rem;
+      border: 1px solid var(--line);
+    }
+    .pin {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 2rem;
+      letter-spacing: 0.12em;
+      margin: 0.25rem 0;
+    }
+    .url {
+      margin: 0.25rem 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      word-break: break-all;
+    }
+    .url a {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    @media (max-width: 30rem) {
+      .panel {
+        min-width: min(16rem, 80vw);
+      }
+    }
+  </style>
+</Plain>

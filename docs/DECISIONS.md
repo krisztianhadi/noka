@@ -88,6 +88,51 @@ version dropped the card link first, which would have destroyed the attribution 
 existing contact. The dev database was rebuilt from empty to verify the fresh-install path.
 The delete guard (ADR-020) is now expressed as "last contact while a card exists".
 
+### ADR-023 — Account settings are immediate, because there is no mailer yet
+
+**Context.** He asked for settings (password, email) behind the header menu. better-auth's
+`changeEmail` refuses outright without a working verification-email flow — "Verification
+email isn't enabled" — and Resend is not configured yet.
+
+**Decision.** The email is updated directly on the `users` row, immediately, with the unique
+index as the only gate, and the change is reported as `email-taken` if it collides. The
+password changes through `changePassword` with `revokeOtherSessions`, which in practice ends
+**every** session including the current one; the owner is sent to `/login` with a notice
+saying exactly that.
+
+**Why.** A settings page that silently does nothing is worse than one that acts without a
+confirmation link, and the account is protected by a password the owner already holds. The
+trade-off is recorded rather than hidden: an email change confirms nothing, so a mistyped
+address can lock the account out of its own recovery. When the Resend domain exists this
+becomes a verification flow, and this ADR is superseded.
+
+### ADR-024 — Dark mode is a cookie, not a client-side theme
+
+**Decision.** The choice lives in a cookie, is read in middleware, and arrives as
+`<html data-theme>`. No cookie means "follow the system", via
+`@media (prefers-color-scheme: dark)`. Colours are CSS custom properties on `:root`.
+
+**Why.** A server-rendered theme has no flash of the wrong colours and no hydration step, and
+it works with JavaScript disabled. The toggle is a POST that sets the cookie and redirects
+back — the same pattern as every other action on the page.
+
+**Consequences.** The responder page does not read the cookie: a stranger holding a card gets
+the light, high-contrast page every time (ADR-021's audience is not the owner).
+
+### ADR-025 — Every channel is a button, and the number is on the page
+
+**Context.** His second test pass: "make all contact options a button on the responders card"
+and "display the phone number on the responders card" — superseding ADR-021's split between
+buttons and an "available on" line.
+
+**Decision.** All six channels render as buttons, in the contact's own channel order, with
+**Call** keeping the solid style and the rest outlined. The stored number is shown, grouped,
+directly under the relation, and is itself a `tel:` link.
+
+**Why.** A button is the thing a panicking person aims at; a wall of text is not. Keeping the
+number visible also means the page works when a link scheme does not, which is the honest
+failure mode for Signal, Telegram and Viber on desktop.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

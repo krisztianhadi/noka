@@ -1,46 +1,68 @@
 ---
-import type { Channel } from '@/lib/channels';
+import { COUNTRIES, DEFAULT_COUNTRY, flagFor } from '@/lib/countries';
 import { MESSAGES } from '@/i18n/catalogue';
 import type { ContactView } from '@/lib/contacts';
 import { RELATIONS } from '@/lib/relations';
 import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
 
 /**
- * One form for creating and editing a contact, used inline on the dashboard.
+ * The one contact form, used inline for adding and editing.
  *
- * Channel order is his (2026-09-29): WhatsApp first because it is the one people
- * ask for, then the rest, with **phone call on by default** and text message
- * present because a responder may be unable to speak or hear.
+ * Order and defaults are his (2026-09-29): **call comes first** in the channel list
+ * and is on by default; the spoken languages are visible rather than folded away;
+ * the country is a flag picker so the number ends up in E.164 without anyone having
+ * to know what E.164 means.
  */
 interface Props {
   action: string;
   contact?: ContactView | null;
   error?: string;
   submitLabel?: string;
-  compact?: boolean;
+  /** Which country the picker starts on, when the contact has no stored number yet. */
+  defaultCountry?: string;
 }
 
-const { action, contact = null, error = '', submitLabel = 'Save contact', compact = false } = Astro.props;
+const {
+  action,
+  contact = null,
+  error = '',
+  submitLabel = 'Save contact',
+  defaultCountry = DEFAULT_COUNTRY,
+} = Astro.props;
 
-const CHANNEL_ORDER: Channel[] = ['whatsapp', 'signal', 'telegram', 'viber', 'call', 'sms'];
+const CHANNEL_ORDER = ['call', 'whatsapp', 'sms', 'signal', 'telegram', 'viber'] as const;
 const selectedChannels = new Set(contact?.channels ?? ['call']);
+const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
 const relationLabel = (relation: string) => MESSAGES.en[`relation.${relation}` as 'relation.spouse'];
 const channelLabel = (channel: string) => MESSAGES.en[`channel.${channel}` as 'channel.call'];
 const spokenLabel = (code: string) => MESSAGES.en[`spoken.${code}` as 'spoken.en'];
-const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
+
+/**
+ * A stored number is split back into country + national part where the dial code
+ * matches the list, so editing never double-prefixes it.
+ */
+const stored = contact?.phoneE164 ?? '';
+const matched = COUNTRIES.filter((country) => stored.startsWith(`+${country.dial}`)).sort(
+  (a, b) => b.dial.length - a.dial.length,
+)[0];
+const country = matched?.code ?? defaultCountry;
+const nationalRaw = matched ? stored.slice(matched.dial.length + 1) : stored.replace(/^\+/, '');
+// Grouped exactly as the input mask does, so an edit shows what typing produces.
+const national = nationalRaw.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+const uid = contact?.id ?? 'new';
 ---
 
 {error && <p class="error" role="alert">{error}</p>}
 
-<form method="post" action={action} class={compact ? 'compact' : ''}>
+<form method="post" action={action} class="contact-form">
   <div class="row">
     <div>
-      <label for={`name-${contact?.id ?? 'new'}`}>Name</label>
-      <input id={`name-${contact?.id ?? 'new'}`} name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
+      <label for={`name-${uid}`}>Name</label>
+      <input id={`name-${uid}`} name="name" type="text" required maxlength="80" value={contact?.name ?? ''} />
     </div>
     <div>
-      <label for={`relation-${contact?.id ?? 'new'}`}>Relation</label>
-      <select id={`relation-${contact?.id ?? 'new'}`} name="relation" required>
+      <label for={`relation-${uid}`}>Relation</label>
+      <select id={`relation-${uid}`} name="relation" required>
         {
           RELATIONS.map((relation) => (
             <option value={relation} selected={contact?.relation === relation}>
@@ -52,23 +74,37 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
     </div>
   </div>
 
-  <label for={`phone-${contact?.id ?? 'new'}`}>Phone</label>
-  <input
-    id={`phone-${contact?.id ?? 'new'}`}
-    name="phone"
-    type="tel"
-    required
-    autocomplete="tel"
-    placeholder="+66 812 345 678"
-    value={contact?.phoneDisplay ?? ''}
-  />
+  <label for={`phone-${uid}`}>Phone</label>
+  <div class="phone-row">
+    <select name="country" id={`country-${uid}`} aria-label="Country calling code">
+      {
+        COUNTRIES.map((entry) => (
+          <option value={entry.code} selected={entry.code === country}>
+            {flagFor(entry.code)} +{entry.dial} {entry.name}
+          </option>
+        ))
+      }
+    </select>
+    <input
+      id={`phone-${uid}`}
+      name="phone"
+      type="tel"
+      required
+      autocomplete="tel-national"
+      inputmode="tel"
+      data-phone
+      placeholder="81 234 5678"
+      value={national}
+    />
+  </div>
   <p class="note">
-    International format with a country code — <code>+66</code> for Thailand, <code>+36</code> for Hungary.
+    Pick the country and type the local number — a leading zero is dropped for you. A full
+    international number typed with <code>+</code> is used exactly as typed.
   </p>
 
   <fieldset>
     <legend>How can they be reached?</legend>
-    <div class="channels">
+    <div class="chips">
       {
         CHANNEL_ORDER.map((channel) => (
           <label class="chip">
@@ -79,13 +115,13 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
       }
     </div>
     <p class="note">
-      A responder sees these as buttons or as a line of "available on". Text message matters: it is what
+      Every one of these becomes a button on the card page. Text message matters: it is what
       works when someone cannot speak or hear.
     </p>
   </fieldset>
 
-  <details>
-    <summary>Languages this contact speaks</summary>
+  <fieldset>
+    <legend>Languages this contact speaks</legend>
     <div class="chips">
       {
         SPOKEN_LANGUAGES.map((code) => (
@@ -96,7 +132,7 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
         ))
       }
     </div>
-  </details>
+  </fieldset>
 
   <button type="submit">{submitLabel}</button>
 </form>
@@ -109,9 +145,10 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
     box-sizing: border-box;
     padding: 0.6rem 0.7rem;
     font: inherit;
-    border: 1px solid #666;
+    color: var(--fg);
+    background: var(--bg-raised);
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
-    background: #fff;
   }
   .row {
     display: flex;
@@ -121,22 +158,26 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
   .row > div {
     flex: 1 1 12rem;
   }
+  .phone-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .phone-row select {
+    flex: 0 0 auto;
+    max-width: 15rem;
+  }
+  .phone-row input {
+    flex: 1 1 auto;
+  }
   fieldset {
     margin-top: 1rem;
-    border: 1px solid #999;
+    border: 1px solid var(--line);
     border-radius: 4px;
   }
   legend {
     font-weight: 600;
   }
-  details {
-    margin-top: 0.75rem;
-  }
-  summary {
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .channels,
   .chips {
     display: flex;
     flex-wrap: wrap;
@@ -151,5 +192,13 @@ const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
   }
   .chip input {
     width: auto;
+  }
+  @media (max-width: 30rem) {
+    .phone-row {
+      flex-direction: column;
+    }
+    .phone-row select {
+      max-width: none;
+    }
   }
 </style>

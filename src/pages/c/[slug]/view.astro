@@ -2,7 +2,7 @@
 import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
-import { channelHref, isButtonChannel } from '@/lib/channels';
+import { channelHref } from '@/lib/channels';
 import {
   cardLanguages,
   findCardBySlug,
@@ -54,28 +54,16 @@ const offered = cardLanguages(card);
               .join(' · ')}
           </div>
         )}
-        <div class="actions">
-          {contact.channels
-            .filter((channel) => isButtonChannel(channel))
-            .map((channel) => (
-              <a class={channel} href={channelHref(channel, contact.phoneE164)}>
-                {label(`channel.${channel}` as MessageKey)}
-              </a>
-            ))}
+        <div class="phone">
+          <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
         </div>
-        {contact.channels.some((channel) => !isButtonChannel(channel)) && (
-          <div class="on-channels">
-            {label('view.on')}:{' '}
-            {contact.channels
-              .filter((channel) => !isButtonChannel(channel))
-              .map((channel, index) => (
-                <>
-                  {index > 0 && ' · '}
-                  <a href={channelHref(channel, contact.phoneE164)}>{label(`channel.${channel}` as MessageKey)}</a>
-                </>
-              ))}
-          </div>
-        )}
+        <div class="actions">
+          {contact.channels.map((channel) => (
+            <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
+              {label(`channel.${channel}` as MessageKey)}
+            </a>
+          ))}
+        </div>
       </div>
     ))
   }

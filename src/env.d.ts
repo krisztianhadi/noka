@@ -11,5 +11,7 @@ declare namespace App {
       name: string;
       email: string;
     };
+    /** The owner's theme choice, read from the cookie during rendering (src/lib/theme.ts). */
+    theme: 'light' | 'dark' | null;
   }
 }

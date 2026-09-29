@@ -46,6 +46,16 @@ At Phase 1 it splits per the project-docs method: decisions and threat model →
 17. **Contacts and notes belong to the owner**, not to the card, so the order is
     contacts → notes → card and reissuing a card never touches the people. The
     owner plane is a single page. → ADR-022, ADR-020, §7
+18. **Deleting the last contact deletes the card with it**, after a confirmation
+    that says so. A printed card behind an empty page is worse than no card.
+    → ADR-020
+19. **Every channel is a button on the responder page**, and the number is shown.
+    → ADR-025, supersedes the button/line split of ADR-021
+20. **Account settings are immediate** (email on the row, password through the
+    library), because there is no mailer to confirm an address with yet; a
+    password change ends every session. → ADR-023
+21. **Dark mode is server-rendered from a cookie**, and the responder page never
+    reads it. → ADR-024
 
 ---
 

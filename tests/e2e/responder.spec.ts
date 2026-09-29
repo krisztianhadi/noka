@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { addContact, makeCard, saveNotes, signUp } from './helpers';
+import { acceptDialogs, addContact, kebab, makeCard, saveNotes, signUp } from './helpers';
 
 /**
  * The whole point of the product (§3, §9): a stranger with the card and the PIN
@@ -12,7 +12,8 @@ async function owner(page: import('@playwright/test').Page): Promise<{ slug: str
   await signUp(page);
   await addContact(page, {
     name: 'Maria Silva',
-    phone: '+66 812 345 678',
+    country: 'TH',
+    phone: '812 345 678',
     channels: ['whatsapp', 'sms', 'signal'],
     spoken: ['th', 'en'],
   });
@@ -54,8 +55,10 @@ test.describe('the responder page', () => {
     await expect(guest.locator('a.call')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('a.whatsapp')).toHaveAttribute('href', 'https://wa.me/66812345678');
     await expect(guest.locator('a.sms')).toHaveAttribute('href', 'sms:+66812345678');
-    // The less reliable schemes are named, not turned into buttons.
-    await expect(guest.locator('.on-channels a[href^="https://signal.me"]')).toContainText('Signal');
+    // Every channel is a button, and the number itself is on the page.
+    await expect(guest.locator('a.signal')).toContainText('Signal');
+    await expect(guest.locator('.phone')).toHaveText('+66 812 345 678');
+    await expect(guest.locator('.phone a')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('.notes')).toContainText('Allergic to penicillin.');
 
     // Still zero JavaScript, still one request.
@@ -103,6 +106,8 @@ test.describe('the responder page', () => {
     await guest.getByRole('button', { name: 'Open' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
 
+    acceptDialogs(page);
+    await kebab(page, '#card').click();
     await page.getByRole('button', { name: 'New card' }).click();
     await expect(page).toHaveURL(/notice=card-renewed$/);
 

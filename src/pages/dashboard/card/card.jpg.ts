@@ -17,7 +17,6 @@ export const GET: APIRoute = async ({ locals }) => {
   if (!card) return new Response('No card', { status: 404 });
 
   const jpeg = await cardJpeg({
-    ownerName: owner.name,
     pin: revealPin(card),
     url: cardUrl(card),
     languages: card.languages,

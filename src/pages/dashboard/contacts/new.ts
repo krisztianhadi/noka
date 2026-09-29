@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { createContact } from '@/lib/contacts';
 import { dashboardBack } from '@/lib/dashboard';
 import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
+import { composePhone } from '@/lib/phone';
 
 /** Add a contact. The first thing an owner does, before any card exists. */
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -14,7 +15,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const result = await createContact(locals.owner.id, {
     name: field(form, 'name'),
     relation: field(form, 'relation'),
-    phone: field(form, 'phone'),
+    phone: composePhone(field(form, 'country'), field(form, 'phone')),
     spokenLanguages: form.getAll('spoken').map(String),
     channels: form.getAll('channels').map(String),
   });

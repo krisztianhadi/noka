@@ -26,7 +26,7 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 10:27Z (c9b83d6c) | 2026-09-29 15:20+07 | 434 | 903,893 | 148,953,088 | 424,030 | $1.1112 | $0.2813 | $1.3924 |
+| 2026-09-29 08:20Z → 11:24Z (c9b83d6c) | 2026-09-29 15:20+07 | 652 | 1,791,936 | 219,499,392 | 592,964 | $1.1112 | $0.7275 | $1.8386 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
@@ -34,7 +34,9 @@ the figures below are read rather than remembered:
 | 2026-09-29 10:01Z → 10:01Z (967dd579) | 2026-09-29 17:01+07 | 2 | 15,149 | 14,336 | 2,107 | $0.0000 | $0.0036 | $0.0036 |
 | 2026-09-29 10:09Z → 10:09Z (14dc1a86) | 2026-09-29 17:09+07 | 3 | 30,974 | 31,232 | 2,893 | $0.0000 | $0.0065 | $0.0065 |
 | 2026-09-29 10:21Z → 10:21Z (4762b4ef) | 2026-09-29 17:21+07 | 3 | 32,367 | 34,048 | 3,458 | $0.0000 | $0.0070 | $0.0070 |
-| **Total** | | **451** | **1,049,756** | **149,110,656** | **447,019** | **$1.1426** | **$0.3017** | **$1.4443** |
+| 2026-09-29 10:28Z → 10:28Z (5b9c7522) | 2026-09-29 17:28+07 | 4 | 31,527 | 50,816 | 4,291 | $0.0000 | $0.0075 | $0.0075 |
+| 2026-09-29 10:57Z → 10:57Z (5fe5cb5e) | 2026-09-29 17:57+07 | 3 | 31,106 | 32,768 | 4,171 | $0.0000 | $0.0073 | $0.0073 |
+| **Total** | | **676** | **2,000,432** | **219,740,544** | **624,415** | **$1.1426** | **$0.7626** | **$1.9053** |
 
 _Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-29 by `node scripts/usage-report.mjs --write`._
 <!-- usage:end -->
@@ -54,16 +56,16 @@ rates. The error is on the safe side.
 <!-- blocks:start -->
 | Block | What it built | Turns | Tokens | Est. USD | Share |
 |---|---|---:|---:|---:|---:|
-| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 14% |
-| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 12% |
-| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 7% |
-| 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 4% |
-| 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 7% |
-| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 15% |
-| 09:08–10:27Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 169 | 86,424,060 | $0.5700 | 41% |
-| **Total** | | **434** | **150,281,011** | **$1.3924** | |
+| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 11% |
+| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 9% |
+| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 5% |
+| 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 3% |
+| 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 5% |
+| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 12% |
+| 09:08–11:24Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 387 | 158,027,341 | $1.0162 | 55% |
+| **Total** | | **652** | **221,884,292** | **$1.8386** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.0519 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.0666 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the

@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getAuth } from '@/lib/auth';
+import { readTheme, THEME_COOKIE } from '@/lib/theme';
 
 /**
  * Security headers of §5, applied centrally so a new route cannot forget them,
@@ -25,6 +26,9 @@ const RESPONDER_CSP = [
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname;
+
+  // Read before anything renders: the theme must be right in the first paint.
+  context.locals.theme = readTheme(context.cookies.get(THEME_COOKIE)?.value);
 
   if (path.startsWith('/dashboard')) {
     const session = await getAuth().api.getSession({ headers: context.request.headers });

@@ -1,24 +1,30 @@
 import QRCode from 'qrcode';
 import sharp from 'sharp';
+import { cardPhrasesFor } from '@/i18n/card-copy';
 
 /**
- * The card artwork, as a JPEG the dashboard can show immediately.
+ * The card artwork: portrait ISO ID-1 (53.98 × 85.60 mm) at 300 dpi, drawn to his
+ * mockup (2026-09-29).
  *
- * A proper print pipeline (exact ID-1 page boxes, an A4 sheet, an engraving
- * vector) is Phase 7. What exists here is the honest first step he asked for: a
- * card-shaped image, generated server-side from the same data the QR uses, so the
- * owner can see what they are about to print.
+ * Top to bottom: the heading in every language the card carries, a rule, the SCAN
+ * line in the same languages, the QR, a rule, the PIN, and the wordmark. No owner
+ * name — a card lying in a wallet should not announce whose it is, and the page
+ * behind the QR says it anyway.
  *
- * Geometry: ID-1 is 85.60 × 53.98 mm. This draws it at 300 dpi, portrait artwork
- * on a landscape card (his choice, D30 pending) — 632 × 1011 px.
+ * The deterministic, exact-size PDF and the A4 sheet are Phase 7; this is the image
+ * the dashboard shows and the owner can already print.
  */
 const DPI = 300;
 const MM = DPI / 25.4;
-export const CARD_WIDTH_PX = Math.round(53.98 * MM);
-export const CARD_HEIGHT_PX = Math.round(85.6 * MM);
+export const CARD_WIDTH_PX = Math.round(53.98 * MM); // 638
+export const CARD_HEIGHT_PX = Math.round(85.6 * MM); // 1011
+
+const INK = '#111111';
+const SOFT = '#555555';
+const LINE = '#d8d8d8';
+const FONT = 'Helvetica, Arial, "Noto Sans", sans-serif';
 
 export interface CardArtworkInput {
-  ownerName: string;
   pin: string;
   url: string;
   languages: string[];
@@ -30,7 +36,6 @@ function escapeXml(value: string): string {
   );
 }
 
-/** The QR as an SVG group, scaled to fit the given box. */
 async function qrSvg(url: string, size: number): Promise<string> {
   const svg = await QRCode.toString(url, {
     type: 'svg',
@@ -41,32 +46,57 @@ async function qrSvg(url: string, size: number): Promise<string> {
   return svg.replace(/<\?xml.*?\?>/, '').trim();
 }
 
-/** The whole card as SVG: header, QR, PIN, instructions. */
-export async function cardSvg(input: CardArtworkInput): Promise<string> {
-  const qrBox = Math.round(CARD_WIDTH_PX * 0.68);
-  const qr = await qrSvg(input.url, qrBox);
-  const pinSpaced = input.pin;
-  const languages = input.languages.join(' · ').toUpperCase();
+function centeredText(
+  value: string,
+  y: number,
+  size: number,
+  options: { weight?: string; fill?: string; tracking?: number } = {},
+): string {
+  const { weight = 'normal', fill = INK, tracking = 0 } = options;
+  return `<text x="${CARD_WIDTH_PX / 2}" y="${y}" text-anchor="middle" font-family='${FONT}' font-size="${size}" font-weight="${weight}" letter-spacing="${tracking}" fill="${fill}">${escapeXml(value)}</text>`;
+}
 
-  const qrX = Math.round((CARD_WIDTH_PX - qrBox) / 2);
-  const rule = (y: number) =>
-    `<line x1="56" y1="${y}" x2="${CARD_WIDTH_PX - 56}" y2="${y}" stroke="#e2e2e2" stroke-width="2"/>`;
+export async function cardSvg(input: CardArtworkInput): Promise<string> {
+  const phrases = cardPhrasesFor(input.languages);
+
+  // Heading: every language, stacked, with CJK a touch larger to hold the same weight.
+  const heading: string[] = [];
+  let y = 74;
+  for (const phrase of phrases) {
+    const size = Math.round(26 * (phrase.scale ?? 1));
+    heading.push(centeredText(phrase.title, y, size, { weight: 'bold' }));
+    y += Math.round(38 * (phrase.scale ?? 1));
+  }
+
+  const ruleY = y + 4;
+  // The SCAN line wraps after the third language, as in the mockup.
+  const scanWords = phrases.map((phrase) => phrase.scan.toUpperCase());
+  const firstLine = scanWords.slice(0, 3).join('  ·  ');
+  const secondLine = scanWords.slice(3).join('  ·  ');
+
+  const qrSize = 360;
+  const qr = await qrSvg(input.url, qrSize);
+  const qrX = Math.round((CARD_WIDTH_PX - qrSize) / 2);
+  const qrY = ruleY + (secondLine ? 66 : 42);
+
+  const pinRuleY = qrY + qrSize + 44;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_WIDTH_PX}" height="${CARD_HEIGHT_PX}" viewBox="0 0 ${CARD_WIDTH_PX} ${CARD_HEIGHT_PX}">
   <rect width="100%" height="100%" fill="#ffffff"/>
-  <text x="${CARD_WIDTH_PX / 2}" y="76" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="bold" fill="#111111">${escapeXml(input.ownerName || 'EMERGENCY')}</text>
-  ${rule(98)}
-  <g transform="translate(${qrX}, 126)">${qr}</g>
-  <text x="${CARD_WIDTH_PX / 2}" y="622" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="28" letter-spacing="4" fill="#555555">PIN</text>
-  <text x="${CARD_WIDTH_PX / 2}" y="706" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="92" font-weight="bold" letter-spacing="8" fill="#000000">${escapeXml(pinSpaced)}</text>
-  ${rule(748)}
-  <text x="${CARD_WIDTH_PX / 2}" y="860" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="26" letter-spacing="3" fill="#333333">SCAN · PIN · CALL</text>
-  <text x="${CARD_WIDTH_PX / 2}" y="918" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#666666">${escapeXml(languages)}</text>
+  ${heading.join('\n  ')}
+  <line x1="${CARD_WIDTH_PX / 2 - 44}" y1="${ruleY}" x2="${CARD_WIDTH_PX / 2 + 44}" y2="${ruleY}" stroke="${LINE}" stroke-width="3"/>
+  ${centeredText(firstLine, ruleY + 32, 19, { fill: SOFT, tracking: 1 })}
+  ${secondLine ? centeredText(secondLine, ruleY + 58, 19, { fill: SOFT, tracking: 1 }) : ''}
+  <g transform="translate(${qrX}, ${qrY})">${qr}</g>
+  <line x1="${CARD_WIDTH_PX / 2 - 44}" y1="${pinRuleY}" x2="${CARD_WIDTH_PX / 2 + 44}" y2="${pinRuleY}" stroke="${LINE}" stroke-width="3"/>
+  ${centeredText('PIN', pinRuleY + 40, 20, { fill: SOFT, tracking: 6 })}
+  ${centeredText(input.pin, pinRuleY + 116, 72, { weight: 'bold', tracking: 14 })}
+  ${centeredText('noka', CARD_HEIGHT_PX - 34, 24, { fill: '#b9b9b9', tracking: 4 })}
 </svg>`;
 }
 
 /** The same artwork as a JPEG, which is what the dashboard displays. */
 export async function cardJpeg(input: CardArtworkInput): Promise<Buffer> {
   const svg = await cardSvg(input);
-  return sharp(Buffer.from(svg)).jpeg({ quality: 92, chromaSubsampling: '4:4:4' }).toBuffer();
+  return sharp(Buffer.from(svg)).jpeg({ quality: 94, chromaSubsampling: '4:4:4' }).toBuffer();
 }

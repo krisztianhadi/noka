@@ -1,6 +1,6 @@
 import { and, asc, eq } from 'drizzle-orm';
 import { getDb } from '@/db/client';
-import { contacts, ownerNotes } from '@/db/schema';
+import { cards, contacts, ownerNotes } from '@/db/schema';
 import { sanitizeChannels, type Channel } from '@/lib/channels';
 import { CONTACT_PAYLOAD_SCHEMA, type ContactPayload } from '@/lib/contact-payload';
 import { activeKeyVersion, decryptJson, encryptJson } from '@/lib/crypto';
@@ -42,7 +42,9 @@ export type PhoneError = Extract<PhoneResult, { ok: false }>['reason'];
 export type ContactError = 'name-required' | 'relation-invalid' | 'not-found' | PhoneError;
 
 export type ContactResult = { ok: true; contact: ContactView } | { ok: false; error: ContactError };
-export type DeleteResult = { ok: true } | { ok: false; error: 'not-found' | 'last-contact-while-card-exists' };
+export type DeleteResult =
+  | { ok: true; cardDeleted: boolean }
+  | { ok: false; error: 'not-found' };
 
 type ContactRow = typeof contacts.$inferSelect;
 
@@ -83,6 +85,14 @@ function validate(
   const phone = normalizePhone(input.phone);
   if (!phone.ok) return { ok: false, error: phone.reason };
   return { ok: true, phone: { e164: phone.e164, display: phone.display } };
+}
+
+/** Local import-free delete: keeps the dependency between the two modules one-way. */
+async function deleteOwnerCard(userId: string): Promise<boolean> {
+  const [card] = await getDb().select().from(cards).where(eq(cards.userId, userId)).limit(1);
+  if (!card) return false;
+  await getDb().delete(cards).where(eq(cards.id, card.id));
+  return true;
 }
 
 export async function listContacts(userId: string): Promise<ContactView[]> {
@@ -144,21 +154,21 @@ export async function updateContact(userId: string, id: string, input: ContactIn
 }
 
 /**
- * A card with nobody behind it is worse than no card, so the last contact cannot
- * be deleted while a card exists. There is no switch-off any more: the way out is
- * to edit the contact, or to add someone else first.
+ * Delete a contact. If it was the last one, the card goes with it (his call,
+ * 2026-09-29): a printed card behind an empty page is worse than no card, so the
+ * two disappear together — and the UI says so before it happens.
+ *
+ * The owner is never left in a half state: with no contacts there is no card, and
+ * making one again needs a new contact first.
  */
-export async function deleteContact(
-  userId: string,
-  id: string,
-  options: { hasCard: boolean },
-): Promise<DeleteResult> {
+export async function deleteContact(userId: string, id: string): Promise<DeleteResult> {
   const existing = await listContacts(userId);
   if (!existing.some((contact) => contact.id === id)) return { ok: false, error: 'not-found' };
-  if (options.hasCard && existing.length <= 1) return { ok: false, error: 'last-contact-while-card-exists' };
 
   await getDb().delete(contacts).where(and(eq(contacts.userId, userId), eq(contacts.id, id)));
-  return { ok: true };
+
+  if (existing.length > 1) return { ok: true, cardDeleted: false };
+  return { ok: true, cardDeleted: await deleteOwnerCard(userId) };
 }
 
 export async function reorderContacts(userId: string, orderedIds: readonly string[]): Promise<void> {

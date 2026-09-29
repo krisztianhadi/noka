@@ -1,9 +1,12 @@
 ---
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
+import { noticeMessage } from '@/lib/dashboard';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
 
 let error = '';
+// A password change redirects here, so the reason for the sign-out is on the page.
+const notice = noticeMessage(Astro.url.searchParams.get('notice'));
 let email = '';
 
 if (Astro.request.method === 'POST') {
@@ -28,6 +31,7 @@ if (Astro.request.method === 'POST') {
 <Plain title="Sign in to noka">
   <h1>Sign in</h1>
 
+  {notice && <p class="notice" role="status">{notice}</p>}
   {error && <p class="error" role="alert">{error}</p>}
 
   <form method="post">

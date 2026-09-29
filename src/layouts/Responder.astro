@@ -118,6 +118,14 @@ const { lang, title } = Astro.props;
     margin: 2rem 0 0.5rem;
     font-size: 1.25rem;
   }
+  .phone {
+    margin-top: 0.35rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.05rem;
+  }
+  .phone a {
+    color: inherit;
+  }
   .speaks,
   .on-channels {
     margin-top: 0.35rem;
@@ -139,16 +147,16 @@ const { lang, title } = Astro.props;
     font-size: 1.125rem;
     font-weight: 700;
     text-decoration: none;
+    color: #111;
+    background: #fff;
     border: 2px solid #111;
     border-radius: 6px;
   }
-  .call {
+  /* A phone call is the one thing that always works: it keeps the solid button,
+     every other channel is outlined beside it. */
+  .actions a.call {
     color: #fff;
     background: #111;
-  }
-  .whatsapp {
-    color: #111;
-    background: #fff;
   }
   .notes {
     margin-top: 2rem;

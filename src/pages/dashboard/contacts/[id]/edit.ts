@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getContact, updateContact } from '@/lib/contacts';
 import { dashboardBack } from '@/lib/dashboard';
 import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
+import { composePhone } from '@/lib/phone';
 
 export const POST: APIRoute = async ({ request, locals, params }) => {
   if (!isSameOrigin(request)) return forbidden();
@@ -16,7 +17,7 @@ export const POST: APIRoute = async ({ request, locals, params }) => {
   const result = await updateContact(locals.owner.id, id, {
     name: field(form, 'name'),
     relation: field(form, 'relation'),
-    phone: field(form, 'phone'),
+    phone: composePhone(field(form, 'country'), field(form, 'phone')),
     spokenLanguages: form.getAll('spoken').map(String),
     channels: form.getAll('channels').map(String),
   });

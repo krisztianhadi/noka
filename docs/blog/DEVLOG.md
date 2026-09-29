@@ -278,3 +278,33 @@ silence.
 channels, with text message because a responder may be unable to speak or hear),
 ADR-022 (contacts and notes belong to the owner). The plan's contract grows items 15–17,
 so the document and the code still agree.
+
+## 2026-09-29 — He drew the card, and the dashboard grew a menu
+
+**What happened.** Twelve changes from his second test pass: the kebab menus, the header and
+its hamburger, dark mode, settings, the country picker with flags, the card artwork redrawn
+from a mockup he brought, and one rule change that matters more than the styling.
+
+**The rule change.** Deleting the last contact now deletes the card with it, after a
+confirmation that says exactly that. The old behaviour refused the deletion and told him to
+add someone else first, which is the kind of instruction that leaves a person stuck. The
+confirmation is the honest place for the consequence: it names what is lost before it is lost.
+
+**Three bugs the tests caught, all mine.**
+1. Every settings result was redirecting to `/dashboard`, so a failed password change lost the
+   form. Settings keeps its own page now.
+2. The phone input mask stripped the `+`, so a deliberately international number got the
+   selected country prepended to it: `+36 30 123 4567` became `+66 363 0123 4567`.
+3. `changeEmail` does not work without a mailer — it throws "Verification email isn't
+   enabled". Found by probing the API directly instead of guessing from the error key.
+
+**What I had to accept as a design decision.** A password change ends *every* session,
+including the current one. I could have reached for a re-login, but the honest reading is that
+this is the safe direction for the one action people take when they think someone else has
+their password. So the notice now says so plainly, and the owner signs in again.
+
+**Where the printable stands.** His mockup is implemented: five-language heading, the SCAN
+line, the QR, the PIN, the wordmark, no owner name. The CJK and Cyrillic text renders from
+system fonts on this machine, which is fine here and *not* fine in the Alpine container — the
+vendored font is still Phase 7's job, and I would rather say that now than discover it on a
+print.

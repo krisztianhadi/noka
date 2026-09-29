@@ -1,9 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 
 /**
- * Shared setup for the browser tests. The owner plane is one page now, so these
- * helpers read as the flow an owner actually performs: sign up, add people, make
- * a card.
+ * Shared setup for the browser tests. The owner plane is one page, so these read
+ * as the flow an owner performs: sign up, add people, make a card.
  */
 export const PASSWORD = 'correct-horse-battery';
 
@@ -19,31 +18,54 @@ export async function signUp(page: Page): Promise<string> {
   return email;
 }
 
+/** Every destructive action asks first; tests accept unless they assert on the message. */
+export function acceptDialogs(page: Page, seen: string[] = []): void {
+  page.on('dialog', (dialog) => {
+    seen.push(dialog.message());
+    void dialog.accept();
+  });
+}
+
 export interface ContactSpec {
   name: string;
   relation?: string;
+  /** ISO code, as the picker shows it. */
+  country?: string;
+  /** The national part only. */
   phone: string;
   channels?: string[];
   spoken?: string[];
 }
 
+/** The add form: open for the first contact, folded behind a button afterwards. */
+export async function openAddForm(page: Page): Promise<void> {
+  const disclosure = page.locator('.add-more');
+  if (await disclosure.count()) {
+    const open = await disclosure.evaluate((element) => (element as HTMLDetailsElement).open);
+    if (!open) await disclosure.locator('> summary').click();
+  }
+}
+
 export async function addContact(page: Page, spec: ContactSpec): Promise<void> {
-  // The add form is the last one inside the contacts section.
-  const form = page.locator('#contacts form').last();
+  await openAddForm(page);
+  const form = page.locator('form[action="/dashboard/contacts/new"]').last();
   await form.locator('input[name="name"]').fill(spec.name);
   await form.locator('select[name="relation"]').selectOption(spec.relation ?? 'spouse');
+  await form.locator('select[name="country"]').selectOption(spec.country ?? 'TH');
   await form.locator('input[name="phone"]').fill(spec.phone);
   for (const channel of spec.channels ?? []) {
     await form.locator(`input[name="channels"][value="${channel}"]`).check();
   }
-  // The spoken languages live behind a disclosure: open it like a person would,
-  // rather than reaching into a hidden control.
-  if ((spec.spoken ?? []).length > 0) await form.locator('summary').first().click();
   for (const code of spec.spoken ?? []) {
     await form.locator(`input[name="spoken"][value="${code}"]`).check();
   }
   await form.getByRole('button', { name: 'Add contact' }).click();
   await expect(page).toHaveURL(/notice=contact-added$/);
+}
+
+/** The kebab beside a contact, or the one in the card section. */
+export function kebab(page: Page, scope = 'body') {
+  return page.locator(`${scope} .kebab > summary`).first();
 }
 
 export async function makeCard(page: Page): Promise<{ slug: string; pin: string }> {
@@ -54,7 +76,7 @@ export async function makeCard(page: Page): Promise<{ slug: string; pin: string 
 
 export async function readCard(page: Page): Promise<{ slug: string; pin: string }> {
   const pin = ((await page.locator('.pin').textContent()) ?? '').trim();
-  const url = ((await page.locator('.url').textContent()) ?? '').trim();
+  const url = ((await page.locator('.url a').textContent()) ?? '').trim();
   return { slug: url.split('/').pop() ?? '', pin };
 }
 

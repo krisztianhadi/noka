@@ -92,6 +92,17 @@ export async function newCardForOwner(userId: string): Promise<CardResult> {
   return updated ? { ok: true, card: updated } : { ok: false, reason: 'no-card' };
 }
 
+/**
+ * Delete the card outright. The contacts and notes stay: they belong to the owner
+ * (ADR-022), so this is only the loss of the printed card and its link.
+ */
+export async function deleteCardForOwner(userId: string): Promise<boolean> {
+  const card = await getCardForOwner(userId);
+  if (!card) return false;
+  await getDb().delete(cards).where(eq(cards.id, card.id));
+  return true;
+}
+
 /** The owner's own PIN, decrypted for display and reprinting (D9). */
 export function revealPin(card: Card): string {
   const { value } = decryptJson<{ pin: string }>(card.pinEncrypted, contactKeyring());

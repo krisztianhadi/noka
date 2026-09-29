@@ -21,9 +21,8 @@ export function contactErrorMessage(error: string): string {
 }
 
 const DELETE_ERRORS: Record<string, string> = {
-  'last-contact-while-card-exists':
-    'The last contact cannot be deleted while a card exists — a card with nobody behind it is worse than no card. Add someone else first.',
   'not-found': 'That contact no longer exists.',
+  'no-card': 'There is no card to delete.',
 };
 
 export function deleteErrorMessage(error: string): string {
@@ -39,13 +38,28 @@ export function cardErrorMessage(error: string): string {
   return CARD_ERRORS[error] ?? 'Something went wrong with the card.';
 }
 
+const SETTINGS_ERRORS: Record<string, string> = {
+  'not-signed-in': 'Your session expired. Sign in again.',
+  'email-invalid': 'That does not look like an email address.',
+  'email-taken': 'That email is already in use, or the change was refused.',
+  'password-too-short': 'The new password needs at least 10 characters.',
+  'password-mismatch': 'The two new passwords do not match.',
+  'password-wrong': 'The current password is not right.',
+};
+
 const NOTICES: Record<string, string> = {
   'contact-added': 'Contact added.',
   'contact-updated': 'Contact updated.',
   'contact-deleted': 'Contact deleted.',
+  'contact-and-card-deleted':
+    'Contact and card deleted. Add a contact and make a new card when you are ready.',
   'notes-saved': 'Notes saved.',
   'card-made': 'Card made. Print it, or copy the link and PIN.',
   'card-renewed': 'New card. The previous one stopped working immediately.',
+  'card-deleted': 'Card deleted. Your contacts and notes are untouched. A new card can be made any time.',
+  'email-changed': 'Email updated.',
+  'email-unchanged': 'That is already your email.',
+  'password-changed': 'Password updated, and every session was signed out. Sign in with the new password.',
 };
 
 export function noticeMessage(notice: string | null): string {
@@ -55,7 +69,7 @@ export function noticeMessage(notice: string | null): string {
 /** One resolver for the dashboard, whatever produced the key. */
 export function errorMessage(error: string | null): string {
   if (!error) return '';
-  for (const map of [CONTACT_ERRORS, DELETE_ERRORS, CARD_ERRORS]) {
+  for (const map of [CONTACT_ERRORS, DELETE_ERRORS, CARD_ERRORS, SETTINGS_ERRORS]) {
     const message = (map as Record<string, string>)[error];
     if (message) return message;
   }
@@ -69,4 +83,9 @@ export function ownerRedirect(location: string): Response {
 /** Where the dashboard sends the owner back to, with a result to show. */
 export function dashboardBack(key: 'notice' | 'error', value: string): Response {
   return ownerRedirect(`/dashboard?${key}=${encodeURIComponent(value)}`);
+}
+
+/** Settings keeps its own page: a failed password change should not lose the form. */
+export function settingsBack(key: 'notice' | 'error', value: string): Response {
+  return ownerRedirect(`/dashboard/settings?${key}=${encodeURIComponent(value)}`);
 }

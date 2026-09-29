@@ -20,8 +20,11 @@ test.describe('owner plane', () => {
     await page.getByRole('button', { name: 'Create account' }).click();
 
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.locator('h1')).toContainText('Hello, Krisztian');
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(page.locator('h1')).toHaveText('Emergency contacts');
+    // The account lives in the top menu now.
+    await page.locator('header .menu > summary').click();
+    await expect(page.locator('header .panel')).toContainText('Krisztian');
+    await expect(page.locator('header .panel')).toContainText(email);
 
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/login$/);

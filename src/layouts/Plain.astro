@@ -1,14 +1,20 @@
 ---
+import { toggleTarget } from '@/lib/theme';
+
 interface Props {
   title: string;
   lang?: string;
+  /** Omitted on the responder page: a stranger always gets the light card. */
+  theme?: 'light' | 'dark' | null;
 }
 
-const { title, lang = 'en' } = Astro.props;
+const { title, lang = 'en', theme = null } = Astro.props;
+const dataTheme = theme ?? undefined;
+void toggleTarget;
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-theme={dataTheme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,54 +29,141 @@ const { title, lang = 'en' } = Astro.props;
 </html>
 
 <style is:global>
+  /* Tokens first, so every component can be written against them. Light is the
+     default; `data-theme` wins over the system, and no attribute follows it. */
   :root {
     color-scheme: light;
+    --bg: #fff;
+    --bg-raised: #fff;
+    --fg: #111;
+    --fg-muted: #555;
+    --line: #e5e5e5;
+    --line-strong: #666;
+    --notice: #064;
+    --notice-line: #0a5;
+    --danger: #7a0000;
+    --danger-line: #a00;
+    --accent: #111;
+  }
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #14161a;
+    --bg-raised: #1c1f24;
+    --fg: #ecedef;
+    --fg-muted: #a6abb3;
+    --line: #2b2f36;
+    --line-strong: #4a5058;
+    --notice: #7fe0b0;
+    --notice-line: #1d7a52;
+    --danger: #ff9c9c;
+    --danger-line: #b4463f;
+    --accent: #ecedef;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      color-scheme: dark;
+      --bg: #14161a;
+      --bg-raised: #1c1f24;
+      --fg: #ecedef;
+      --fg-muted: #a6abb3;
+      --line: #2b2f36;
+      --line-strong: #4a5058;
+      --notice: #7fe0b0;
+      --notice-line: #1d7a52;
+      --danger: #ff9c9c;
+      --danger-line: #b4463f;
+      --accent: #ecedef;
+    }
   }
   body {
     margin: 0 auto;
     max-width: 34rem;
     padding: 2rem 1.25rem 4rem;
     font: 1.125rem/1.6 system-ui, sans-serif;
-    color: #111;
-    background: #fff;
+    color: var(--fg);
+    background: var(--bg);
   }
   h1 {
     font-size: 1.6rem;
     margin-top: 0;
+  }
+  a {
+    color: inherit;
   }
   label {
     display: block;
     margin: 1rem 0 0.25rem;
     font-weight: 600;
   }
-  input {
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='tel'],
+  textarea,
+  select {
     width: 100%;
     box-sizing: border-box;
     padding: 0.6rem 0.7rem;
     font: inherit;
-    border: 1px solid #666;
+    color: var(--fg);
+    background: var(--bg-raised);
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
-  }
-  button {
-    margin-top: 1.25rem;
-    padding: 0.7rem 1.1rem;
-    font: inherit;
-    font-weight: 600;
-    color: #fff;
-    background: #111;
-    border: 1px solid #111;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .error {
-    margin-top: 1rem;
-    padding: 0.7rem 0.8rem;
-    border: 2px solid #a00;
-    border-radius: 4px;
-    color: #7a0000;
   }
   .note {
-    margin-top: 1.25rem;
+    margin: 0.35rem 0 0;
+    color: var(--fg-muted);
     font-size: 0.95rem;
+  }
+  .notice {
+    padding: 0.7rem 0.8rem;
+    border: 2px solid var(--notice-line);
+    border-radius: 4px;
+    color: var(--notice);
+  }
+  button,
+  .button {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 0.6rem 1.1rem;
+    font: inherit;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  button.secondary,
+  .button.secondary {
+    color: var(--fg);
+    background: transparent;
+    border-color: var(--line-strong);
+  }
+  button.danger,
+  .button.danger {
+    color: var(--danger);
+    background: transparent;
+    border-color: var(--danger-line);
+  }
+  button.danger.solid {
+    color: var(--bg);
+    background: var(--danger-line);
+    border-color: var(--danger-line);
+  }
+  .error {
+    padding: 0.7rem 0.8rem;
+    border: 2px solid var(--danger-line);
+    border-radius: 4px;
+    color: var(--danger);
+  }
+  code {
+    font-size: 0.95em;
   }
 </style>

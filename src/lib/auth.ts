@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { getConfig } from '@/config';
@@ -58,4 +59,23 @@ let instance: Auth | undefined;
 export function getAuth(): Auth {
   instance ??= createAuth();
   return instance;
+}
+
+/**
+ * Better-auth's `changeEmail` requires a working verification-email flow, and there
+ * is no mailer until the Resend domain exists. So the owner's address is updated
+ * directly here, immediately and without a confirmation link (ADR-023). The unique
+ * index is what makes "already taken" an honest answer rather than a silent
+ * overwrite, and when the mailer lands this becomes a verification flow.
+ */
+export async function changeOwnerEmail(userId: string, newEmail: string): Promise<'ok' | 'taken'> {
+  try {
+    await getDb()
+      .update(users)
+      .set({ email: newEmail.toLowerCase(), emailVerified: false, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+    return 'ok';
+  } catch {
+    return 'taken';
+  }
 }
