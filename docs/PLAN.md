@@ -452,7 +452,8 @@ scan_attempts
   created_at
   INDEX (card_id, created_at DESC), INDEX (ip_prefix_hash, created_at DESC)
 
-rate_limits           -- owned by rate-limiter-flexible
+rate_limits           -- owned by rate-limiter-flexible; created by migration
+                      -- 0002, never by the library at runtime (ADR-016)
 ```
 
 Dropped from the spec: `failed_count` / `locked_until` on `cards` (superseded by

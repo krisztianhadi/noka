@@ -4,6 +4,41 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — Phase 0 spikes finished (rate limiter, PDF determinism)
+
+- `rate-limiter-flexible` with its Postgres store is wired up behind a five-line
+  adapter over the postgres.js client we already use, so the project has one
+  database driver, not two (ADR-016). `pg` was installed for the spike and
+  removed.
+- The `rate_limits` table comes from migration `0002_rate_limits.sql`: the store
+  creates it asynchronously and rejects every `consume()` until that resolves,
+  which the first responder would have hit.
+- Verified: 50 concurrent attempts on one key allow exactly `points` and refuse
+  the rest, with no lost updates; two instances share one counter. Recorded the
+  property that is easy to misread — the counter counts *attempts*, the window is
+  fixed from the first attempt and never extended, and `msBeforeNext` is what
+  `Retry-After` will use.
+- PDF determinism spiked (`scripts/spike-pdf.mjs`): two renders of the same page
+  are byte-identical, with and without an embedded subset font; no random `/ID`,
+  no implicit dates. Subsetting is the difference between 5.6 KB and 419 KB.
+  Recorded the two limits Phase 7 must respect — a `.ttc` CJK collection cannot
+  be subset, and determinism is per pdf-lib version and font bytes (ADR-017).
+- Tests: 5 hermetic PDF determinism cases and 6 rate-limiter store cases,
+  including the 50-way concurrency proof.
+
+### Feature — the production container is verified
+
+- `docker build` on `node:22-alpine` succeeds, and the running container serves
+  `/healthz` (database up), the responder page, and a full signup: the stored
+  password came back as `$argon2id$v=19`, which proves `@node-rs/argon2`'s musl
+  prebuild loads in the deploy target — the last open Phase 0 spike.
+- The image now installs **pnpm 11.24.0** (the version that wrote the lockfile)
+  instead of kaja's 10.12.1: pnpm 10 silently ignores `allowBuilds`, and kaja's
+  reason for pinning 10 (verify-deps-before-run in non-TTY) cannot apply here
+  because the container never invokes pnpm at runtime.
+- `.npmrc` is no longer copied into the image; it points pnpm's store at a
+  sandbox-local `.tmp` path.
+
 ### Feature — Phase 5: the responder page
 
 The product works end to end locally: sign up → card → contacts → switch on →

@@ -1,15 +1,18 @@
 # syntax=docker/dockerfile:1
 
 FROM node:22-alpine AS base
-# Pin pnpm deterministically — corepack can resolve "latest" (11.x), and
-# pnpm 11's verify-deps-before-run re-runs install at startup and fails on
-# unapproved build scripts in non-TTY. Node 22 ships npm, so install the
-# pinned version directly (proven in kaja and Ghosted).
-RUN npm install -g pnpm@10.12.1 && pnpm --version
+# Same pnpm as CI and the lockfile author. kaja pinned 10.12.1 to dodge pnpm
+# 11's verify-deps-before-run in non-TTY; this image never invokes pnpm at
+# runtime (the CMD runs node directly), so that failure mode cannot occur —
+# and pnpm 11 is the version that reads `allowBuilds` from pnpm-workspace.yaml.
+RUN npm install -g pnpm@11.24.0 && pnpm --version
 WORKDIR /app
+ENV CI=true
 
 FROM base AS deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# .npmrc is deliberately left out: it points pnpm's store at a local .tmp path
+# for this sandbox, which has no business inside the image.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
@@ -23,7 +26,6 @@ ENV NODE_ENV=production
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/.npmrc ./.npmrc
 COPY --from=builder /app/node_modules ./node_modules
 # keep only production deps; confirmModulesPurge=false skips the
 # interactive prompt (build must be non-TTY)

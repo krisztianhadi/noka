@@ -23,6 +23,12 @@ export function getDb(): PostgresJsDatabase<typeof fullSchema> {
   return database;
 }
 
+/** The raw postgres.js client — the rate limiter's store needs it (D12). */
+export function getSql(): ReturnType<typeof postgres> {
+  getDb();
+  return sql as ReturnType<typeof postgres>;
+}
+
 /** True when the database answers a trivial query — used by /healthz. */
 export async function pingDb(): Promise<boolean> {
   try {

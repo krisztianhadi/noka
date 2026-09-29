@@ -248,6 +248,60 @@ answers with its ordinary page.
   set, then the card's first language. A stale cookie falls through rather than
   erroring.
 
+### ADR-016 — the rate limiter's store, and what its counter actually counts
+
+`rate-limiter-flexible` 11.2.1 with its Postgres store (D12). Three things were
+decided by the Phase 0 spike:
+
+- **One database driver.** The store wants `query({text, values}) -> {rows}`; the
+  app already has postgres.js. A five-line adapter (`src/lib/limiter.ts`) is
+  cheaper than a second driver and a second connection pool. `pg` was installed
+  for the spike and removed again. `storeType: 'pool'` is required because the
+  store infers the client kind from the constructor name and a plain object has
+  none.
+- **The table comes from a migration** (`drizzle/0002_rate_limits.sql`), not from
+  the library at runtime. The store creates it asynchronously in its constructor
+  and rejects every `consume()` with "Table is not created yet" until that
+  resolves — a race the first responder would lose. After construction
+  `limiter.tableCreated = true` stops the redundant DDL.
+- **Verified atomicity:** 50 concurrent attempts on one key allow exactly
+  `points` and refuse the rest — no lost updates. Two instances share one
+  counter, as two replicas must.
+
+And one property worth writing down, because it is easy to misread:
+
+- **The counter counts attempts, not allowances.** Every `consume()` increments
+  it inside the same atomic upsert that decides the outcome, so after 50 attempts
+  against `points: 10` the stored value is 50. For a throttle that is the right
+  behaviour. It also means the counter is *not* a tally of successful unlocks —
+  that is `cards.scan_count` (D25) — and a dashboard must not present it as one.
+- **The window is fixed from the first attempt** and later attempts never extend
+  it, so hammering cannot push the owner's own retry further away. The refusals
+  carry `msBeforeNext`, which is what the `Retry-After` header will use.
+
+### ADR-017 — the printed card can be byte-deterministic (D16, D29)
+
+Phase 0 spike, run by `scripts/spike-pdf.mjs`, with the hermetic half kept as
+`tests/unit/pdf-determinism.test.ts`:
+
+- **Two renders of the same page are byte-identical** — with standard fonts and
+  with an embedded subset font. pdf-lib 1.17.1 writes no random `/ID` and no
+  timestamped `CreationDate`/`ModDate` unless asked; with the dates pinned it
+  stays deterministic.
+- **Subsetting is not optional:** the same page is 5.6 KB with a subset font and
+  419 KB without. §7's few-hundred-KB estimate is what no subsetting looks like.
+- **A variable Noto Sans subsets fine and stays deterministic**, so the
+  Latin+Cyrillic face may be a variable font.
+- **A `.ttc` collection fails** — `createSubset is not a function`. Phase 7 must
+  therefore vendor a **single-face** Noto Sans SC (and its Latin/Cyrillic
+  partner) into the repository instead of reading whatever the host has.
+- Determinism is per *(pdf-lib version, font file bytes)*. That is exactly why
+  D16 promises a reprint "byte-comparable **for the same card revision**", and
+  why the Phase 7 test must pin the library version and use the vendored fonts.
+- pdf-lib stamps its own `/Producer` at save time and ignores `setProducer`. It
+  is a constant, so it threatens nothing — but the printed PDF will advertise
+  pdf-lib.
+
 ## What is deliberately absent
 
 No client framework, no analytics on `/c/*`, no sponsor markup on `/c/*` or
