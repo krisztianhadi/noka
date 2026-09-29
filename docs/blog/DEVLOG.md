@@ -22,7 +22,7 @@ probably padding.
 - Making a PDF byte-identical is harder than it looks.
 - Designing for a stranger who is having the worst day of their week.
 - The licence decision nobody makes until a stranger asks to use the code.
-- Four cents for a card, forty-five for a font: what the cost log says about
+- Four cents for a card, fifty-four for a font: what the cost log says about
   where the money goes.
 - The cheapest mistake of the week: doing the work inside peak-pricing hours.
 
@@ -30,7 +30,7 @@ probably padding.
 
 - [2026-09-29-the-post-it-in-my-wallet.md](2026-09-29-the-post-it-in-my-wallet.md)
   — the product story, unpublished.
-- [2026-09-29-two-products-three-dollars.md](2026-09-29-two-products-three-dollars.md)
+- [2026-09-29-four-cents-for-a-card.md](2026-09-29-four-cents-for-a-card.md)
   — the cost story, unpublished, and the one the webchat calls the differentiator.
 
 ---
@@ -234,5 +234,8 @@ expensive in time, which is the budget that actually runs out.
 differentiator, because the public conversation is either "I made $50k in a
 weekend" or "AI is useless". The middle — cheap inference for grunt work, tokens
 as a real budget line, honest numbers — is the part almost nobody shows. So this
-becomes its own piece, separate from the product story: [Two products, three
-dollars](2026-09-29-two-products-three-dollars.md).
+becomes its own piece, separate from the product story:
+[Four cents for a card](2026-09-29-four-cents-for-a-card.md), and it is about this
+project only. Costs are never added up across projects: another project lost a
+month of session logs, so a combined total would silently under-report. The method
+is now the **project-costs** skill.

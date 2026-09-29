@@ -26,14 +26,15 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 10:20Z (c9b83d6c) | 2026-09-29 15:20+07 | 418 | 414,328 | 139,737,088 | 410,791 | $1.1112 | $0.1723 | $1.2834 |
+| 2026-09-29 08:20Z → 10:27Z (c9b83d6c) | 2026-09-29 15:20+07 | 434 | 903,893 | 148,953,088 | 424,030 | $1.1112 | $0.2813 | $1.3924 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
 | 2026-09-29 10:00Z → 10:00Z (0cc33cd9) | 2026-09-29 17:00+07 | 1 | 5,704 | 128 | 4,108 | $0.0000 | $0.0033 | $0.0033 |
 | 2026-09-29 10:01Z → 10:01Z (967dd579) | 2026-09-29 17:01+07 | 2 | 15,149 | 14,336 | 2,107 | $0.0000 | $0.0036 | $0.0036 |
 | 2026-09-29 10:09Z → 10:09Z (14dc1a86) | 2026-09-29 17:09+07 | 3 | 30,974 | 31,232 | 2,893 | $0.0000 | $0.0065 | $0.0065 |
-| **Total** | | **432** | **527,824** | **139,860,608** | **430,322** | **$1.1426** | **$0.1856** | **$1.3283** |
+| 2026-09-29 10:21Z → 10:21Z (4762b4ef) | 2026-09-29 17:21+07 | 3 | 32,367 | 34,048 | 3,458 | $0.0000 | $0.0070 | $0.0070 |
+| **Total** | | **451** | **1,049,756** | **149,110,656** | **447,019** | **$1.1426** | **$0.3017** | **$1.4443** |
 
 _Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-29 by `node scripts/usage-report.mjs --write`._
 <!-- usage:end -->
@@ -53,16 +54,16 @@ rates. The error is on the safe side.
 <!-- blocks:start -->
 | Block | What it built | Turns | Tokens | Est. USD | Share |
 |---|---|---:|---:|---:|---:|
-| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 15% |
-| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 13% |
-| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 8% |
+| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 14% |
+| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 12% |
+| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 7% |
 | 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 4% |
 | 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 7% |
-| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 17% |
-| 09:08–10:20Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 153 | 76,705,256 | $0.4610 | 36% |
-| **Total** | | **418** | **140,562,207** | **$1.2834** | |
+| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 15% |
+| 09:08–10:27Z (16:08+07) | Phase 0 spikes closed (limiter, PDF, container) + docs, licence, policy, costs | 169 | 86,424,060 | $0.5700 | 41% |
+| **Total** | | **434** | **150,281,011** | **$1.3924** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.0449 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.0519 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
@@ -123,21 +124,18 @@ inside peak is not worth scheduling around.
    responder page works and the PIN endpoint is not rate-limited yet. The plan
    sequenced it that way, and it is still the wrong feeling.
 
-## The same measurement, across projects
+## One project, one file
 
-`node scripts/usage-report.mjs --all` reads every workspace the harness has logged:
+`docs/COSTS.md` covers **noka only**. The script never reads another workspace's
+logs, and there is no cross-project total anywhere in this file.
 
-| Workspace | Sessions | Turns | Tokens | Est. USD |
-|---|---:|---:|---:|---:|
-| `~/Code/314` | 28 | 564 | 161,765,713 | $1.39 |
-| `~/Code/noka` | 7 | 425 | 136,666,671 | $1.31 |
-| `~/Code/nokard` (noka's earlier home) | 4 | 35 | 1,867,926 | $0.15 |
-| `~/Code/ghosted` | 5 | 80 | 5,868,068 | $0.07 |
-| **Total** | **44** | **1,104** | **306,168,378** | **$2.93** |
+That is not tidiness, it is accuracy. Session logs get lost — a month of work on a
+sibling project left no logs at all, so its true spend is unknown and any combined
+figure would silently under-report both projects. An honest per-project number
+beats a wrong aggregate.
 
-Two things this table is not. It is not the whole picture — it sees only this
-harness, not the free webchat that carried the thinking, and not any other tool.
-And it is not a bill: the only measured money is the ledger below.
+The method is packaged as the `project-costs` skill, so every project gets the same
+file, the same script and the same rules, with its own ledger.
 
 ## Balance ledger (actual USD)
 
@@ -149,10 +147,11 @@ And it is not a bill: the only measured money is the ledger below.
 _Only one balance recorded so far, so there is nothing to subtract yet. Run `--balance` again after the next block of work._
 <!-- ledger:end -->
 
-The ledger is sampled by hand — `node scripts/usage-report.mjs --balance "note"` —
-because the provider exposes a balance endpoint but no per-day spend endpoint. The
-difference between two samples is what was actually deducted, which beats any
-estimate built from token counts and a rate table.
+The ledger is sampled before and after a block of work —
+`node scripts/usage-report.mjs --balance "note"` — because the provider exposes a
+balance endpoint but no per-day spend endpoint. The difference between two samples
+is what was actually deducted, which beats any estimate built from token counts
+and a rate table.
 
 The baseline sample is dated today, so everything above it was **not yet measured**
 when the ledger opened: those rows are estimates and will stay estimates.
@@ -164,7 +163,6 @@ Everything after the last row is measured.
 node scripts/usage-report.mjs                              # print everything
 node scripts/usage-report.mjs --write                      # refresh the three blocks
 node scripts/usage-report.mjs --balance "end of phase 6"   # sample the balance, then --write
-node scripts/usage-report.mjs --all                        # every workspace
 ```
 
 ## What this file is not

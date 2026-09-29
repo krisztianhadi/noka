@@ -22,7 +22,7 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 | [COSTS.md](COSTS.md) | What the build costs: per-feature attribution, peak/off-peak timing, real USD ledger. |
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
 | [blog/2026-09-29-the-post-it-in-my-wallet.md](blog/2026-09-29-the-post-it-in-my-wallet.md) | Product-story post draft (unpublished). |
-| [blog/2026-09-29-two-products-three-dollars.md](blog/2026-09-29-two-products-three-dollars.md) | Cost-story post draft (unpublished). |
+| [blog/2026-09-29-four-cents-for-a-card.md](blog/2026-09-29-four-cents-for-a-card.md) | Cost-story post draft (unpublished). |
 | [../README.md](../README.md) | Under 200 lines: what it is, quick start, scripts. |
 | [ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md) | Historical: the spec as first pasted on 2026-09-29. Superseded by PLAN.md, kept for provenance. |
 

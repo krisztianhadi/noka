@@ -17,13 +17,18 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
   ran at 15:20–17:20 local, inside peak, so half the bill was avoidable by
   starting two hours later. Recorded as the first item under "what I would not do
   again", with three more.
-- New draft in his post format: `docs/blog/2026-09-29-two-products-three-dollars.md`
+- New draft in his post format: `docs/blog/2026-09-29-four-cents-for-a-card.md`
   — the cost story as its own piece, framed as cost per shipped artifact rather
   than scarcity, with the numbers and the honest negatives.
 - Fixed a bug in my own instrument: the log parser skipped lines without a usage
   object before looking for round boundaries, so per-block attribution silently
   collapsed to a single block. Caught because the table disagreed with the six
   rounds that actually happened.
+- **Costs are now strictly per project.** The cross-project mode is gone from the
+  script and the file, and docs/COSTS.md says why: session logs can be lost, so a
+  combined total silently under-reports. The method lives in the new
+  **`project-costs` skill** (with the script), so each project gets the same file,
+  ledger and rules — separately.
 
 ### Feature — real money in the cost record, and two standing conventions
 

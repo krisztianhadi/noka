@@ -11,12 +11,17 @@
  * The balance ledger is the only true money: it is what the provider actually
  * deducted between two runs.
  *
+ * ONE PROJECT PER FILE. This never reads another workspace's logs, on purpose:
+ * session logs get lost, so a cross-project total is a number that silently
+ * under-reports. Each project carries its own copy of this script and its own
+ * docs/COSTS.md.
+ *
  * Rates: https://api-docs.deepseek.com/quick_start/pricing — deepseek-flash,
  * peak = 01:00–04:00 and 06:00–10:00 UTC, Monday–Friday, excluding Chinese
  * public holidays. Everything else (and weekends entirely) is off-peak, at half
  * the peak rate.
  */
-import { readdirSync, readFileSync, statSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { zstdDecompressSync } from 'node:zlib';
 import { homedir } from 'node:os';
@@ -147,7 +152,7 @@ function sessions(dir = storeDir) {
       const cost = costOf(entry.rows);
       return {
         id: entry.id,
-        // kept so --all can aggregate and --by-block can split without re-reading
+        // kept so --by-block can split without re-reading the log
         rows: entry.rows,
         boundaries: entry.boundaries,
         turns: entry.rows.length,
@@ -312,37 +317,6 @@ function replaceBlock(text, start, end, body) {
   return text.replace(pattern, `${start}\n${body}\n${end}`);
 }
 
-/** Every workspace the harness has logged, for the cross-project view. */
-function allWorkspaces() {
-  const root = join(DSH_HOME, 'sessions');
-  if (!existsSync(root)) return [];
-  return readdirSync(root)
-    .filter((name) => name.startsWith('--') && statSyncQuiet(join(root, name)))
-    .map((name) => {
-      const dir = join(root, name);
-      const list = sessions(dir);
-      const rows = list.flatMap((session) => session.rows);
-      const cost = costOf(rows);
-      return {
-        workspace: name.replace(/^--/, '').replace(/--$/, '').replace(/-/g, '/'),
-        sessions: list.length,
-        turns: rows.length,
-        tokens: rows.reduce((acc, row) => acc + row.cacheMiss + row.cacheHit + row.cacheWrite + row.output, 0),
-        ...cost,
-      };
-    })
-    .filter((entry) => entry.turns > 0)
-    .sort((a, b) => b.usd - a.usd);
-}
-
-function statSyncQuiet(path) {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
-  }
-}
-
 const list = sessions();
 const { table, totals } = usageTable(list);
 const ledger = readLedger();
@@ -385,18 +359,6 @@ if (process.argv.includes('--write')) {
   text = replaceBlock(text, LEDGER_START, LEDGER_END, ledgerBody);
   writeFileSync(COSTS_FILE, text);
   console.log(`Updated ${COSTS_FILE}`);
-} else if (process.argv.includes('--all')) {
-  const workspaces = allWorkspaces();
-  console.log('| Workspace | Sessions | Turns | Tokens | Est. USD |');
-  console.log('|---|---:|---:|---:|---:|');
-  for (const entry of workspaces) {
-    console.log(
-      `| ${entry.workspace} | ${entry.sessions} | ${fmt(entry.turns)} | ${fmt(entry.tokens)} | ${usd(entry.usd)} |`,
-    );
-  }
-  console.log(
-    `\nAcross ${workspaces.length} workspaces: ${usd(workspaces.reduce((acc, entry) => acc + entry.usd, 0))} estimated.`,
-  );
 } else if (!process.argv.includes('--balance')) {
   const main = [...list].sort((a, b) => b.total - a.total)[0];
   console.log(`workspace: ${workspace}`);
