@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MESSAGES, t, type MessageKey } from '@/i18n/catalogue';
+import { CARD_PHRASES, CARD_PHRASE_ORDER, cardPhrasesFor } from '@/i18n/card-copy';
 import { CARD_LANGUAGES, LANGUAGE_INFO, primarySubtag, sanitizeLanguageSet } from '@/i18n/languages';
 import { RELATIONS, isRelation } from '@/lib/relations';
 
@@ -59,6 +60,24 @@ describe('message catalogue', () => {
   it('returns the requested language', () => {
     expect(t('ru', 'view.call')).toBe('Позвонить');
     expect(t('en', 'view.call')).toBe('Call');
+  });
+});
+
+describe("the printed card's copy", () => {
+  it('exists for every language the card can carry', () => {
+    // The artwork is the one artefact nobody can fix after the fact: a missing language here
+    // used to compile and print a card with a language silently absent.
+    for (const language of CARD_LANGUAGES) {
+      expect(CARD_PHRASES[language]?.title, language).toBeTruthy();
+      expect(CARD_PHRASES[language]?.scan, language).toBeTruthy();
+    }
+    expect(CARD_PHRASE_ORDER.slice().sort()).toEqual([...CARD_LANGUAGES].sort());
+  });
+
+  it("prints the requested languages in the mockup's order, never an empty card", () => {
+    expect(cardPhrasesFor(['zh', 'en']).map((phrase) => phrase.scan)).toEqual(['SCAN', '扫描']);
+    // A card whose language set somehow matches nothing still prints something readable.
+    expect(cardPhrasesFor(['xx']).length).toBeGreaterThan(0);
   });
 });
 

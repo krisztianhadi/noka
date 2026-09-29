@@ -22,12 +22,13 @@ interface Props {
 const { title, theme = null, wide = false } = Astro.props;
 // The <html lang> comes from the resolved locale, not from the page: a Spanish page marked
 // `lang="en"` makes screen readers read Spanish with English pronunciation rules.
-const lang = LANGUAGE_INFO[Astro.locals.locale].htmlLang;
+const info = LANGUAGE_INFO[Astro.locals.locale];
+const lang = info.htmlLang;
 const dataTheme = theme ?? undefined;
 ---
 
 <!doctype html>
-<html lang={lang} data-theme={dataTheme}>
+<html lang={lang} dir={info.dir} data-theme={dataTheme}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

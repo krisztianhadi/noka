@@ -14,7 +14,14 @@ export interface CardPhrase {
   scale?: number;
 }
 
-export const CARD_PHRASES: Record<string, CardPhrase> = {
+import type { CardLanguage } from './languages';
+
+/**
+ * Typed against the language set on purpose: with `Record<string, …>`, adding a language
+ * to `CARD_LANGUAGES` compiled happily while the artwork silently omitted it. The printed
+ * card is the one artefact nobody can fix after the fact.
+ */
+export const CARD_PHRASES: Record<CardLanguage, CardPhrase> = {
   en: { title: 'EMERGENCY CONTACT', scan: 'SCAN' },
   es: { title: 'CONTACTO DE EMERGENCIA', scan: 'ESCANEAR' },
   fr: { title: "CONTACT D'URGENCE", scan: 'SCANNER' },
@@ -23,7 +30,7 @@ export const CARD_PHRASES: Record<string, CardPhrase> = {
 };
 
 /** The order the mockup prints them in: Latin first, then Cyrillic, then CJK. */
-export const CARD_PHRASE_ORDER = ['en', 'es', 'fr', 'ru', 'zh'];
+export const CARD_PHRASE_ORDER: readonly CardLanguage[] = ['en', 'es', 'fr', 'ru', 'zh'];
 
 export function cardPhrasesFor(languages: readonly string[]): CardPhrase[] {
   const wanted = CARD_PHRASE_ORDER.filter((code) => languages.includes(code));

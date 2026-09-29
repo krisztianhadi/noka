@@ -18,14 +18,20 @@ export interface LanguageInfo {
   englishName: string;
   /** Value for the <html lang> attribute. */
   htmlLang: string;
+  /**
+   * Writing direction for the `<html dir>` attribute. Every shipped language is `ltr`;
+   * the field exists so adding Arabic, Hebrew or Farsi is a metadata change rather than a
+   * layout archaeology project (ADR-032).
+   */
+  dir: 'ltr' | 'rtl';
 }
 
 export const LANGUAGE_INFO: Record<CardLanguage, LanguageInfo> = {
-  en: { endonym: 'English', englishName: 'English', htmlLang: 'en' },
-  es: { endonym: 'Español', englishName: 'Spanish', htmlLang: 'es' },
-  fr: { endonym: 'Français', englishName: 'French', htmlLang: 'fr' },
-  zh: { endonym: '中文', englishName: 'Chinese', htmlLang: 'zh-Hans' },
-  ru: { endonym: 'Русский', englishName: 'Russian', htmlLang: 'ru' },
+  en: { dir: 'ltr', endonym: 'English', englishName: 'English', htmlLang: 'en' },
+  es: { dir: 'ltr', endonym: 'Español', englishName: 'Spanish', htmlLang: 'es' },
+  fr: { dir: 'ltr', endonym: 'Français', englishName: 'French', htmlLang: 'fr' },
+  zh: { dir: 'ltr', endonym: '中文', englishName: 'Chinese', htmlLang: 'zh-Hans' },
+  ru: { dir: 'ltr', endonym: 'Русский', englishName: 'Russian', htmlLang: 'ru' },
 };
 
 export function isCardLanguage(value: string): value is CardLanguage {
