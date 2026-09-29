@@ -4,6 +4,26 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — real money in the cost record, and two standing conventions
+
+- **`docs/COSTS.md` now shows time windows and USD.** Each session is bucketed by
+  its own timestamps into the provider's peak and off-peak windows (peak is
+  01:00–04:00 and 06:00–10:00 UTC, Monday–Friday, excluding Chinese public
+  holidays; off-peak is half price), with both UTC and local `+07` columns, so the
+  rate that applied to each hour is visible rather than assumed. Current estimate
+  for the whole build: **$1.25**, of which $1.14 fell in peak hours.
+- **A balance ledger for actual USD.** The provider exposes no per-day spend
+  endpoint, but it does expose the balance, so `scripts/usage-report.mjs
+  --balance "note"` samples it and the difference between two samples is money
+  the provider deducted itself. Baseline recorded at **$28.97**.
+- **The AI disclosure is now a standing rule**, not a one-off: added to the
+  project-docs skill, which every future project loads when its README is written.
+  Hand-written and AI-enhanced, the tooling named, and a pointer to the commits,
+  ADRs and devlog as the evidence.
+- **The name in the copyright line is settled:** ASCII **Krisztian** in licence
+  files (the official accented form is Krisztián), recorded in ADR-018 so it is
+  not re-litigated per repository.
+
 ### Feature — monetization policy, the encryption delta, and a cost record
 
 - **Monetization policy written down (D32, §18, ADR-019):** users are never

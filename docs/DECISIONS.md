@@ -306,6 +306,13 @@ trap to a reviewer and buys nothing here.
 
 Consistency mattered too: Ghosted, the sibling project, is MIT, so a reader
 moving between the two repositories does not have to think about licensing.
+
+**On the spelling of the name in the copyright line:** it is the ASCII form,
+**Krisztian**, which is how he writes it everywhere it has to work — handles,
+registrations, licence files. The accented form, **Krisztián**, is the official
+one. Not a typo, and not worth reopening: use the ASCII form in every repository
+so the two never drift.
+
 ### ADR-019 — users are never charged, and the project is never sold into closed source
 
 A monetization decision, written down before there is any money, because the
