@@ -440,3 +440,38 @@ family: the suite and the server sharing something they should not. I fixed the 
 there, which is exactly the "one layer deep" mistake this whole session keeps punishing. The rule I
 am taking forward: when two processes must not disturb each other, separate *all* the state they
 touch — port, build directory, database — not just the one that produced today's error message.
+
+## 2026-09-29 — Auditing the tests, and the bug my own new test would have cemented
+
+**The audit.** He added a testing skill and asked me to run it over the suite. Eleven cases
+out, three in. The instructive ones: a whole pdf-lib determinism suite for a renderer that does
+not exist yet (every finding already lives in ADR-017, which even says the real test belongs to
+Phase 7); two spoken-language cases that restated their own source lists, or duplicated the
+catalogue's completeness contract; `reorderContacts` and `isSlug`, both exported and tested and
+called by nothing; and a visual assertion that hardcoded control heights — it would have failed
+under a padding change while no user could tell the difference. That last one is now a
+consistency check: one height per control shape, and shadows coming from the token.
+
+**The bug the audit found.** Writing the channel-link table, I asserted what the helper
+returned: `signal.me/#p/%2B…`. That is the "expected value produced by the code under test"
+trap, and it was hiding a real defect — Signal's format is `#p/+<number>`, and an encoded
+number opens no chat at all (Signal-Android #11627). The button on the emergency page has been
+dead for anyone using Signal. Fixed, and the test now asserts the documented format.
+
+**Two guards that existed, passed their tests, and were never called.** `readContactPayload`
+was unit-tested but the read path cast the decrypted JSON straight to a type, so an old or
+corrupted row would have rendered `undefined` onto the emergency page. `negotiateLanguage` —
+q-values, `q=0` refusals, wildcards, all tested — sat unused while the live responder path
+hand-rolled a comma split. Both are wired now, which also means the tests are testing the code
+that actually runs.
+
+**The pattern worth naming.** Three of this session's bugs have the same shape: a thing exists,
+is believed, and is not connected — a limiter nobody calls, a validator nobody invokes, a
+negotiator nobody uses, a modal whose `data-*` attributes never reached the DOM. Tests that
+exercise a helper cannot see that. Only a test that goes through the real boundary can, which
+is where the regression test for the payload validation now lives.
+
+**What I am leaving alone, deliberately.** The limiter module and its storage tests: nothing
+calls it yet, but Phase 6 will, and the tests prove the Postgres store is atomic across
+instances (ADR-016). I added a comment saying so in both files, because a green limiter test
+must not be read as "the PIN endpoint is throttled".

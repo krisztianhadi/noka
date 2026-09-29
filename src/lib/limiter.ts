@@ -11,7 +11,13 @@ import { getSql } from '@/db/client';
  * client the app already uses. The store's own SQL is untouched — including the
  * `INSERT … ON CONFLICT … RETURNING`, which is what makes the increment and the
  * decision a single atomic operation (§6).
+ 
+ * NOT WIRED YET (Phase 6). No endpoint calls this: the PIN endpoint is still
+ * unthrottled, which is the one open security gap in the README. The tests below it
+ * are storage-contract tests — they prove the Postgres store, the atomicity and the
+ * window semantics are right — and must not be read as "the responder is protected".
  */
+
 export interface LimiterOptions {
   /** Namespaces the counters; also the table's key prefix. */
   keyPrefix: string;

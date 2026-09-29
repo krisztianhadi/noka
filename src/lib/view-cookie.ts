@@ -1,5 +1,5 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getConfig } from '@/config';
+import { constantTimeEqual, hmacBase64Url } from '@/lib/crypto';
 
 /**
  * The guest's view cookie (§3, D14): `{slug, pin_version, exp}`, signed with
@@ -26,13 +26,11 @@ function secret(): string {
 }
 
 function sign(body: string): string {
-  return createHmac('sha256', secret()).update(body).digest('base64url');
+  return hmacBase64Url(body, secret());
 }
 
 function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a, 'utf8');
-  const right = Buffer.from(b, 'utf8');
-  return left.length === right.length && timingSafeEqual(left, right);
+  return constantTimeEqual(a, b);
 }
 
 export function issueViewToken(

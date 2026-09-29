@@ -264,6 +264,3 @@ export function t(language: CardLanguage, key: MessageKey): string {
   return MESSAGES[language][key];
 }
 
-export function messageKeys(): MessageKey[] {
-  return Object.keys(en) as MessageKey[];
-}

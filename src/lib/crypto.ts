@@ -75,15 +75,23 @@ export function decryptJson<T>(blob: Buffer, ring: Keyring): Decrypted<T> {
   return { keyVersion, value: JSON.parse(plaintext.toString('utf8')) as T };
 }
 
-/** HMAC-SHA256 as hex — used for IP hashing and the session-token lookup. */
-export function hmacHex(value: string, key: string): string {
-  return createHmac('sha256', key).update(value).digest('hex');
-}
 
 /** Constant-time comparison for two hex/base64 digests of equal length. */
-export function digestEquals(a: string, b: string): boolean {
+
+/**
+ * Signed-value helpers, shared by everything that signs something.
+ *
+ * These live here rather than in each caller because the alternative is what the
+ * codebase actually had: two HMAC implementations, where the tested one was unused
+ * and the live one was a private copy. One implementation, exercised through the
+ * cookie round-trip in `view-cookie.test.ts` and directly here.
+ */
+export function hmacBase64Url(body: string, secret: string): string {
+  return createHmac('sha256', secret).update(body).digest('base64url');
+}
+
+export function constantTimeEqual(a: string, b: string): boolean {
   const left = Buffer.from(a, 'utf8');
   const right = Buffer.from(b, 'utf8');
-  if (left.length !== right.length) return false;
-  return timingSafeEqual(left, right);
+  return left.length === right.length && timingSafeEqual(left, right);
 }

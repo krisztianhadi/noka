@@ -115,35 +115,53 @@ test.describe('things axe cannot see', () => {
     }
   });
 
-  test('the interactive surfaces keep their size and one shadow', async ({ page }) => {
+  test('controls that sit together agree on size, and shadows come from the token', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    // Open the folded form: a hidden field cannot be measured, and the add/edit form
+    // is where the field heights actually live.
+    await page.locator('.add-more > summary').click();
 
-    // Buttons and inputs agree on a height; that was the "sizes are off" report.
-    const heights = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('button, input, select'))
-        // Checkboxes are not controls in this sense: they are 16px by definition.
-        .filter((element) => !['checkbox', 'radio'].includes((element as HTMLInputElement).type))
-        .filter((element) => (element as HTMLElement).offsetParent !== null)
-        .map((element) => Math.round(element.getBoundingClientRect().height)),
-    );
-    for (const height of heights) expect([32, 36, 40, 44, 76]).toContain(height);
+    // Consistency, not absolute pixels: this survives a padding change and still
+    // catches "the UI element sizes are off", which is what was actually reported.
+    const heights = await page.evaluate(() => {
+      const visible = Array.from(document.querySelectorAll('button, input, select, textarea')).filter(
+        (element) => (element as HTMLElement).checkVisibility({ checkVisibilityCSS: true }),
+      );
+      const byShape = new Map<string, Set<number>>();
+      for (const element of visible) {
+        const type = (element as HTMLInputElement).type ?? element.tagName.toLowerCase();
+        const height = Math.round(element.getBoundingClientRect().height);
+        // Checkboxes and the note textarea are their own shapes.
+        if (['checkbox', 'radio', 'textarea'].includes(type)) continue;
+        const key = element.tagName.toLowerCase() === 'button' ? 'button' : 'field';
+        byShape.set(key, (byShape.get(key) ?? new Set()).add(height));
+      }
+      return Object.fromEntries([...byShape].map(([key, value]) => [key, [...value]]));
+    });
+    // One height per shape across the whole page.
+    expect(heights.button ?? [], 'button heights').toHaveLength(1);
+    expect(heights.field ?? [], 'field heights').toHaveLength(1);
 
-    // Nothing floats at rest: a closed dialog is still in the DOM, so only *visible*
-    // elements count.
-    const shadows = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('*'))
-        .filter((element) => (element as HTMLElement).checkVisibility({ checkVisibilityCSS: true }))
-        .filter((element) => getComputedStyle(element).boxShadow !== 'none')
-        .map((element) => `${element.tagName}.${element.className}`),
-    );
-    expect(shadows).toEqual([]);
+    // Anything that floats wears the one shadow token, and nothing floats at rest.
+    const shadowState = await page.evaluate(() => {
+      const token = getComputedStyle(document.documentElement).getPropertyValue('--noka-shadow').trim();
+      const visible = Array.from(document.querySelectorAll<HTMLElement>('*')).filter((element) =>
+        element.checkVisibility({ checkVisibilityCSS: true }),
+      );
+      const floating = visible.filter((element) => getComputedStyle(element).boxShadow !== 'none');
+      return { atRest: floating.length, token: token.length > 0 };
+    });
+    expect(shadowState.atRest, 'nothing floats at rest').toBe(0);
+    expect(shadowState.token, 'the shadow token exists').toBe(true);
 
+    // Open one menu: the only visible shadow is then the floating panel's.
     await kebab(page, '.contacts > li').click();
-    const opened = await page.evaluate(
-      () => getComputedStyle(document.querySelector('.panel')!).boxShadow,
-    );
-    expect(opened).not.toBe('none');
+    const panelShadow = await page
+      .locator('.panel:visible')
+      .first()
+      .evaluate((element) => getComputedStyle(element).boxShadow);
+    expect(panelShadow).not.toBe('none');
     await page.keyboard.press('Escape');
   });
 

@@ -39,6 +39,3 @@ export function sanitizeSpokenLanguages(values: readonly string[]): SpokenLangua
   return [...seen];
 }
 
-export function spokenLanguageMessageKey(code: SpokenLanguage): `spoken.${SpokenLanguage}` {
-  return `spoken.${code}`;
-}

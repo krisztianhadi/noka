@@ -2,6 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import { cards, scanAttempts } from '@/db/schema';
 import { users } from '@/db/auth-schema';
+import { negotiateLanguage } from '@/i18n/negotiate';
 import { DEFAULT_CARD_LANGUAGES, primarySubtag, sanitizeLanguageSet, type CardLanguage } from '@/i18n/languages';
 import { getNotes, listContacts, type ContactView } from '@/lib/contacts';
 import { decoyVerify, verifyPin } from '@/lib/pin';
@@ -60,16 +61,13 @@ export function resolveLanguage(
   acceptLanguage: string | undefined | null,
 ): CardLanguage {
   const allowed = card ? cardLanguages(card) : [...DEFAULT_CARD_LANGUAGES];
-  const fallback = allowed[0] ?? 'en';
 
   const cookie = cookieValue ? primarySubtag(cookieValue) : '';
   if (cookie && allowed.includes(cookie as CardLanguage)) return cookie as CardLanguage;
 
-  for (const tag of (acceptLanguage ?? '').split(',')) {
-    const primary = primarySubtag(tag.split(';')[0] ?? '');
-    if (primary && allowed.includes(primary as CardLanguage)) return primary as CardLanguage;
-  }
-  return fallback;
+  // The real negotiator, not a hand-rolled split: it orders by q-value and treats
+  // `q=0` as a refusal. The live path and the unit tests are the same code now.
+  return negotiateLanguage(acceptLanguage, allowed);
 }
 
 export function isLanguageOffered(card: Card, code: string): boolean {

@@ -2,7 +2,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import { cards, contacts, ownerNotes } from '@/db/schema';
 import { sanitizeChannels, type Channel } from '@/lib/channels';
-import { CONTACT_PAYLOAD_SCHEMA, type ContactPayload } from '@/lib/contact-payload';
+import { CONTACT_PAYLOAD_SCHEMA, readContactPayload, type ContactPayload } from '@/lib/contact-payload';
 import { activeKeyVersion, decryptJson, encryptJson } from '@/lib/crypto';
 import { contactKeyring } from '@/lib/keys';
 import { normalizePhone, type PhoneResult } from '@/lib/phone';
@@ -49,7 +49,10 @@ export type DeleteResult =
 type ContactRow = typeof contacts.$inferSelect;
 
 function decode(row: ContactRow): ContactView {
+  // Validated, not cast: a row written by an older schema — or a corrupted one —
+  // must fail here rather than render `undefined` onto the emergency page.
   const { value } = decryptJson<ContactPayload>(row.payloadEncrypted, contactKeyring());
+  readContactPayload(value);
   return {
     id: row.id,
     name: value.name,
@@ -171,17 +174,6 @@ export async function deleteContact(userId: string, id: string): Promise<DeleteR
   return { ok: true, cardDeleted: await deleteOwnerCard(userId) };
 }
 
-export async function reorderContacts(userId: string, orderedIds: readonly string[]): Promise<void> {
-  const db = getDb();
-  let position = 0;
-  for (const id of orderedIds) {
-    await db
-      .update(contacts)
-      .set({ sortOrder: position, updatedAt: new Date() })
-      .where(and(eq(contacts.userId, userId), eq(contacts.id, id)));
-    position += 1;
-  }
-}
 
 export async function getNotes(userId: string): Promise<string> {
   const [row] = await getDb().select().from(ownerNotes).where(eq(ownerNotes.userId, userId)).limit(1);

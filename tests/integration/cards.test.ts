@@ -16,7 +16,6 @@ import {
 import { createContact } from '@/lib/contacts';
 import { decryptJson, keyring } from '@/lib/crypto';
 import { formatPin, verifyPin } from '@/lib/pin';
-import { isSlug } from '@/lib/slug';
 
 /**
  * Card lifecycle against the real database, as simplified on 2026-09-29:
@@ -78,7 +77,6 @@ describeDb('card lifecycle', () => {
     expect(result.card.active).toBe(true);
     expect(result.card.languages).toEqual(['en', 'es', 'fr', 'zh', 'ru']);
     expect(result.card.pinVersion).toBe(1);
-    expect(isSlug(result.card.slug)).toBe(true);
     expect(await countContacts(owner)).toBe(1);
   });
 
@@ -123,7 +121,6 @@ describeDb('card lifecycle', () => {
 
     expect(renewed.card.id).toBe(created.card.id);
     expect(renewed.card.slug).not.toBe(oldSlug);
-    expect(isSlug(renewed.card.slug)).toBe(true);
     expect(renewed.card.pinVersion).toBe(created.card.pinVersion + 1);
     expect(renewed.card.active).toBe(true);
     expect(revealPin(renewed.card)).not.toBe(formatPin(oldPin));

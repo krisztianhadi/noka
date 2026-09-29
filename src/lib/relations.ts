@@ -14,6 +14,3 @@ export function isRelation(value: string): value is Relation {
   return (RELATIONS as readonly string[]).includes(value);
 }
 
-export function relationMessageKey(relation: Relation): `relation.${Relation}` {
-  return `relation.${relation}`;
-}

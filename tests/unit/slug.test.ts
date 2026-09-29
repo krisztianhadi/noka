@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CROCKFORD, SLUG_LENGTH, generateSlug, isSlug, normalizeSlug } from '@/lib/slug';
+import { CROCKFORD, SLUG_LENGTH, generateSlug, normalizeSlug } from '@/lib/slug';
 
 describe('generateSlug', () => {
   it('produces 26 Crockford characters from 16 random bytes', () => {
@@ -46,9 +46,4 @@ describe('normalizeSlug', () => {
     expect(normalizeSlug('')).toBeNull();
   });
 
-  it('recognises a generated slug', () => {
-    const slug = generateSlug();
-    expect(isSlug(slug)).toBe(true);
-    expect(normalizeSlug(slug)).toBe(slug);
-  });
 });

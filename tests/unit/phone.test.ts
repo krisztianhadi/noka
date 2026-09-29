@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { normalizePhone, prettyPhone } from '@/lib/phone';
 
 describe('normalizePhone', () => {
-  it('accepts an international number and keeps the owner’s formatting for display', () => {
+  it('accepts an international number and groups the digits for display', () => {
     const result = normalizePhone('+66 812 345 678');
     expect(result).toEqual({ ok: true, e164: '+66812345678', display: '+66 812 345 678' });
   });

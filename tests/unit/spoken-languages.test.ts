@@ -1,37 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { MESSAGES, messageKeys } from '@/i18n/catalogue';
-import { CARD_LANGUAGES } from '@/i18n/languages';
-import { SPOKEN_LANGUAGES, isSpokenLanguage, sanitizeSpokenLanguages, spokenLanguageMessageKey } from '@/lib/spoken-languages';
+import { MESSAGES, type MessageKey } from '@/i18n/catalogue';
+import { SPOKEN_LANGUAGES, sanitizeSpokenLanguages } from '@/lib/spoken-languages';
+
+/** The key the pages build (`spoken.${code}` in the responder view and the dashboard). */
+const key = (code: string) => `spoken.${code}` as MessageKey;
 
 describe('spoken-language vocabulary', () => {
-  it('labels every code in every UI language', () => {
-    for (const code of SPOKEN_LANGUAGES) {
-      const key = spokenLanguageMessageKey(code);
-      for (const language of CARD_LANGUAGES) {
-        expect(MESSAGES[language][key], `${language} is missing ${key}`).toBeTruthy();
-      }
-    }
+  it('has a key in the catalogue for every spoken language it declares', () => {
+    // Exact set equality both ways: a declared language with no copy, or copy for a
+    // language the vocabulary dropped, is a defect. The catalogue's own completeness
+    // test covers the rest of the message set.
+    const declared = SPOKEN_LANGUAGES.map(key).sort();
+    const present = (Object.keys(MESSAGES.en) as MessageKey[]).filter((k) => k.startsWith('spoken.')).sort();
+    expect(present).toEqual(declared);
   });
 
-  it('has no dead spoken.* key that the vocabulary does not declare', () => {
-    const declared = new Set(SPOKEN_LANGUAGES.map((code) => spokenLanguageMessageKey(code)));
-    const present = messageKeys().filter((key) => key.startsWith('spoken.'));
-    expect(present.sort()).toEqual([...declared].sort());
-  });
-
-  it('is wider than the card’s own print languages, on purpose', () => {
-    // A contact may speak Thai even though the card is not printed in Thai.
-    expect(isSpokenLanguage('th')).toBe(true);
-    expect(isSpokenLanguage('hu')).toBe(true);
-    expect(CARD_LANGUAGES).not.toContain('th');
-  });
-
-  it('keeps order, drops duplicates and rejects anything unknown', () => {
+  it('keeps order, drops duplicates, rejects anything unknown and normalises case', () => {
     expect(sanitizeSpokenLanguages(['th', 'en', 'th', 'xx', ''])).toEqual(['th', 'en']);
-    expect(sanitizeSpokenLanguages(['XX'])).toEqual([]);
-  });
-
-  it('normalises case and whitespace', () => {
     expect(sanitizeSpokenLanguages([' EN ', 'Th'])).toEqual(['en', 'th']);
+    expect(sanitizeSpokenLanguages(['XX'])).toEqual([]);
   });
 });

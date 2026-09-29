@@ -51,7 +51,11 @@ export function channelHref(channel: Channel, phoneE164: string): string {
     case 'telegram':
       return `https://t.me/+${digits}`;
     case 'signal':
-      return `https://signal.me/#p/${encodeURIComponent(phoneE164)}`;
+      // Not encoded: Signal's own format is `#p/+<number>`, and a URI-encoded `%2B`
+      // opens no chat at all (Signal-Android issue 11627). Found while auditing the
+      // tests — the first version of this test asserted the encoded string, which
+      // would have locked the bug in.
+      return `https://signal.me/#p/${phoneE164}`;
     case 'viber':
       return `viber://chat?number=${encodeURIComponent(phoneE164)}`;
   }

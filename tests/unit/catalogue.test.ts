@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { MESSAGES, messageKeys, t } from '@/i18n/catalogue';
+import { MESSAGES, t, type MessageKey } from '@/i18n/catalogue';
 import { CARD_LANGUAGES, LANGUAGE_INFO, primarySubtag, sanitizeLanguageSet } from '@/i18n/languages';
-import { RELATIONS, isRelation, relationMessageKey } from '@/lib/relations';
+import { RELATIONS, isRelation } from '@/lib/relations';
 
 describe('message catalogue', () => {
   it('has every key in every card language (the build-failing rule of D20)', () => {
-    const keys = messageKeys();
+    const keys = Object.keys(MESSAGES.en) as MessageKey[];
     expect(keys.length).toBeGreaterThan(10);
     for (const language of CARD_LANGUAGES) {
       for (const key of keys) {
@@ -15,7 +15,7 @@ describe('message catalogue', () => {
   });
 
   it('has no extra keys in a language that English does not define', () => {
-    const canonical = new Set(messageKeys());
+    const canonical = new Set(Object.keys(MESSAGES.en) as MessageKey[]);
     for (const language of CARD_LANGUAGES) {
       for (const key of Object.keys(MESSAGES[language])) expect(canonical.has(key as never)).toBe(true);
     }
@@ -23,7 +23,7 @@ describe('message catalogue', () => {
 
   it('never leaves a string empty or untranslated-looking', () => {
     for (const language of CARD_LANGUAGES) {
-      for (const key of messageKeys()) {
+      for (const key of Object.keys(MESSAGES.en) as MessageKey[]) {
         const value = MESSAGES[language][key];
         expect(value.trim().length).toBeGreaterThan(0);
         expect(value).not.toMatch(/^(TODO|FIXME|XXX|\?\?\?)/i);
@@ -33,7 +33,7 @@ describe('message catalogue', () => {
 
   it('keeps placeholder tokens identical across languages', () => {
     const placeholders = (value: string) => (value.match(/\{[a-zA-Z0-9_]+\}/g) ?? []).sort().join(',');
-    for (const key of messageKeys()) {
+    for (const key of Object.keys(MESSAGES.en) as MessageKey[]) {
       const expected = placeholders(MESSAGES.en[key]);
       for (const language of CARD_LANGUAGES) {
         expect(placeholders(MESSAGES[language][key]), `${language}.${key}`).toBe(expected);
@@ -43,13 +43,14 @@ describe('message catalogue', () => {
 
   it('labels every relation in every language, and only the known relations', () => {
     for (const relation of RELATIONS) {
-      const key = relationMessageKey(relation);
+      // The key the pages actually build (`relation.${…}` in the responder view).
+      const key = `relation.${relation}` as MessageKey;
       for (const language of CARD_LANGUAGES) {
         expect(MESSAGES[language][key]).toBeTruthy();
       }
     }
     // A key for a relation that no longer exists would be dead copy.
-    const relationKeys = messageKeys().filter((key) => key.startsWith('relation.'));
+    const relationKeys = (Object.keys(MESSAGES.en) as MessageKey[]).filter((key) => key.startsWith('relation.'));
     expect(relationKeys).toHaveLength(RELATIONS.length);
   });
 

@@ -1,16 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
+import { getConfig } from '@/config';
 import { closeDb, getDb } from '@/db/client';
+import { encryptJson, keyring } from '@/lib/crypto';
 import { createCardForOwner, getCardForOwner } from '@/lib/cards';
 import { users } from '@/db/auth-schema';
+import { contacts } from '@/db/schema';
 import {
   createContact,
   deleteContact,
   getContact,
   getNotes,
   listContacts,
-  reorderContacts,
   setNotes,
   updateContact,
   type ContactInput,
@@ -21,6 +23,7 @@ import {
  */
 const describeDb = process.env.DATABASE_URL ? describe : describe.skip;
 
+const ring = keyring({ 1: getConfig().CONTACT_ENCRYPTION_KEY });
 const SECRET_NAME = 'ZZCONTACTSECRETZZ';
 const SECRET_PHONE = '+66899999999';
 
@@ -82,6 +85,22 @@ describeDb('contacts and notes', () => {
     const encoded = (raw[0] as unknown as { encoded: string }).encoded;
     expect(encoded).not.toContain('ZZCONTACTSECRET');
     expect(encoded).not.toContain('66899999999');
+  });
+
+  it('refuses to render a row it cannot validate, instead of showing half a contact', async () => {
+    const owner = await freshOwner();
+    const created = await createContact(owner, input());
+    if (!created.ok) return;
+
+    // A row from a future schema, or a corrupted one. The read path must reject it:
+    // rendering `undefined` onto an emergency page is worse than a hard failure.
+    await db
+      .update(contacts)
+      .set({ payloadEncrypted: encryptJson({ schema: 99, name: 'Ghost' }, ring), keyVersion: 1 })
+      .where(eq(contacts.id, created.contact.id));
+
+    await expect(listContacts(owner)).rejects.toThrow(/Unsupported contact payload schema/);
+    await db.delete(contacts).where(eq(contacts.id, created.contact.id));
   });
 
   it('validates instead of storing garbage', async () => {
@@ -154,17 +173,17 @@ describeDb('contacts and notes', () => {
     expect(await listContacts(first)).toHaveLength(1);
   });
 
-  it('numbers contacts in creation order and reorders on request', async () => {
+  it('numbers contacts in creation order', async () => {
     const owner = await freshOwner();
     const first = await createContact(owner, input({ name: 'First' }));
     const second = await createContact(owner, input({ name: 'Second' }));
     const third = await createContact(owner, input({ name: 'Third' }));
     if (!first.ok || !second.ok || !third.ok) return;
 
+    // sortOrder is the rendering order the responder page uses. Nothing reorders
+    // contacts yet, so creation order is the contract.
     expect((await listContacts(owner)).map((contact) => contact.name)).toEqual(['First', 'Second', 'Third']);
-
-    await reorderContacts(owner, [third.contact.id, first.contact.id, second.contact.id]);
-    expect((await listContacts(owner)).map((contact) => contact.name)).toEqual(['Third', 'First', 'Second']);
+    expect((await listContacts(owner)).map((contact) => contact.sortOrder)).toEqual([0, 1, 2]);
   });
 
   it('deletes the card along with the last contact', async () => {

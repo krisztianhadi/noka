@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { activeKeyVersion, decryptJson, digestEquals, encryptJson, hmacHex, keyring } from '@/lib/crypto';
+import { activeKeyVersion, constantTimeEqual, decryptJson, encryptJson, hmacBase64Url, keyring } from '@/lib/crypto';
 
 const key1 = randomBytes(32).toString('base64');
 const key2 = randomBytes(32).toString('base64');
@@ -81,20 +81,18 @@ describe('encryptJson / decryptJson', () => {
   });
 });
 
-describe('hmacHex', () => {
-  it('is stable, keyed, and not a bare hash', () => {
-    const a = hmacHex('203.0.113.7', 'key-a');
-    expect(a).toBe(hmacHex('203.0.113.7', 'key-a'));
-    expect(a).not.toBe(hmacHex('203.0.113.7', 'key-b'));
-    expect(a).not.toBe(hmacHex('203.0.113.8', 'key-a'));
-    expect(a).toMatch(/^[0-9a-f]{64}$/);
+describe('signed-value helpers', () => {
+  it('keys the digest, and is not a bare hash of the body', () => {
+    const body = 'card.claims.payload';
+    const first = hmacBase64Url(body, 'secret-one');
+    expect(first).not.toBe(hmacBase64Url(body, 'secret-two'));
+    expect(first).not.toContain(body);
+    expect(hmacBase64Url(body, 'secret-one')).toBe(first);
   });
-});
 
-describe('digestEquals', () => {
-  it('compares equal and unequal digests, and refuses different lengths', () => {
-    expect(digestEquals('abc', 'abc')).toBe(true);
-    expect(digestEquals('abc', 'abd')).toBe(false);
-    expect(digestEquals('abc', 'abcd')).toBe(false);
+  it('compares equal values and rejects different ones, including different lengths', () => {
+    expect(constantTimeEqual('abc', 'abc')).toBe(true);
+    expect(constantTimeEqual('abc', 'abd')).toBe(false);
+    expect(constantTimeEqual('abc', 'abcd')).toBe(false);
   });
 });

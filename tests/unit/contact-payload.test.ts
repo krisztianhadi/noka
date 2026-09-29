@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { CONTACT_PAYLOAD_SCHEMA, parseContactPayload, readContactPayload } from '@/lib/contact-payload';
-import { channelHref } from '@/lib/channels';
 
 const valid = {
   schema: CONTACT_PAYLOAD_SCHEMA,
@@ -12,7 +11,7 @@ const valid = {
   channels: ['call', 'whatsapp'],
 };
 
-describe('contact payload (schema 2)', () => {
+describe('contact payload (schema 3)', () => {
   it('accepts a well-formed payload', () => {
     expect(parseContactPayload(valid)).toEqual(valid);
   });
@@ -63,12 +62,3 @@ describe('contact payload (schema 2)', () => {
   });
 });
 
-describe('link builders', () => {
-  it('builds a tel: link from E.164', () => {
-    expect(channelHref('call', valid.phone_e164)).toBe('tel:+66812345678');
-  });
-
-  it('builds a wa.me link without the plus, as WhatsApp requires', () => {
-    expect(channelHref('whatsapp', valid.phone_e164)).toBe('https://wa.me/66812345678');
-  });
-});

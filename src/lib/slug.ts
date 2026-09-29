@@ -48,6 +48,3 @@ export function normalizeSlug(input: string): string | null {
   return folded;
 }
 
-export function isSlug(input: string): boolean {
-  return normalizeSlug(input) === input;
-}
