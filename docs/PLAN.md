@@ -56,6 +56,10 @@ At Phase 1 it splits per the project-docs method: decisions and threat model →
     password change ends every session. → ADR-023
 21. **Dark mode is server-rendered from a cookie**, and the responder page never
     reads it. → ADR-024
+22. **JavaScript, custom fonts and icons are owner-plane only.** The no-JS,
+    self-contained rule of D6 still governs `/c/*` and nothing else; the owner
+    plane uses a real `<dialog>` modal for destructive actions and vendored Noto
+    for the card. → ADR-026, ADR-027
 
 ---
 

@@ -1,0 +1,98 @@
+---
+/**
+ * A real modal for destructive actions, on the owner platform only.
+ *
+ * Uses `<dialog>.showModal()`, so focus is trapped, Escape closes it and the rest of
+ * the page is inert while it is open — no native `confirm()`, and no library.
+ *
+ * Progressive: every form still carries its plain action and method, so with
+ * JavaScript disabled the action simply happens without the extra question. The
+ * dialog is the confirmation, not the mechanism.
+ */
+---
+
+<dialog id="confirm-dialog" class="modal" aria-labelledby="confirm-title">
+  <h2 id="confirm-title" data-confirm-title>Are you sure?</h2>
+  <p data-confirm-message></p>
+  <div class="modal-actions">
+    <button type="button" class="secondary" data-confirm-cancel>Cancel</button>
+    <button type="button" class="danger solid" data-confirm-ok>Confirm</button>
+  </div>
+</dialog>
+
+<style>
+  .modal {
+    width: min(30rem, calc(100vw - 2rem));
+    padding: 1.25rem;
+    color: var(--fg);
+    background: var(--bg-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+  }
+  .modal::backdrop {
+    background: rgb(0 0 0 / 55%);
+  }
+  .modal h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+  .modal p {
+    margin: 0;
+    color: var(--fg-muted);
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .modal-actions button {
+    margin-top: 0;
+  }
+</style>
+
+<script>
+  const dialog = document.getElementById('confirm-dialog') as HTMLDialogElement | null;
+  let pending: HTMLFormElement | null = null;
+
+  if (dialog) {
+    const title = dialog.querySelector('[data-confirm-title]') as HTMLElement;
+    const message = dialog.querySelector('[data-confirm-message]') as HTMLElement;
+    const ok = dialog.querySelector('[data-confirm-ok]') as HTMLButtonElement;
+    const cancel = dialog.querySelector('[data-confirm-cancel]') as HTMLButtonElement;
+
+    const open = (form: HTMLFormElement) => {
+      pending = form;
+      title.textContent = form.dataset.confirmTitle ?? 'Are you sure?';
+      message.textContent = form.dataset.confirm ?? '';
+      ok.textContent = form.dataset.confirmOk ?? 'Confirm';
+      dialog.showModal();
+    };
+
+    for (const form of document.querySelectorAll<HTMLFormElement>('form[data-confirm]')) {
+      form.addEventListener('submit', (event) => {
+        // Second pass: the dialog already had its answer.
+        if (form.dataset.confirmed === 'yes') return;
+        event.preventDefault();
+        open(form);
+      });
+    }
+
+    ok.addEventListener('click', () => {
+      if (!pending) return;
+      pending.dataset.confirmed = 'yes';
+      dialog.close();
+      pending.requestSubmit();
+    });
+
+    cancel.addEventListener('click', () => {
+      pending = null;
+      dialog.close();
+    });
+
+    dialog.addEventListener('cancel', () => {
+      pending = null;
+    });
+  }
+</script>

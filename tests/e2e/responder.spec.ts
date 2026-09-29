@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { acceptDialogs, addContact, kebab, makeCard, saveNotes, signUp } from './helpers';
+import { addContact, confirmModal, kebab, makeCard, saveNotes, signUp } from './helpers';
 
 /**
  * The whole point of the product (§3, §9): a stranger with the card and the PIN
@@ -106,9 +106,9 @@ test.describe('the responder page', () => {
     await guest.getByRole('button', { name: 'Open' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
 
-    acceptDialogs(page);
     await kebab(page, '#card').click();
     await page.getByRole('button', { name: 'New card' }).click();
+    await confirmModal(page);
     await expect(page).toHaveURL(/notice=card-renewed$/);
 
     await guest.goto(`/c/${slug}/view`);

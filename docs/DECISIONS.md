@@ -133,6 +133,48 @@ directly under the relation, and is itself a `tel:` link.
 number visible also means the page works when a link scheme does not, which is the honest
 failure mode for Signal, Telegram and Viber on desktop.
 
+### ADR-026 — JavaScript and custom fonts are for the owner plane only
+
+**Context.** His second pass: "the main platform for card generation and such can use js to
+make it more fluid and such. proper modal windows not native browser one. the no js and no
+custom font and such limitation is only for the respondent side."
+
+**Decision.** The no-JavaScript, no-external-anything, self-contained rule of D6 now applies
+**only** to `/c/*`. The owner plane, the auth pages and the landing page may use JavaScript,
+inlined icons, custom fonts and richer interaction. Nothing on the responder plane changes.
+
+**Why.** The responder rule exists because a stranger's phone, on a bad connection, with an
+unknown browser, has to see who to call — and because a page that asks for nothing cannot
+leak anything. That argument never applied to the owner, who is already signed in.
+
+**Consequences.** Destructive actions use a real `<dialog>` modal with the consequence spelled
+out (not `window.confirm`), and the forms keep their plain `action`/`method`, so with
+JavaScript disabled the action still happens — the modal is an enhancement, not the
+mechanism. Icons are inline SVG in `src/components/Icon.astro`. The card is rendered with
+vendored Noto fonts (ADR-027). The responder page keeps its zero-script guarantee, and the
+e2e suite still asserts no third-party request and no `<script>` there.
+
+### ADR-027 — The card is set in vendored Noto, found through fontconfig
+
+**Context.** He asked for Noto on the card, with Noto Sans Mono for the labels and the PIN,
+and said the noka logo should be an SVG.
+
+**Decision.** `scripts/make-fonts.py` instantiates static weights from the Noto variable fonts
+(Noto Sans Regular/Bold, Noto Sans Mono Regular/Bold) and subsets Noto Sans CJK SC down to the
+ten Chinese characters the card prints — 6 KB instead of 15 MB. These live in
+`assets/fonts/`, and the first render writes a fontconfig file pointing **only** at that
+directory (`src/lib/fonts.ts`), so a render is identical here and in the Alpine container,
+which has no fonts of its own. The wordmark is generated as outlines by
+`scripts/make-wordmark.py` and inlined into the card SVG, so the logo needs no font at all.
+
+**Why.** A card is printed once and kept for years; it cannot depend on whatever fonts a host
+happens to have. Subsetting keeps the repository honest (1.6 MB, not 16) and the license is
+OFL, which permits it.
+
+**Consequences.** The Dockerfile installs `fontconfig` and copies `assets/`. If the font
+directory is missing, `ensureFonts()` leaves the system alone rather than crashing, and the
+render falls back to whatever fontconfig finds — degraded, not broken.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

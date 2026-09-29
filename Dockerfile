@@ -22,6 +22,10 @@ RUN pnpm build
 
 FROM base AS runner
 ENV NODE_ENV=production
+# The card is rendered as an image server-side, and librsvg finds fonts through
+# fontconfig. Alpine ships neither, so both are installed explicitly and pointed at
+# the vendored Noto files (src/lib/fonts.ts writes the config at first render).
+RUN apk add --no-cache fontconfig
 # lockfile must be present before `pnpm prune` reads the manifest
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -33,6 +37,8 @@ RUN pnpm prune --prod --config.confirmModulesPurge=false
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/scripts ./scripts
+# Brand assets and the vendored fonts: the card cannot be drawn without them.
+COPY --from=builder /app/assets ./assets
 # Astro's standalone server reads HOST and PORT from the environment.
 ENV HOST=0.0.0.0 PORT=3000
 EXPOSE 3000

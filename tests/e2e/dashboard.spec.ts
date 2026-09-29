@@ -1,8 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
-  acceptDialogs,
   addContact,
+  cancelModal,
+  confirmModal,
   kebab,
   makeCard,
   openAddForm,
@@ -131,14 +132,13 @@ test.describe('the dashboard', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     await makeCard(page);
 
-    const seen: string[] = [];
-    acceptDialogs(page, seen);
     await kebab(page, '.contacts > li').click();
     await page.getByRole('button', { name: 'Delete contact' }).click();
 
+    // The modal names the consequence before anything happens.
+    const message = await confirmModal(page);
+    expect(message).toContain('delete your card');
     await expect(page).toHaveURL(/notice=contact-and-card-deleted$/);
-    // The confirmation names the consequence before it happens.
-    expect(seen.join(' ')).toContain('delete your card');
     await expect(page.locator('.contacts > li')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Make my card' })).toBeDisabled();
   });
@@ -148,12 +148,39 @@ test.describe('the dashboard', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     await makeCard(page);
 
-    page.on('dialog', (dialog) => void dialog.dismiss());
     await kebab(page, '.contacts > li').click();
     await page.getByRole('button', { name: 'Delete contact' }).click();
+    await cancelModal(page);
 
     await expect(page.locator('.contacts > li')).toHaveCount(1);
     await expect(page.locator('.pin')).toBeVisible();
+  });
+
+  test('the confirmation is a real modal, not a native dialog', async ({ page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    await makeCard(page);
+
+    await kebab(page, '.contacts > li').click();
+    await page.getByRole('button', { name: 'Delete contact' }).click();
+
+    const dialog = page.locator('#confirm-dialog');
+    await expect(dialog).toBeVisible();
+    // Opened with showModal(): it is the top layer, so the page behind is inert.
+    await expect(dialog).toHaveAttribute('open', '');
+    expect(await dialog.evaluate((element) => (element as HTMLDialogElement).matches(':modal'))).toBe(true);
+
+    // Escape closes it without acting.
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(page.locator('.contacts > li')).toHaveCount(1);
+
+    // …and the modal itself passes an accessibility check. (The kebab is still open,
+    // so the delete item is one click away; clicking the summary would close it.)
+    await page.getByRole('button', { name: 'Delete contact' }).click();
+    await expect(dialog).toBeVisible();
+    const results = await new AxeBuilder({ page }).include('#confirm-dialog').analyze();
+    expect(results.violations).toEqual([]);
   });
 
   test('the dashboard is accessible', async ({ page }) => {
@@ -189,13 +216,12 @@ test.describe('the card', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     const first = await makeCard(page);
 
-    const seen: string[] = [];
-    acceptDialogs(page, seen);
     await kebab(page, '#card').click();
     await page.getByRole('button', { name: 'New card' }).click();
 
+    const message = await confirmModal(page);
+    expect(message).toContain('new link and a new PIN');
     await expect(page).toHaveURL(/notice=card-renewed$/);
-    expect(seen.join(' ')).toContain('new link and a new PIN');
     const second = await readCard(page);
     expect(second.slug).not.toBe(first.slug);
     expect(second.pin).not.toBe(first.pin);
@@ -207,13 +233,12 @@ test.describe('the card', () => {
     await makeCard(page);
     await saveNotes(page, 'Type 1 diabetic.');
 
-    const seen: string[] = [];
-    acceptDialogs(page, seen);
     await kebab(page, '#card').click();
     await page.getByRole('button', { name: 'Delete card' }).click();
 
+    const message = await confirmModal(page);
+    expect(message).toContain('contacts and notes are kept');
     await expect(page).toHaveURL(/notice=card-deleted$/);
-    expect(seen.join(' ')).toContain('contacts and notes are kept');
     await expect(page.locator('.contacts > li')).toHaveCount(1);
     await expect(page.locator('#notes')).toHaveValue('Type 1 diabetic.');
     await expect(page.getByRole('button', { name: 'Make my card' })).toBeEnabled();
@@ -271,6 +296,7 @@ test.describe('the account menu', () => {
     await page.fill('#new_password', 'a-brand-new-password');
     await page.fill('#new_password_confirm', 'a-brand-new-password');
     await page.getByRole('button', { name: 'Update password' }).click();
+    await confirmModal(page);
     await expect(page).toHaveURL(/error=password-wrong$/);
 
     // ...the right one is applied, and the new password signs in.
@@ -278,7 +304,10 @@ test.describe('the account menu', () => {
     await page.fill('#new_password', 'a-brand-new-password');
     await page.fill('#new_password_confirm', 'a-brand-new-password');
     await page.getByRole('button', { name: 'Update password' }).click();
-    // The password change ends every session, so it lands on the sign-in page.
+    // The modal warns first: changing the password ends every session.
+    const warning = await confirmModal(page);
+    expect(warning).toContain('signs you out of every device');
+    // …and it lands on the sign-in page.
     await expect(page).toHaveURL(/\/login\?notice=password-changed$/);
     await expect(page.locator('.notice')).toContainText('signed out');
 

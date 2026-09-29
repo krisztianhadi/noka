@@ -1,5 +1,7 @@
 ---
+import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import ContactForm from '@/components/ContactForm.astro';
+import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
 import { MESSAGES } from '@/i18n/catalogue';
 import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
@@ -40,28 +42,26 @@ const DELETE_CARD_WARNING =
 ---
 
 <Plain title="Your noka" theme={theme}>
+  <ConfirmDialog />
   <header class="top">
     <a class="brand" href="/dashboard">noka</a>
     <details class="menu">
-      <summary aria-label="Menu">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-        </svg>
-      </summary>
+      <summary aria-label="Menu"><Icon name="menu" size={22} /></summary>
       <div class="panel">
         <p class="who">
           <strong>{owner.name}</strong>
           <span class="muted">{owner.email}</span>
         </p>
-        <a href="/dashboard/settings">Settings</a>
+        <a href="/dashboard/settings"><Icon name="settings" /> Settings</a>
         <form method="post" action="/dashboard/theme">
           <input type="hidden" name="theme" value={nextTheme} />
           <button type="submit" class="menu-item">
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </form>
         <form method="post" action="/logout">
-          <button type="submit" class="menu-item">Sign out</button>
+          <button type="submit" class="menu-item"><Icon name="logout" /> Sign out</button>
         </form>
       </div>
     </details>
@@ -100,16 +100,10 @@ const DELETE_CARD_WARNING =
                 </div>
 
                 <details class="menu kebab">
-                  <summary aria-label={`Actions for ${contact.name}`}>
-                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                      <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
-                      <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
-                      <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
-                    </svg>
-                  </summary>
+                  <summary aria-label={`Actions for ${contact.name}`}><Icon name="dots" /></summary>
                   <div class="panel">
                     <details class="submenu">
-                      <summary class="menu-item">Edit contact</summary>
+                      <summary class="menu-item"><Icon name="edit" /> Edit contact</summary>
                       <ContactForm
                         action={`/dashboard/contacts/${contact.id}/edit`}
                         contact={contact}
@@ -120,8 +114,12 @@ const DELETE_CARD_WARNING =
                       method="post"
                       action={`/dashboard/contacts/${contact.id}/delete`}
                       data-confirm={contacts.length === 1 ? LAST_CONTACT_WARNING : 'Delete this contact?'}
+                      data-confirm-title={contacts.length === 1 ? 'Delete contact and card?' : 'Delete contact?'}
+                      data-confirm-ok="Delete"
                     >
-                      <button type="submit" class="menu-item danger">Delete contact</button>
+                      <button type="submit" class="menu-item danger">
+                        <Icon name="trash" /> Delete contact
+                      </button>
                     </form>
                   </div>
                 </details>
@@ -166,19 +164,25 @@ const DELETE_CARD_WARNING =
       {
         card && (
           <details class="menu kebab">
-            <summary aria-label="Card actions">
-              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                <circle cx="12" cy="5" r="2" fill="currentColor"></circle>
-                <circle cx="12" cy="12" r="2" fill="currentColor"></circle>
-                <circle cx="12" cy="19" r="2" fill="currentColor"></circle>
-              </svg>
-            </summary>
+            <summary aria-label="Card actions"><Icon name="dots" /></summary>
             <div class="panel">
-              <form method="post" action="/dashboard/card/new" data-confirm={NEW_CARD_WARNING}>
-                <button type="submit" class="menu-item">New card</button>
+              <form
+                method="post"
+                action="/dashboard/card/new"
+                data-confirm={NEW_CARD_WARNING}
+                data-confirm-title="Make a new card?"
+                data-confirm-ok="New card"
+              >
+                <button type="submit" class="menu-item"><Icon name="refresh" /> New card</button>
               </form>
-              <form method="post" action="/dashboard/card/delete" data-confirm={DELETE_CARD_WARNING}>
-                <button type="submit" class="menu-item danger">Delete card</button>
+              <form
+                method="post"
+                action="/dashboard/card/delete"
+                data-confirm={DELETE_CARD_WARNING}
+                data-confirm-title="Delete this card?"
+                data-confirm-ok="Delete card"
+              >
+                <button type="submit" class="menu-item danger"><Icon name="trash" /> Delete card</button>
               </form>
             </div>
           </details>
@@ -218,6 +222,11 @@ const DELETE_CARD_WARNING =
             <a href={cardUrl(card)}>{cardUrl(card)}</a>
           </p>
           <p class="note">
+            <a href="/dashboard/card/card.jpg" target="_blank" rel="noopener">
+              <Icon name="print" size={16} /> Open the card image in a new tab
+            </a>
+          </p>
+          <p class="note">
             Print the image above, or copy the link and PIN by hand. The QR points at the link.
           </p>
         </>
@@ -225,27 +234,6 @@ const DELETE_CARD_WARNING =
     }
   </section>
 
-  <script>
-    // Two things the browser does better than the server: confirm a destructive
-    // action, and space a phone number as it is typed. The dashboard may run
-    // JavaScript; the responder page never does (D6).
-    for (const form of document.querySelectorAll<HTMLFormElement>('form[data-confirm]')) {
-      form.addEventListener('submit', (event) => {
-        const message = form.dataset.confirm ?? 'Are you sure?';
-        if (!window.confirm(message)) event.preventDefault();
-      });
-    }
-
-    for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {
-      input.addEventListener('input', () => {
-        // A leading "+" means the number is already international: keep it, because
-        // the server treats a full E.164 number as typed.
-        const international = input.value.trimStart().startsWith('+');
-        const digits = input.value.replace(/[^\d]/g, '').slice(0, 15);
-        input.value = `${international ? '+' : ''}${digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()}`;
-      });
-    }
-  </script>
 
   <style>
     .top {

@@ -18,12 +18,25 @@ export async function signUp(page: Page): Promise<string> {
   return email;
 }
 
-/** Every destructive action asks first; tests accept unless they assert on the message. */
-export function acceptDialogs(page: Page, seen: string[] = []): void {
-  page.on('dialog', (dialog) => {
-    seen.push(dialog.message());
-    void dialog.accept();
-  });
+/**
+ * Destructive actions open a real `<dialog>` (not a native confirm). Confirm it and
+ * hand back the sentence the owner was shown, so a test can assert on the promise
+ * the UI made before it acted.
+ */
+export async function confirmModal(page: Page): Promise<string> {
+  const dialog = page.locator('#confirm-dialog');
+  await expect(dialog).toBeVisible();
+  const message = ((await dialog.locator('[data-confirm-message]').textContent()) ?? '').trim();
+  await dialog.locator('[data-confirm-ok]').click();
+  await expect(dialog).not.toBeVisible();
+  return message;
+}
+
+export async function cancelModal(page: Page): Promise<void> {
+  const dialog = page.locator('#confirm-dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.locator('[data-confirm-cancel]').click();
+  await expect(dialog).not.toBeVisible();
 }
 
 export interface ContactSpec {

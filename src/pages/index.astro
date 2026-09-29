@@ -1,5 +1,8 @@
 ---
-// Landing page. Functionality first: no design pass, no tracking, no scripts.
+import Icon from '@/components/Icon.astro';
+
+// Landing page. Functionality first: no design pass yet, no tracking, no scripts.
+// Icons and the wordmark are allowed here (the card page is the one that stays bare).
 // Sponsor logos (D18) and the auth links land with their phases.
 ---
 
@@ -17,7 +20,9 @@
   </head>
   <body>
     <main>
-      <h1>noka</h1>
+      <h1>
+        <img src="/noka-wordmark.svg" alt="noka" width="210" height="77" />
+      </h1>
       <p><em>next of kin access</em></p>
 
       <p>
@@ -26,10 +31,10 @@
         phone, without JavaScript and without an app.
       </p>
 
-      <ul>
-        <li>Your contacts are encrypted; the key is not in the database.</li>
-        <li>The page works on a bad mobile connection and asks for nothing.</li>
-        <li>No tracking on the card page, and no data sold, ever.</li>
+      <ul class="points">
+        <li><Icon name="lock" /> Your contacts are encrypted; the key is not in the database.</li>
+        <li><Icon name="signal" /> The page works on a bad mobile connection and asks for nothing.</li>
+        <li><Icon name="eye-off" /> No tracking on the card page, and no data sold, ever.</li>
       </ul>
 
       <p><a href="/signup">Create an account</a> · <a href="/login">Sign in</a></p>
@@ -55,7 +60,24 @@
     margin-bottom: 0;
     font-size: 2rem;
   }
-  ul {
-    padding-left: 1.25rem;
+  .points {
+    padding-left: 0;
+    list-style: none;
+  }
+  .points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .points :global(svg) {
+    flex: 0 0 auto;
+    margin-top: 0.35rem;
+    color: #555;
+  }
+  h1 img {
+    display: block;
+    max-width: 100%;
+    height: auto;
   }
 </style>

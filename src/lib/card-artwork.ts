@@ -1,15 +1,18 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ensureFonts, HEADING_FONT, MONO_FONT } from '@/lib/fonts';
+import { cardPhrasesFor } from '@/i18n/card-copy';
 import QRCode from 'qrcode';
 import sharp from 'sharp';
-import { cardPhrasesFor } from '@/i18n/card-copy';
 
 /**
  * The card artwork: portrait ISO ID-1 (53.98 × 85.60 mm) at 300 dpi, drawn to his
- * mockup (2026-09-29).
+ * mockup (2026-09-29) and re-set in Noto (2026-09-29, second pass).
  *
- * Top to bottom: the heading in every language the card carries, a rule, the SCAN
- * line in the same languages, the QR, a rule, the PIN, and the wordmark. No owner
- * name — a card lying in a wallet should not announce whose it is, and the page
- * behind the QR says it anyway.
+ * Top to bottom: the heading in every language the card carries (Noto Sans), a rule,
+ * the SCAN line in the same languages, the QR with room around it, a rule, the PIN in
+ * Noto Sans Mono, and the wordmark as vector paths. No owner name: a card lying in a
+ * wallet should not announce whose it is, and the page behind the QR says it anyway.
  *
  * The deterministic, exact-size PDF and the A4 sheet are Phase 7; this is the image
  * the dashboard shows and the owner can already print.
@@ -22,7 +25,8 @@ export const CARD_HEIGHT_PX = Math.round(85.6 * MM); // 1011
 const INK = '#111111';
 const SOFT = '#555555';
 const LINE = '#d8d8d8';
-const FONT = 'Helvetica, Arial, "Noto Sans", sans-serif';
+const LOGO_INK = '#c9c9c9';
+const WORDMARK = 'assets/brand/noka-wordmark.svg';
 
 export interface CardArtworkInput {
   pin: string;
@@ -50,48 +54,72 @@ function centeredText(
   value: string,
   y: number,
   size: number,
-  options: { weight?: string; fill?: string; tracking?: number } = {},
+  options: { font?: string; weight?: string; fill?: string; tracking?: number; scale?: number } = {},
 ): string {
-  const { weight = 'normal', fill = INK, tracking = 0 } = options;
-  return `<text x="${CARD_WIDTH_PX / 2}" y="${y}" text-anchor="middle" font-family='${FONT}' font-size="${size}" font-weight="${weight}" letter-spacing="${tracking}" fill="${fill}">${escapeXml(value)}</text>`;
+  const { font = HEADING_FONT, weight = 'normal', fill = INK, tracking = 0, scale = 1 } = options;
+  const sizeAttr = scale === 1 ? `font-size="${size}"` : `font-size="${Math.round(size * scale)}"`;
+  return `<text x="${CARD_WIDTH_PX / 2}" y="${y}" text-anchor="middle" font-family="${font}" ${sizeAttr} font-weight="${weight}" letter-spacing="${tracking}" fill="${fill}">${escapeXml(value)}</text>`;
+}
+
+/**
+ * The wordmark, inlined from the SVG asset so the card does not depend on a font for
+ * it. Returns nothing if the file is missing: a card without a logo still prints.
+ */
+function wordmarkSvg(x: number, y: number, height: number): string {
+  try {
+    const source = readFileSync(join(process.cwd(), WORDMARK), 'utf8');
+    const viewBox = source.match(/viewBox="([^"]+)"/)?.[1];
+    const inner = source.match(/<g[\s\S]*<\/g>/)?.[0];
+    if (!viewBox || !inner) return '';
+    const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
+    const width = ((vw ?? 1) / (vh ?? 1)) * height;
+    const drawn = inner.replace('currentColor', LOGO_INK);
+    return `<svg x="${x - width / 2}" y="${y}" width="${width}" height="${height}" viewBox="${vx} ${vy} ${vw} ${vh}">${drawn}</svg>`;
+  } catch {
+    return '';
+  }
 }
 
 export async function cardSvg(input: CardArtworkInput): Promise<string> {
+  ensureFonts();
   const phrases = cardPhrasesFor(input.languages);
 
-  // Heading: every language, stacked, with CJK a touch larger to hold the same weight.
+  // Heading: every language, stacked, CJK a touch larger to hold the same weight.
   const heading: string[] = [];
-  let y = 74;
+  let y = 76;
   for (const phrase of phrases) {
-    const size = Math.round(26 * (phrase.scale ?? 1));
-    heading.push(centeredText(phrase.title, y, size, { weight: 'bold' }));
+    heading.push(centeredText(phrase.title, y, 26, { weight: 'bold', scale: phrase.scale ?? 1 }));
     y += Math.round(38 * (phrase.scale ?? 1));
   }
 
-  const ruleY = y + 4;
-  // The SCAN line wraps after the third language, as in the mockup.
+  const ruleY = y + 6;
   const scanWords = phrases.map((phrase) => phrase.scan.toUpperCase());
   const firstLine = scanWords.slice(0, 3).join('  ·  ');
   const secondLine = scanWords.slice(3).join('  ·  ');
 
-  const qrSize = 360;
-  const qr = await qrSvg(input.url, qrSize);
-  const qrX = Math.round((CARD_WIDTH_PX - qrSize) / 2);
-  const qrY = ruleY + (secondLine ? 66 : 42);
+  const scanLineHeight = 26;
+  const scanTop = ruleY + 34;
+  const scanBottom = secondLine ? scanTop + scanLineHeight : scanTop;
 
-  const pinRuleY = qrY + qrSize + 44;
+  // Room to breathe: the QR sits well clear of the text above and the PIN below.
+  const qrSize = 340;
+  const qrX = Math.round((CARD_WIDTH_PX - qrSize) / 2);
+  const qrY = scanBottom + 52;
+  const qr = await qrSvg(input.url, qrSize);
+
+  const pinRuleY = qrY + qrSize + 62;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_WIDTH_PX}" height="${CARD_HEIGHT_PX}" viewBox="0 0 ${CARD_WIDTH_PX} ${CARD_HEIGHT_PX}">
   <rect width="100%" height="100%" fill="#ffffff"/>
   ${heading.join('\n  ')}
-  <line x1="${CARD_WIDTH_PX / 2 - 44}" y1="${ruleY}" x2="${CARD_WIDTH_PX / 2 + 44}" y2="${ruleY}" stroke="${LINE}" stroke-width="3"/>
-  ${centeredText(firstLine, ruleY + 32, 19, { fill: SOFT, tracking: 1 })}
-  ${secondLine ? centeredText(secondLine, ruleY + 58, 19, { fill: SOFT, tracking: 1 }) : ''}
+  <line x1="${CARD_WIDTH_PX / 2 - 46}" y1="${ruleY}" x2="${CARD_WIDTH_PX / 2 + 46}" y2="${ruleY}" stroke="${LINE}" stroke-width="3"/>
+  ${centeredText(firstLine, scanTop, 18, { font: MONO_FONT, fill: SOFT, tracking: 1 })}
+  ${secondLine ? centeredText(secondLine, scanTop + scanLineHeight, 18, { font: MONO_FONT, fill: SOFT, tracking: 1 }) : ''}
   <g transform="translate(${qrX}, ${qrY})">${qr}</g>
-  <line x1="${CARD_WIDTH_PX / 2 - 44}" y1="${pinRuleY}" x2="${CARD_WIDTH_PX / 2 + 44}" y2="${pinRuleY}" stroke="${LINE}" stroke-width="3"/>
-  ${centeredText('PIN', pinRuleY + 40, 20, { fill: SOFT, tracking: 6 })}
-  ${centeredText(input.pin, pinRuleY + 116, 72, { weight: 'bold', tracking: 14 })}
-  ${centeredText('noka', CARD_HEIGHT_PX - 34, 24, { fill: '#b9b9b9', tracking: 4 })}
+  <line x1="${CARD_WIDTH_PX / 2 - 46}" y1="${pinRuleY}" x2="${CARD_WIDTH_PX / 2 + 46}" y2="${pinRuleY}" stroke="${LINE}" stroke-width="3"/>
+  ${centeredText('PIN', pinRuleY + 42, 17, { font: MONO_FONT, fill: SOFT, tracking: 6 })}
+  ${centeredText(input.pin, pinRuleY + 112, 68, { font: MONO_FONT, weight: 'bold', tracking: 10 })}
+  ${wordmarkSvg(CARD_WIDTH_PX / 2, CARD_HEIGHT_PX - 56, 30)}
 </svg>`;
 }
 

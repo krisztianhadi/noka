@@ -18,7 +18,9 @@ test.describe('landing', () => {
 
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
-    await expect(page.locator('h1')).toHaveText('noka');
+    // The heading is the wordmark asset; its alt text is the product name.
+    await expect(page.locator('h1 img')).toHaveAttribute('alt', 'noka');
+    await expect(page.locator('h1 img')).toBeVisible();
     expect(external).toEqual([]);
   });
 

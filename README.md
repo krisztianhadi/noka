@@ -36,13 +36,15 @@ Two planes that never mix ([PLAN.md](docs/PLAN.md) §3).
   zero third-party requests, no fonts, no query strings.
 - **Owner plane** — `/dashboard`. One page in the order the work happens:
   **contacts, then notes, then the card**, all belonging to the owner rather than
-  the card. Make a card and it is live immediately, with a printable image, a link
-  and a six-digit PIN; *New card* replaces link and PIN together, which is how a
-  lost card is retired.
+  the card. Icons, dark mode and confirmation modals live here; the account menu
+  holds settings, theme and sign out. A card is live as soon as it is made, with a
+  printable image, a link and a six-digit PIN; *New card* replaces link and PIN
+  together, which is how a lost card is retired.
 
 The card's own language set drives the responder page: the same five languages
-(EN / ES / FR / ZH / RU) are used for the printed instructions and the page, so a
-card cannot be printed in a language its page cannot speak.
+(EN / ES / FR / ZH / RU) print on the card and appear on the page, so a card cannot
+be printed in a language its page cannot speak. The card is set in vendored Noto —
+subset, so the image renders the same in the container as on a laptop.
 
 ## The threat model, in plain words
 
@@ -75,16 +77,15 @@ address. A scan is not an alert, and nothing tells the owner in real time.
 
 ## What is deliberately not here (v1)
 
-- **No mobile app.** A wallet card and a web page; nothing to install.
-- **No structured medical fields.** Free-text notes, the owner's own liability.
-- **No analytics on the responder page.** Not a pixel, not a beacon.
+- **No mobile app** — a wallet card and a web page; nothing to install.
+- **No structured medical fields** — free-text notes, the owner's liability.
+- **No analytics on the responder page** — not a pixel, not a beacon.
 - **No sponsor content on `/c/*` or `/dashboard`.** Sponsor logos are static,
   self-hosted, and live on the landing and auth pages only.
-- **One card per account**, no public profiles, no sharing, no discovery.
-- **The dashboard and the landing are English only.** The responder page and the
-  printed card are not.
-- **No permanent lock on the PIN.** A printed URL must not be able to brick a
-  safety feature.
+- **One card per account** — no public profiles, no sharing, no discovery.
+- **The dashboard and the landing are English only**; the responder page and the
+  printed card are in five languages.
+- **No permanent lock on the PIN**: a printed URL must not brick a safety feature.
 
 ## Who pays for it
 

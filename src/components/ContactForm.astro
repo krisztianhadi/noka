@@ -137,6 +137,18 @@ const uid = contact?.id ?? 'new';
   <button type="submit">{submitLabel}</button>
 </form>
 
+<script>
+  // Space the number as it is typed, and never eat a deliberate "+": a value that
+  // starts with one is already international and is sent as typed.
+  for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {
+    input.addEventListener('input', () => {
+      const international = input.value.trimStart().startsWith('+');
+      const digits = input.value.replace(/[^\d]/g, '').slice(0, 15);
+      input.value = `${international ? '+' : ''}${digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()}`;
+    });
+  }
+</script>
+
 <style>
   input[type='text'],
   input[type='tel'],

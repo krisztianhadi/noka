@@ -308,3 +308,27 @@ line, the QR, the PIN, the wordmark, no owner name. The CJK and Cyrillic text re
 system fonts on this machine, which is fine here and *not* fine in the Alpine container — the
 vendored font is still Phase 7's job, and I would rather say that now than discover it on a
 print.
+
+## 2026-09-29 — Noto, real modals, and where the no-JS rule actually belongs
+
+**The rule he corrected.** I had been treating "no JavaScript, no custom fonts, works with
+nothing" as a property of the whole product. He pointed out it is a property of *one page*:
+the one a stranger opens in an emergency. The owner plane can have modals, icons and Noto,
+because the owner is signed in and their browser is known. That is now ADR-026, and the
+responder page keeps its zero-script guarantee intact.
+
+**The card.** Noto Sans for the heading, Noto Sans Mono for the labels and the PIN, more room
+around the QR, and the noka wordmark as vector outlines rather than text. The Chinese heading
+is ten characters, so the font is subset to ten characters: 6 KB instead of 15 MB, and
+fontconfig is pointed at our directory only, which means a render no longer depends on what
+the host has installed. On Alpine, which has no fonts at all, that is the difference between a
+card and a page of empty boxes.
+
+**Two mistakes worth recording.** Generating the wordmark, I flipped the glyphs myself and got
+a giant 'n': `SVGPathPen` already flips y for SVG, and my bounds only measured one glyph
+instead of the laid-out word. Both were visible in one render — which is the argument for
+looking at the output rather than trusting the transform.
+
+**And one process failure, twice.** Playwright reused the dev server I had running, so two
+full test runs reported failures that the new build did not have. The fix is boring: stop the
+server before the suite, not after it fails.
