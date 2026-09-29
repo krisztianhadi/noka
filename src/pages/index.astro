@@ -41,7 +41,7 @@ import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
           <span>Your contacts are encrypted; the key is not in the database.</span>
         </li>
         <li class="flex gap-3">
-          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="signal" size={18} /></span>
+          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="bars" size={18} /></span>
           <span>The page works on a bad mobile connection and asks for nothing.</span>
         </li>
         <li class="flex gap-3">
@@ -53,11 +53,13 @@ import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
       <div class="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-4">
         <a
           class="inline-flex h-9 items-center rounded-md border border-accent bg-accent px-3.5 text-sm font-medium text-accent-fg no-underline hover:opacity-90"
-          href="/signup">Create an account</a
+          href="/signup"
+          ><span class="inline-flex items-center gap-2"><Icon name="plus" size={16} /> Create an account</span></a
         >
         <a
           class="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
-          href="/login">Sign in</a
+          href="/login"
+          ><span class="inline-flex items-center gap-2"><Icon name="logout" size={16} /> Sign in</span></a
         >
         <p class="w-full text-xs text-fg-muted sm:w-auto sm:pl-2">
           Cards and printing are being built; accounts work today.

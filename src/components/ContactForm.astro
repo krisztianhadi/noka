@@ -5,6 +5,8 @@ import type { ContactView } from '@/lib/contacts';
 import { RELATIONS } from '@/lib/relations';
 import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
 import Button from '@/components/Button.astro';
+import { flagForLanguage } from '@/lib/flags';
+import Icon from '@/components/Icon.astro';
 
 /**
  * One form for adding and editing a contact.
@@ -177,6 +179,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
               value={code}
               checked={selectedSpoken.has(code)}
             />
+            <span aria-hidden="true">{flagForLanguage(code)}</span>
             <span>{spokenLabel(code)}</span>
           </label>
         ))
@@ -185,7 +188,10 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
   </fieldset>
 
   <div class="flex justify-end pt-1">
-    <Button type="submit">{submitLabel}</Button>
+    <Button type="submit">
+      <Icon name={contact ? 'check' : 'plus'} size={16} />
+      {submitLabel}
+    </Button>
   </div>
 </form>
 

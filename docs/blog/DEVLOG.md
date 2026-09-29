@@ -475,3 +475,32 @@ is where the regression test for the payload validation now lives.
 calls it yet, but Phase 6 will, and the tests prove the Postgres store is atomic across
 instances (ADR-016). I added a comment saying so in both files, because a green limiter test
 must not be read as "the PIN endpoint is throttled".
+
+## 2026-09-29 — Brand marks, flags, and a colour that would not stay red
+
+**What he asked for.** Icons on the buttons, brand icons for the messengers, flags for the
+languages, and a red destructive item in the kebab — which is a bug report, not a preference:
+that item was red in the markup and black on the screen.
+
+**The colour.** The shared `menu-item` class string contained `text-fg`. `text-danger` does not
+win against it, because both live in one cascade layer and document order decides, not the order
+I wrote them in the attribute. It is the same trap as `w-full` beating `w-[10.5rem]` on the phone
+field, one day apart, and I only noticed because he looked. The fix is a rule now: a shared class
+string carries layout, and each item states its own colour. I verified it by reading the computed
+colour instead of trusting the markup.
+
+**The brands.** Inlined from simple-icons' CC0 path data through a generator script, so the
+shapes are exactly as published and reproducible, and nothing is fetched at runtime — the
+responder page's zero-request promise survives having four brand marks on it. Used nominatively:
+they label the service each button dials.
+
+**The flags.** Emoji, keyed off the language code, always beside the written language name. A
+flag is not a language — English is not only Britain — and on Windows they fall back to letter
+pairs, which is fine because the name is right there.
+
+**The oversight this exposed.** The responder suite checked "fetches nothing external" against
+`/c/{unknown}` — the PIN form, which has no channel buttons on it. The page that actually carries
+`wa.me`, `t.me`, `signal.me` and `viber://` links had never been checked, and the old allowlist
+would have rejected them anyway. The contract is now split the way the platform splits it: a
+**resource** is a `src` or a `<link href>` and must be local; a **navigation** is an `<a href>`
+and may dial a service. Ran on the unlocked view too, which is where the buttons are.

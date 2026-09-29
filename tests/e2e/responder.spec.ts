@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { addContact, confirmModal, kebab, makeCard, saveNotes, signUp } from './helpers';
+import { addContact, confirmModal, externalResources, kebab, makeCard, saveNotes, signUp, unexpectedNavigations } from './helpers';
 
 /**
  * The whole point of the product (§3, §9): a stranger with the card and the PIN
@@ -58,6 +58,12 @@ test.describe('the responder page', () => {
     // Every channel is a button, and the number itself is on the page.
     await expect(guest.locator('a.signal')).toContainText('Signal');
     await expect(guest.locator('.phone')).toHaveText('+66 812 345 678');
+
+    // The unlocked page is the one with brand marks and service links on it, so this
+    // is where "the responder page fetches nothing" has to be proven.
+    const unlocked = await guest.content();
+    expect(externalResources(unlocked), 'unlocked page fetches nothing').toEqual([]);
+    expect(unexpectedNavigations(unlocked), 'navigations stay inside the allowlist').toEqual([]);
     await expect(guest.locator('.phone a')).toHaveAttribute('href', 'tel:+66812345678');
     await expect(guest.locator('.notes')).toContainText('Allergic to penicillin.');
 

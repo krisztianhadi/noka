@@ -237,6 +237,36 @@ holds references to and every page answers 500. He found it as "login is broken"
 is now per-process — `outDir` comes from `NOKA_OUT_DIR`, and the suite builds into `dist-e2e`
 (gitignored, dockerignored). Two servers, two build directories, no shared mutable state.
 
+### ADR-030 — Brand marks, flags, and who owns a colour
+
+**Context.** He asked for icons on the buttons and brand icons for WhatsApp, Signal,
+Telegram and Viber, flags for the languages, and for the destructive kebab item to be red —
+which it was not.
+
+**Decision.**
+
+1. **Brand marks are inlined.** `scripts/make-brand-icons.mjs` generates
+   `src/lib/brand-icons.ts` from **simple-icons** (CC0-1.0 path data) for the four messenger
+   logos, and `ChannelIcon.astro` renders them with the brand's own colour. Call and text
+   message use the project's own line icons. Nothing is fetched: the responder page's
+   zero-request guarantee (ADR-026) is unchanged, and the marks are used nominatively — to
+   label the service each button dials, which is what a brand mark is for. Trademarks remain
+   their owners'.
+2. **Flags for languages are emoji**, mapped from the language code
+   (`src/lib/flags.ts`), never an image. They decorate a written label, never replace it: a
+   flag is not a language, and Windows has no flag-emoji font, where they degrade to letter
+   pairs beside the name that was already there.
+3. **A shared class string must not own a colour.** The destructive kebab item rendered in
+   normal ink because the shared `menu-item` string contained `text-fg`, and both classes sit
+   in one cascade layer where document order decides — the same trap as `w-full` beating
+   `w-[10.5rem]` on the phone field. Shared strings now carry layout only; each item states
+   its own colour.
+
+**Consequences.** The responder page still loads nothing external, and the e2e suite proves it
+on the **unlocked** page — the one that actually carries the service links — not just on the
+PIN form. `externalResources()` and `unexpectedNavigations()` separate resource loads from
+navigations, which is the distinction the old check lacked.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

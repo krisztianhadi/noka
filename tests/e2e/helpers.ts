@@ -93,6 +93,48 @@ export async function readCard(page: Page): Promise<{ slug: string; pin: string 
   return { slug: url.split('/').pop() ?? '', pin };
 }
 
+/**
+ * The responder plane's oldest promise (§5, D6): it fetches nothing from anywhere.
+ *
+ * Two different things live in `href` and they must not be conflated. A **resource**
+ * is a `src` attribute, or an `href` on `<link>` — those must be same-origin or a data
+ * URI. A **navigation** is an `href` on `<a>`: tel:, sms:, mailto:, same-origin, or a
+ * service the button dials (wa.me, t.me, signal.me, viber://). Conflating them is how
+ * the old check passed while never looking at the unlocked page.
+ */
+export function externalResources(html: string): string[] {
+  const offenders: string[] = [];
+  for (const [, tag, attrs] of html.matchAll(/<([a-z0-9-]+)\b([^>]*)>/gi)) {
+    const name = String(tag).toLowerCase();
+    const urls = [...String(attrs).matchAll(/\bsrc\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1] ?? '');
+    if (name === 'link') {
+      urls.push(...[...String(attrs).matchAll(/\bhref\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1] ?? ''));
+    }
+    for (const url of urls) {
+      if (!url.startsWith('data:') && !url.startsWith('/')) offenders.push(`${name} → ${url}`);
+    }
+  }
+  return offenders;
+}
+
+const ALLOWED_NAVIGATION = [
+  /^#[^\s]*$/,
+  /^\/[^\s]*$/,
+  /^tel:/i,
+  /^sms:/i,
+  /^mailto:/i,
+  /^https:\/\/wa\.me\//i,
+  /^https:\/\/t\.me\//i,
+  /^https:\/\/signal\.me\//i,
+  /^viber:\/\//i,
+];
+
+export function unexpectedNavigations(html: string): string[] {
+  return [...html.matchAll(/<a\b[^>]*\bhref\s*=\s*["']([^"']+)["']/gi)]
+    .map((match) => match[1] ?? '')
+    .filter((url) => !ALLOWED_NAVIGATION.some((allowed) => allowed.test(url)));
+}
+
 export async function saveNotes(page: Page, text: string): Promise<void> {
   await page.fill('#notes', text);
   await page.getByRole('button', { name: 'Save notes' }).click();

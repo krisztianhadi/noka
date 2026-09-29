@@ -1,5 +1,6 @@
 ---
 import Button from '@/components/Button.astro';
+import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
 import { getAuth } from '@/lib/auth';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
@@ -75,7 +76,7 @@ if (Astro.request.method === 'POST') {
     </div>
 
     <div class="flex justify-end">
-      <Button type="submit">Create account</Button>
+      <Button type="submit"><Icon name="plus" size={16} /> Create account</Button>
     </div>
   </form>
 

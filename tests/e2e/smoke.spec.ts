@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { externalResources, unexpectedNavigations } from './helpers';
 
 /**
  * Phase 1 smoke suite. The assertions that matter here are the ones PLAN §12
@@ -63,19 +64,9 @@ test.describe('responder plane', () => {
     const html = await response.text();
     expect(html).not.toMatch(/<script/i);
 
-    // No resource may be fetched from anywhere (§5): only same-origin paths,
-    // data URIs, in-page anchors, tel:/mailto: links and the wa.me navigation
-    // target are allowed. XML namespaces (xmlns=) are not resource loads.
-    const resourceRefs = [...html.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)]
-      .map((match) => match[1] ?? '')
-      .filter(
-        (value) =>
-          !value.startsWith('data:') &&
-          !value.startsWith('#') &&
-          !value.startsWith('/') &&
-          !/^(tel:|mailto:)/i.test(value) &&
-          !/^https:\/\/wa\.me\//i.test(value),
-      );
-    expect(resourceRefs, `external resource references: ${resourceRefs.join(', ')}`).toEqual([]);
+    // Nothing is fetched from anywhere, and every navigation goes where a card page
+    // may go (§5).
+    expect(externalResources(html)).toEqual([]);
+    expect(unexpectedNavigations(html)).toEqual([]);
   });
 });

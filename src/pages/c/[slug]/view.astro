@@ -2,7 +2,9 @@
 import Responder from '@/layouts/Responder.astro';
 import { t, type MessageKey } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
+import ChannelIcon from '@/components/ChannelIcon.astro';
 import { channelHref } from '@/lib/channels';
+import { flagForLanguage } from '@/lib/flags';
 import {
   cardLanguages,
   findCardBySlug,
@@ -60,7 +62,8 @@ const offered = cardLanguages(card);
         <div class="actions">
           {contact.channels.map((channel) => (
             <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
-              {label(`channel.${channel}` as MessageKey)}
+              <span class="mark"><ChannelIcon channel={channel} size={20} branded /></span>
+              <span>{label(`channel.${channel}` as MessageKey)}</span>
             </a>
           ))}
         </div>
@@ -89,7 +92,7 @@ const offered = cardLanguages(card);
         <form method="post" action={`/c/${card.slug}/lang`}>
           {offered.map((code) => (
             <button type="submit" name="lang" value={code} aria-current={code === language}>
-              {LANGUAGE_INFO[code].endonym}
+              <span aria-hidden="true">{flagForLanguage(code)}</span> {LANGUAGE_INFO[code].endonym}
             </button>
           ))}
         </form>

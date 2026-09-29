@@ -1,5 +1,6 @@
 ---
 import Button from '@/components/Button.astro';
+import ChannelIcon from '@/components/ChannelIcon.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
@@ -45,8 +46,11 @@ const NEW_CARD_WARNING =
 const DELETE_CARD_WARNING =
   'Delete the card and its link? Your contacts and notes are kept, and you can make a new card later.';
 
+// No colour in the shared string: `text-fg` here beat the destructive item's
+// `text-danger` because both are one cascade layer and order decides, so "Delete
+// contact" rendered in normal ink. Colour belongs to each item.
 const menuItem =
-  'menu-item flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-fg no-underline hover:bg-muted';
+  'menu-item flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm no-underline hover:bg-muted';
 const cardClass = 'rounded-lg border border-line bg-surface p-4 sm:p-5';
 const sectionTitle = 'text-sm font-semibold uppercase tracking-wide text-fg-muted';
 const summaryIcon =
@@ -73,16 +77,16 @@ const panelClass =
           <span class="block text-sm font-medium">{owner.name}</span>
           <span class="block text-xs break-all text-fg-muted">{owner.email}</span>
         </p>
-        <a class={menuItem} href="/dashboard/settings"><Icon name="settings" size={16} /> Settings</a>
+        <a class={`${menuItem} text-fg`} href="/dashboard/settings"><Icon name="settings" size={16} /> Settings</a>
         <form method="post" action="/dashboard/theme">
           <input type="hidden" name="theme" value={nextTheme} />
-          <button class={menuItem} type="submit">
+          <button class={`${menuItem} text-fg`} type="submit">
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </form>
         <form method="post" action="/logout">
-          <button class={menuItem} type="submit"><Icon name="logout" size={16} /> Sign out</button>
+          <button class={`${menuItem} text-fg`} type="submit"><Icon name="logout" size={16} /> Sign out</button>
         </form>
       </div>
     </details>
@@ -131,13 +135,18 @@ const panelClass =
                   <p class="name text-base font-semibold">{contact.name}</p>
                   <p class="meta mt-0.5 text-sm text-fg-muted">{relationLabel(contact.relation)}</p>
                   <p class="meta mt-0.5">
-                    <a class="phone font-mono text-sm text-fg" href={channelHref('call', contact.phoneE164)}>
+                    <a
+                      class="phone inline-flex items-center gap-1.5 font-mono text-sm text-fg"
+                      href={channelHref('call', contact.phoneE164)}
+                    >
+                      <Icon name="phone" size={14} />
                       {contact.phoneDisplay}
                     </a>
                   </p>
                   <p class="tags mt-2 flex flex-wrap gap-1">
                     {contact.channels.map((channel: Channel) => (
-                      <span class="tag rounded-full border border-line px-2 py-0.5 text-xs">
+                      <span class="tag inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
+                        <ChannelIcon channel={channel} size={13} branded />
                         {channelLabel(channel)}
                       </span>
                     ))}
@@ -155,7 +164,7 @@ const panelClass =
                   </summary>
                   <div class={panelClass}>
                     <details class="submenu">
-                      <summary class={`${menuItem} marker:content-none`}>
+                      <summary class={`${menuItem} text-fg marker:content-none`}>
                         <Icon name="edit" size={16} /> Edit contact
                       </summary>
                       <div class="border-t border-line p-3">
@@ -223,7 +232,7 @@ const panelClass =
           </p>
         </div>
         <div class="flex justify-end">
-          <Button type="submit">Save notes</Button>
+          <Button type="submit"><Icon name="check" size={16} /> Save notes</Button>
         </div>
       </form>
     </div>
@@ -247,7 +256,7 @@ const panelClass =
                   data-confirm-title="Make a new card?"
                   data-confirm-ok="New card"
                 >
-                  <button class={menuItem} type="submit"><Icon name="refresh" size={16} /> New card</button>
+                  <button class={`${menuItem} text-fg`} type="submit"><Icon name="refresh" size={16} /> New card</button>
                 </form>
                 <form
                   method="post"
@@ -275,7 +284,9 @@ const panelClass =
                 : 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.'}
             </p>
             <form method="post" action="/dashboard/card/create">
-              <Button type="submit" disabled={count === 0}>Make my card</Button>
+              <Button type="submit" disabled={count === 0}>
+                <Icon name="card" size={16} /> Make my card
+              </Button>
             </form>
           </div>
         )
