@@ -4,6 +4,22 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-09-29
 
+### Feature — documentation restructured for readers
+
+- **README rewritten to tell the story** instead of only explaining setup: why
+  the project exists (a post-it in a wallet is the competition), how the two
+  planes work, the threat model in plain words — including what is *not* honest
+  to claim about it — what is deliberately absent in v1, what is next, and what
+  the tests actually prove. Still under the 200-line cap.
+- **`docs/DECISIONS.md` created**: the 17 ADRs moved out of ARCHITECTURE.md into
+  their own register, with a status table, the four still-open decisions, and
+  ADR-004 — the one decision the project reversed — kept in full.
+- **`docs/blog/` started**: `DEVLOG.md` (append-only raw material, one entry per
+  work block, with what broke and what was decided) and
+  `2026-09-29-why-i-built-noka.md` (first post draft, marked unpublished).
+- ARCHITECTURE.md now links to the register instead of duplicating it, so there
+  is one home for each decision.
+
 ### Feature — Phase 0 spikes finished (rate limiter, PDF determinism)
 
 - `rate-limiter-flexible` with its Postgres store is wired up behind a five-line

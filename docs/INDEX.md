@@ -14,10 +14,13 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 | Document | What it is |
 |---|---|
 | [PLAN.md](PLAN.md) | The build contract — decisions D1–D31, threat model, schema, phases, endpoint contract, environment. **Start here.** |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit, the encrypted blob format, and the ADRs — including where PLAN was wrong (ADR-004). |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
+| [DECISIONS.md](DECISIONS.md) | The ADRs: 17 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |
+| [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
+| [blog/2026-09-29-why-i-built-noka.md](blog/2026-09-29-why-i-built-noka.md) | First post draft (unpublished). |
 | [../README.md](../README.md) | Under 200 lines: what it is, quick start, scripts. |
 | [ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md) | Historical: the spec as first pasted on 2026-09-29. Superseded by PLAN.md, kept for provenance. |
 
@@ -28,4 +31,6 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 - **Why is the owner's email in plaintext, when PLAN said it would not be?**
   ADR-004 — the Phase 0 spike, and what it costs.
 - **Why does the responder page speak five languages?** PLAN §3, D19–D20, ADR-006.
-- **What is not built on purpose?** PLAN §13 and §17.
+- **What is not built on purpose?** PLAN §13 and §17, plus README's "deliberately not here".
+- **What would I defend in a design review?** [DECISIONS.md](DECISIONS.md), and ADR-004 in
+  particular — the decision that was reversed, and why.
