@@ -818,3 +818,73 @@ would have made the code harder to reuse for the people this is for.
 **What is still undecided, and is fine to be:** whether sponsors ever actually
 appear, what a whitelabel deal would cost, and whether any of this is worth
 doing before ten people have printed a card. None of it blocks the build.
+
+## Tomorrow — the action plan from two independent reviews (2026-09-29 evening)
+
+Claude Sonnet 5 and GPT-5.6 Sol read the pushed repository separately. Their verdicts agree on the
+shape: the architecture is sound and the responder plane's constraints hold, but the **write paths
+are not transactional**, and a few documents claim more than the code does. Everything below was
+checked against the code before it was written down; two of the findings were claims I had made
+myself earlier the same day.
+
+### 1. Concurrency and transactions (the real defect class)
+
+Every one of these is a read-then-write with no transaction, and every one has a two-tab or
+double-click path to a bad state. This is tomorrow's first job, in this order.
+
+| # | File | Failure | Fix |
+|---|---|---|---|
+| 1 | `src/lib/contacts.ts:173-180` | Two deletions of the last two contacts each see `length > 1`, both delete, neither deletes the card → a live card pointing at nothing | one transaction: delete, recount inside it, then delete the card |
+| 2 | `src/lib/cards.ts:41-64` | Two "Make my card" requests both pass the existence check; one hits the unique index and returns a 500 after two Argon2 hashes | `insert … on conflict do nothing` + return the winning row |
+| 3 | `src/lib/contacts.ts:125-140` | `sortOrder` comes from `listContacts().length` → colliding order under concurrency, and it decrypts every existing contact before every insert | `max(sort_order) + 1` in the same statement |
+| 4 | `src/lib/responder.ts:93-114` | The audit insert and the `scanCount` update are separate writes: an interruption logs a success but leaves the counter behind, or a valid PIN 500s | one transaction, and decide whether audit is allowed to block emergency access (it should not) |
+| 5 | `src/lib/account.ts:49-108` | The export is assembled from independent queries: rotating a card or editing a contact mid-export yields a file describing a state that never existed | one repeatable-read transaction |
+
+### 2. Server-side limits and layout robustness
+
+- **No service-layer length limits** (`src/lib/contacts.ts:91,190-207`): `maxlength` exists only in
+  HTML, so a direct POST stores arbitrarily large encrypted values. Enforce in the service.
+- **No overflow handling on the responder page** (`src/layouts/Responder.astro:101-105`): a long
+  unbroken name or note overflows the card. `overflow-wrap: anywhere`.
+- **No cap on contacts** (`src/lib/responder.ts:123-136`): 200 contacts are decrypted and rendered
+  into one emergency response, against the stated 12 KB budget. Cap it server-side at a number that
+  makes sense for an emergency (10–20), and say so in the UI.
+
+### 3. Product questions the reviews raised, which are mine to answer, not to code around
+
+- **A deleted or superseded card is indistinguishable from a wrong PIN, forever.** That is the
+  anti-enumeration design working as intended, and it is also a person standing in the street. The
+  card itself may need a printed line ("no answer? call this number") so the artefact is useful when
+  the software is not. Related: `no-store` and no service worker mean the page cannot work offline,
+  so the landing copy "works on a bad mobile connection" should say what it actually needs.
+- **Every printed card hard-binds one origin** (`src/lib/cards.ts:112-115`). Losing the domain bricks
+  every card in every wallet. Own a durable redirect domain, and write the migration story down
+  before printing anything.
+
+### 4. i18n follow-ups (found by review, all real)
+
+- **Pluralisation**: `src/pages/dashboard/index.astro:120` hand-picks one/many, which cannot express
+  Russian's three plural categories. Use `Intl.PluralRules` for the keys that take a count.
+- **RTL**: `dir` now exists in `LANGUAGE_INFO` and both layouts render it, but no layout has been
+  looked at mirrored. Arabic is a metadata change plus a visual pass — the doc now says so.
+- **Card artwork vs longer translations** (`src/lib/card-artwork.ts:87-121`): fixed pixels, no
+  measurement. A longer language overlaps its slot instead of failing. Measure and fail loudly.
+
+### 5. Tests to add with the fixes above
+
+Concurrent last-contact deletion · concurrent card creation · fault injection between audit insert
+and counter update · export during rotation/edit · 200-contact create and response budget · direct
+POST over the name/note limits plus an unbroken-name layout case · upgrade migration with pre-existing
+contacts and notes (current DB tests mostly start from a fresh schema) · an exact live-vs-unknown
+response comparison, because the README claims byte-identical and the test only checks a few strings.
+
+### 6. Cut or correct
+
+- **`scan_count` / `last_viewed_at` are written twice** (`src/db/schema.ts:35-39`, `responder.ts:93-114`)
+  for convenience and create a consistency failure for no emergency benefit. Derive activity from
+  `scan_attempts` instead, or accept it and stop maintaining two counters.
+- **The dashboard runs `countContacts()` after `listContacts()`** (`src/pages/dashboard/index.astro:31-34`)
+  — an extra query and a count that can disagree with the list beside it. Use `contacts.length`.
+- **The documentation needs a stale-claims pass.** The README quotes fixed test counts and still lists
+  export/deletion as pending (they shipped today); `docs/PLAN.md` reads as pre-code in places and
+  describes endpoints that no longer exist. Historical spec is fine, but it must be marked as history.
