@@ -1,8 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * E2E + accessibility checks. Local runs reuse the dev server on :3200
- * (3200 keeps clear of ghosted :3000 and kaja :3100).
+ * E2E + accessibility checks.
+ *
+ * **The suite owns its server.** It builds and starts its own on :3300, and never
+ * reuses one that happens to be running. That is not tidiness: when a server was
+ * already listening, `reuseExistingServer` skipped the build as well, so the suite
+ * silently tested a stale build and reported failures the current code did not have
+ * (or passed code it did not have either). Three separate verification mistakes in
+ * one session came from exactly that.
+ *
+ * :3300 is deliberate — :3000 is ghosted, :3100 kaja, :3200 the dev server this repo
+ * runs by hand. A port nobody else uses means the suite can always start clean.
  */
 export default defineConfig({
   testDir: './tests/e2e',
@@ -12,18 +21,19 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
   use: {
-    // 127.0.0.1, not localhost: `localhost` can resolve to ::1 first, which
-    // makes Playwright think no server is running and fail to start its own.
-    baseURL: 'http://127.0.0.1:3200',
+    // 127.0.0.1, not localhost: `localhost` can resolve to ::1 first, which makes
+    // Playwright think no server is running and fail to start its own.
+    baseURL: 'http://127.0.0.1:3300',
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    // The built server, not `astro dev`: dev injects the Vite/HMR client, and
-    // the zero-JavaScript assertion is only meaningful in production output.
+    // The built server, not `astro dev`: dev injects the Vite/HMR client, and the
+    // zero-JavaScript assertion is only meaningful in production output.
     command: 'pnpm build && node --env-file-if-exists=.env ./dist/server/entry.mjs',
-    url: 'http://127.0.0.1:3200/healthz',
-    reuseExistingServer: !process.env.CI,
+    url: 'http://127.0.0.1:3300/healthz',
+    reuseExistingServer: false,
     timeout: 180_000,
+    env: { PORT: '3300', HOST: '127.0.0.1' },
   },
 });

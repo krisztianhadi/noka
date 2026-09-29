@@ -1,6 +1,10 @@
 ---
 import Icon from '@/components/Icon.astro';
 import '@/styles/app.css';
+// Inlined, not an <img>: the wordmark is drawn with `currentColor`, and as an
+// external image that resolves to the SVG's own default (black) — invisible on a
+// dark page. Inline, it follows the theme like any other text.
+import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
 
 // Landing page. Same token scale as the owner plane (ADR-028); no tracking, and no
 // sponsor content until there is a sponsor (PLAN §18).
@@ -21,9 +25,7 @@ import '@/styles/app.css';
   <body class="min-h-dvh">
     <main class="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
       <div class="space-y-3">
-        <h1>
-          <img class="h-auto w-52" src="/noka-wordmark.svg" alt="noka" width="210" height="77" />
-        </h1>
+        <h1 class="w-52 text-fg [&_svg]:h-auto [&_svg]:w-full" set:html={wordmark} />
         <p class="text-sm tracking-wide text-fg-muted">next of kin access</p>
       </div>
 

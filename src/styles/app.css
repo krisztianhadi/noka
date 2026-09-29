@@ -14,13 +14,15 @@
   :root {
     /* Surfaces and ink. Dark is a cookie on the server and a media query for
        everyone who has not chosen — both paths land on the same variables. */
-    --noka-bg: #f6f7f9;
+    /* The page is a clearly darker plane than the cards: at #f6f7f9 against white
+       the two were nearly the same colour, which he caught immediately. */
+    --noka-bg: #e9ebef;
     --noka-surface: #ffffff;
-    --noka-surface-muted: #f0f1f4;
+    --noka-surface-muted: #f4f5f8;
     --noka-fg: #14161a;
     --noka-fg-muted: #5b6270;
-    --noka-line: #e2e5ea;
-    --noka-line-strong: #c3c8d2;
+    --noka-line: #dce0e7;
+    --noka-line-strong: #b6bdc9;
     --noka-accent: #14161a;
     --noka-accent-fg: #ffffff;
     --noka-danger: #b4241f;
@@ -35,7 +37,7 @@
   }
 
   :root[data-theme='dark'] {
-    --noka-bg: #101216;
+    --noka-bg: #0c0e12;
     --noka-surface: #181b21;
     --noka-surface-muted: #1f232b;
     --noka-fg: #ecedef;

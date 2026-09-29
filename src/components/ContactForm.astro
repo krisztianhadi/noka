@@ -55,8 +55,13 @@ const national = (matched ? stored.slice(matched.dial.length + 1) : stored.repla
 const uid = contact?.id ?? 'new';
 
 const labelClass = 'mb-1.5 block text-sm font-medium text-fg';
+/**
+ * No width here on purpose: `w-full` in this string collided with the country
+ * select's own `w-[10rem]`, and the later definition won — the select grew to the
+ * full row and pushed the number input off screen. Width belongs to the use site.
+ */
 const fieldClass =
-  'h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none';
+  'h-10 rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none';
 const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
 const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
 ---
@@ -75,7 +80,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       <label class={labelClass} for={`name-${uid}`}>Name</label>
       <input
         id={`name-${uid}`}
-        class={fieldClass}
+        class={`${fieldClass} w-full`}
         name="name"
         type="text"
         required
@@ -85,7 +90,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
     </div>
     <div>
       <label class={labelClass} for={`relation-${uid}`}>Relation</label>
-      <select id={`relation-${uid}`} class={fieldClass} name="relation" required>
+      <select id={`relation-${uid}`} class={`${fieldClass} w-full`} name="relation" required>
         {
           RELATIONS.map((relation) => (
             <option value={relation} selected={contact?.relation === relation}>
@@ -99,9 +104,11 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
 
   <div>
     <label class={labelClass} for={`phone-${uid}`}>Phone</label>
-    <div class="flex gap-2">
+    {/* Stacked on a phone so the country name is not clipped and the number gets a
+        full-width field; side by side from `sm` up. */}
+    <div class="flex flex-col gap-2 sm:flex-row">
       <select
-        class={`${fieldClass} w-[10rem] shrink-0`}
+        class={`${fieldClass} w-full sm:w-[10.5rem] sm:shrink-0`}
         name="country"
         id={`country-${uid}`}
         aria-label="Country calling code"
@@ -116,7 +123,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
       </select>
       <input
         id={`phone-${uid}`}
-        class={fieldClass}
+        class={`${fieldClass} w-full min-w-0 sm:flex-1`}
         name="phone"
         type="tel"
         required

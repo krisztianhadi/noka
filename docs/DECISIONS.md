@@ -211,6 +211,25 @@ its zero-script, zero-request guarantees. Tailwind emits only the utilities a pa
 page uses none. `Button.astro` spreads unknown attributes through to the element — dropping them
 silently broke the confirmation dialog once, which is why the spread is documented in the file.
 
+### ADR-029 — The e2e suite owns its server, and it never reuses one
+
+**Context.** Three separate verification mistakes in one session had the same shape: a server was
+already running on :3200, so Playwright's `reuseExistingServer` skipped *both* the build and the
+restart and silently tested a stale build. That produced failures the current code did not have,
+and — worse — passes for code that was not being served. The last one nearly had me "fix" a
+correct phone row because the assertion was measured against the old markup.
+
+**Decision.** Playwright builds and starts its own server on **:3300**, with
+`reuseExistingServer: false`. The hand-run dev server stays on :3200. :3000 is ghosted and :3100 is
+kaja, so nothing collides.
+
+**Why a separate port, not just "remember to stop the server".** A rule that depends on me
+remembering has already failed three times today. A port that no other process uses makes the
+failure impossible: if something is listening there, the suite fails loudly instead of testing it.
+
+**Consequences.** Every e2e run pays for one build (~1s, incremental). In exchange, "the tests
+pass" means the current code passed. The dev server can stay up for a human to click.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.

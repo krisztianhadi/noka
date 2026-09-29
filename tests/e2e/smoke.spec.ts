@@ -18,9 +18,9 @@ test.describe('landing', () => {
 
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
-    // The heading is the wordmark asset; its alt text is the product name.
-    await expect(page.locator('h1 img')).toHaveAttribute('alt', 'noka');
-    await expect(page.locator('h1 img')).toBeVisible();
+    // The heading is the wordmark, inlined so it can follow the theme; its accessible
+    // name comes from the SVG's own role and label.
+    await expect(page.getByRole('heading', { name: 'noka' })).toBeVisible();
     expect(external).toEqual([]);
   });
 

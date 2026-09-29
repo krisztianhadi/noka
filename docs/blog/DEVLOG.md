@@ -389,3 +389,31 @@ the confirmation dialog's `data-confirm-ok` never reached the DOM and its script
 button — the modal silently stopped opening. Two of my own tests caught it, which is the argument
 for testing the interaction and not the markup. The component spreads unknown attributes now, and
 says why.
+
+## 2026-09-29 — "What kind of testing you are doing?"
+
+He found three things in five minutes that my green suite did not: the logo invisible in dark mode,
+the country picker stretched across its row, and cards the same colour as the page. He was right to
+ask the question. Axe checks contrast *between text and its background*, not between a logo and the
+page it sits on, and it has nothing to say about a flex row. Behaviour tests pass in a layout nobody
+can use. Green meant "the code does what it says", not "the thing looks right", and I had been
+reporting it as if it meant both.
+
+**The bugs.** The wordmark was `currentColor` inside an `<img>`, which resolves against the SVG's
+own defaults — black, on a near-black page. The field class carried `w-full`, which beat the
+country select's `w-[10.5rem]` because both sit in the same layer and the later rule wins; the
+select ate the row and pushed the number input off screen. And `#f6f7f9` against `#ffffff` is a
+1.07:1 difference, which is not a difference.
+
+**The tests that would have caught them.** A new `visual.spec.ts` asserts page-versus-card
+luminance, the wordmark's contrast in both themes, the phone row fitting at 1280px and at 375px
+(stacked below `sm`, side by side above), one control height scale, zero shadows on things that do
+not float, and no horizontal overflow at phone width. Three of those assertions were wrong on the
+first run and taught me something: I compared an absolute right edge against a row *width*, which
+is how a correct layout reads as broken.
+
+**And the reason my verification kept lying.** `reuseExistingServer` skips the build as well as the
+restart when a server is already listening. Three times today the suite tested a build from before
+the change — twice reporting failures that did not exist, once nearly sending me to "fix" a phone
+row that was already correct. It owns its server on :3300 now, and a port nobody else uses means the
+mistake cannot happen again (ADR-029). A rule that depends on me remembering has already failed.
