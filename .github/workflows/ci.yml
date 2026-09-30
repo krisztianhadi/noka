@@ -97,7 +97,8 @@ jobs:
       # and early instead: it cost five red runs to find a one-line `.npmrc`.
       - name: No machine-specific absolute paths in tracked files
         run: |
-          if git grep -n -I -E '/home/[a-z0-9_-]+/|/Users/[a-z0-9_-]+/' -- . > /tmp/abs-paths.txt; then
+          # Prose may name a sandbox path; configuration may not.
+          if git grep -n -I -E '/home/[a-z0-9_-]+/|/Users/[a-z0-9_-]+/' -- . ':!docs' ':!*.md' > /tmp/abs-paths.txt; then
             echo "Tracked files contain absolute paths from a local machine:"
             cat /tmp/abs-paths.txt
             exit 1
