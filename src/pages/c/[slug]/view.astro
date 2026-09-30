@@ -84,7 +84,7 @@ const offered = cardLanguages(card);
             </span>
           )}
         </div>
-        <div class="phone">
+        <div class={`phone${contact.textOnly ? '' : ' callable'}`}>
           {/* For someone who cannot hear, the number is text to copy, not a button to
               press: a tappable dialler here contradicts the alert right below it. */}
           {contact.textOnly ? (

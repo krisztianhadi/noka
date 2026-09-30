@@ -200,7 +200,8 @@ const { lang, title } = Astro.props;
     /* 40px wherever the whole number fits on one line, which is every screen from about
        460px up. Below that it scales down only as far as it must: a phone number split
        across two lines is worse than a slightly smaller one. */
-    font-size: min(var(--t-phone), 8.6vw);
+    /* The handset before it costs a few pixels, so the number scales a touch earlier. */
+    font-size: min(var(--t-phone), 7.8vw);
     font-weight: 600;
     white-space: nowrap;
     line-height: var(--lh-solid);
@@ -209,6 +210,20 @@ const { lang, title } = Astro.props;
   }
   .phone a {
     color: inherit;
+  }
+  /* Only a number that is a link gets the handset: for a contact who cannot hear, the number
+     is plain text precisely so nothing invites a call. The mark is a sibling of the link, so it
+     does not inherit its underline. */
+  .phone.callable {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .phone.callable::before {
+    content: '📞';
+    /* Decoration: big enough to read, small enough that the number keeps its width. */
+    font-size: 0.62em;
+    line-height: 1;
   }
   .notes-heading {
     margin: var(--s7) 0 var(--s3);
@@ -251,6 +266,16 @@ const { lang, title } = Astro.props;
   .actions a svg {
     flex: 0 0 auto;
     display: block;
+  }
+  .channel-emoji {
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+  .channel-emoji--call::before {
+    content: '📞';
+  }
+  .channel-emoji--sms::before {
+    content: '💬';
   }
   /* A phone call is the one thing that always works: it keeps the solid button,
      every other channel is outlined beside it. */

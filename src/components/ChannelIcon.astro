@@ -26,17 +26,26 @@ interface Props {
 const { channel, size = 18, branded = false, label } = Astro.props;
 
 const brand = brandIcon(channel);
-// Call and text are not brands: a handset and a speech bubble, stroked.
-const LINE_ICONS: Partial<Record<Channel, string>> = {
-  call: '<path d="M6.5 3.5h3l1.3 3.2-1.9 1.4a11.5 11.5 0 0 0 5 5l1.4-1.9 3.2 1.3v3a1.8 1.8 0 0 1-2 1.8A15.5 15.5 0 0 1 4.7 5.5a1.8 1.8 0 0 1 1.8-2Z"/>',
-  sms: '<path d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"/><path d="M8.5 10.5h7"/>',
-};
-const line = LINE_ICONS[channel];
+/**
+ * Call and text message are not brands, and a drawn handset next to a real WhatsApp mark
+ * looked like a different kind of thing. They are the two channels every phone already has a
+ * glyph for, so they use it: 📞 to call, 💬 to write.
+ */
+const EMOJI: Partial<Record<Channel, string>> = { call: '📞', sms: '💬' };
+const emoji = EMOJI[channel];
 const fill = branded && brand ? brand.hex : 'currentColor';
 ---
 
 {
-  brand ? (
+  emoji ? (
+    <span
+      class={`channel-emoji channel-emoji--${channel}`}
+      style={`font-size:${size * 1.15}px`}
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : 'true'}
+    ></span>
+  ) : brand ? (
     <svg
       viewBox="0 0 24 24"
       width={size}
@@ -49,22 +58,5 @@ const fill = branded && brand ? brand.hex : 'currentColor';
     >
       <path d={brand.path} fill={fill} />
     </svg>
-  ) : (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      role={label ? 'img' : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : 'true'}
-      focusable="false"
-      class="shrink-0"
-      set:html={line ?? ''}
-    />
-  )
+  ) : null
 }

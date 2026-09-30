@@ -129,6 +129,32 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* The two channels every phone already has a glyph for. Drawn as CSS content rather than a
+     text node: a flex container drops whitespace-only text nodes, so a literal emoji produced
+     "📞Call" in the markup, and it would also land in the clipboard and the accessible name. */
+  .channel-emoji {
+    line-height: 1;
+  }
+  .channel-emoji--call::before {
+    content: '📞';
+  }
+  .channel-emoji--sms::before {
+    content: '💬';
+  }
+
+  /* The handset beside a phone number is decoration: it sits outside the link, so it never
+     lands in the clipboard when the number is copied, never joins the accessible name, and
+     never picks up the link's underline. */
+  .phone-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .phone-mark::before {
+    content: '📞';
+    font-size: 0.95em;
+  }
+
   /* One focus treatment, everywhere, including inside dialogs and menus. */
   :focus-visible {
     outline: 2px solid var(--noka-focus);

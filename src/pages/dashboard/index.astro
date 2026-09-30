@@ -139,13 +139,14 @@ const panelClass =
                   <p class="name text-base font-semibold">{contact.name}</p>
                   <p class="meta mt-0.5 text-sm text-fg-muted">{relationLabel(contact.relation)}</p>
                   <p class="meta mt-1">
-                    <a
-                      class="phone inline-flex items-center gap-1.5 font-mono text-sm text-fg"
-                      href={channelHref('call', contact.phoneE164)}
-                    >
-                      <Icon name="phone" size={14} />
-                      {contact.phoneDisplay}
-                    </a>
+                    {/* The handset is decorative and lives outside the link: inside it, the
+                        underline drew a stray line beneath the glyph. */}
+                    <span class="phone-row">
+                      <span class="phone-mark" aria-hidden="true"></span>
+                      <a class="phone font-mono text-sm text-fg" href={channelHref('call', contact.phoneE164)}>
+                        {contact.phoneDisplay}
+                      </a>
+                    </span>
                   </p>
                 </div>
 
