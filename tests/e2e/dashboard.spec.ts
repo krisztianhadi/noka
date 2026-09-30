@@ -83,7 +83,7 @@ test.describe('the dashboard', () => {
 
     const contact = page.locator('.contacts > li').first();
     await expect(contact.locator('.name')).toHaveText('Maria Silva');
-    await expect(contact.locator('.meta').first()).toHaveText('Spouse');
+    await expect(contact.locator('.relation').first()).toHaveText('Spouse');
     // Country picker + national part become one E.164 number, shown grouped.
     await expect(contact.locator('.phone')).toHaveText('+66 812 345 678');
     await expect(contact.locator('.phone')).toHaveAttribute('href', 'tel:+66812345678');
@@ -151,7 +151,7 @@ test.describe('the dashboard', () => {
 
     const row = page.locator('.contacts > li').first();
     await expect(row.locator('.text-only')).toHaveText('🔇 Text only');
-    await expect(row.locator('.tags .tag')).toHaveText(['Call', 'Telegram', '🔇 Text only']);
+    await expect(row.locator('.tags .tag')).toHaveText(['🔇 Text only', 'Call', 'Telegram']);
   });
 
   test('saves notes for a responder', async ({ page }) => {

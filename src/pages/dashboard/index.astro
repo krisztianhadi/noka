@@ -63,7 +63,7 @@ const panelClass =
   'panel absolute right-0 z-20 mt-1 min-w-52 rounded-lg border border-line bg-surface p-1 shadow-float';
 ---
 
-<Plain title={label('head.dashboard')} theme={theme} wide>
+<Plain title={label('head.dashboard')} theme={theme} wide wider>
   <ConfirmDialog />
   <DashboardBehavior />
 
@@ -118,6 +118,8 @@ const panelClass =
     )
   }
 
+  <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+  <div class="space-y-6">
   <section id="contacts" class="space-y-4">
     <div class="flex items-baseline justify-between gap-3">
       <h1 class="text-xl font-semibold tracking-tight">{label('owner.contacts.title')}</h1>
@@ -143,9 +145,10 @@ const panelClass =
             <li class="p-4">
               <div class="who-row flex items-start justify-between gap-3">
                 <div class="min-w-0 flex-1">
-                  <p class="name text-base font-semibold">{contact.name}</p>
-                  <p class="meta mt-0.5 text-sm text-fg-muted">{relationLabel(contact.relation)}</p>
-                  <p class="meta mt-1">
+                  <p class="name min-w-0 flex-1 text-base leading-6 font-semibold break-words">{contact.name}</p>
+                  <p class="meta mt-1 flex flex-wrap items-baseline gap-x-2 text-sm text-fg-muted">
+                    <span class="relation">{relationLabel(contact.relation)}</span>
+                    <span aria-hidden="true">·</span>
                     {/* The handset is decorative and lives outside the link: inside it, the
                         underline drew a stray line beneath the glyph. */}
                     <span class="phone-row">
@@ -191,21 +194,21 @@ const panelClass =
                 </div>
               </div>
 
-              <dl class="mt-3 space-y-1.5 text-sm">
+              <dl class="mt-3 space-y-2 text-sm">
                 <div class="flex flex-wrap items-center gap-1.5">
                   <dt class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.contacts.services')}</dt>
                   <dd class="tags flex flex-wrap gap-1">
+                    {contact.textOnly && (
+                      <span class="tag text-only inline-flex min-h-6 items-center gap-1 rounded-full border border-line-strong bg-muted px-2 py-0.5 text-xs font-medium">
+                        <span aria-hidden="true">🔇</span> {label('owner.contacts.textOnly')}
+                      </span>
+                    )}
                     {contact.channels.map((channel: Channel) => (
-                      <span class="tag inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
+                      <span class="tag inline-flex min-h-6 items-center gap-1 min-h-6 rounded-full border border-line px-2 py-0.5 text-xs">
                         <ChannelIcon channel={channel} size={13} branded />
                         {channelLabel(channel)}
                       </span>
                     ))}
-                    {contact.textOnly && (
-                      <span class="tag text-only inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
-                        <span aria-hidden="true">🔇</span> {label('owner.contacts.textOnly')}
-                      </span>
-                    )}
                   </dd>
                 </div>
                 {contact.spokenLanguages.length > 0 && (
@@ -260,7 +263,7 @@ const panelClass =
     }
   </section>
 
-  <section id="notes-section" class="mt-6">
+  <section id="notes-section">
     <div class={cardClass}>
       <h2 class={`${sectionTitle} mb-4`}>{label('owner.notes.title')}</h2>
       <form method="post" action="/dashboard/notes" class="space-y-3">
@@ -283,10 +286,14 @@ const panelClass =
     </div>
   </section>
 
-  <section id="card" class="mt-6">
-    <div class={cardClass}>
+  </div>
+
+  <!-- The card is the output of the workflow beside it, so on a wide screen it parks: the
+       contacts an owner is editing are what they are looking at, and the card follows. -->
+  <section id="card" class="xl:sticky xl:top-6">
+    <div class="rounded-lg border border-ink bg-ink p-5 text-ink-fg">
       <div class="section-head mb-4 flex items-center justify-between gap-3">
-        <h2 class={sectionTitle}>{label('owner.card.title')}</h2>
+        <h2 class="text-sm font-semibold tracking-wide text-ink-fg/70 uppercase">{label('owner.card.title')}</h2>
         {
           card && (
             <details class="menu kebab relative">
@@ -323,7 +330,7 @@ const panelClass =
       {
         !card && (
           <div class="space-y-4">
-            <p class="text-sm text-fg-muted">
+            <p class="text-sm text-ink-fg/70">
               {count === 0 ? label('owner.card.needsContact') : label('owner.card.ready')}
             </p>
             <form method="post" action="/dashboard/card/create">
@@ -337,30 +344,33 @@ const panelClass =
 
       {
         card && (
-          <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
-            <img
-              class="preview w-full max-w-[13rem] shrink-0 rounded-md border border-line"
-              src="/dashboard/card/card.jpg"
-              alt={label('owner.card.imageAlt')}
-              width="638"
-              height="1011"
-            />
-            <div class="min-w-0 flex-1 space-y-3">
+          <div class="space-y-5">
+            <!-- The preview sits on white paper, because that is what the owner will hold.
+                 Small: in a status column this is a reminder of what the card is, and the
+                 owner prints from the image itself. -->
+            <div class="rounded-md bg-white p-2">
+              <img
+                class="preview mx-auto w-full max-w-[9rem] rounded-sm"
+                src="/dashboard/card/card.jpg"
+                alt={label('owner.card.imageAlt')}
+                width="638"
+                height="1011"
+              />
+            </div>
+            <div class="min-w-0 space-y-4">
               <div>
-                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.card.pin')}</p>
-                <p class="pin font-mono text-3xl font-semibold tracking-[0.18em]">{revealPin(card)}</p>
+                <p class="text-xs font-medium tracking-wide text-ink-fg/60 uppercase">{label('owner.card.pin')}</p>
+                <p class="pin mt-1 font-mono text-2xl leading-none font-semibold tracking-[0.08em]">{revealPin(card)}</p>
               </div>
               <div>
-                <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">{label('owner.card.link')}</p>
-                <p class="url truncate font-mono text-sm">
-                  <a class="text-fg underline underline-offset-2" href={cardUrl(card)}>{cardUrl(card)}</a>
+                <p class="text-xs font-medium tracking-wide text-ink-fg/60 uppercase">{label('owner.card.link')}</p>
+                <p class="url mt-1 font-mono text-xs break-all">
+                  <a class="text-ink-fg/80 underline underline-offset-2" href={cardUrl(card)}>{cardUrl(card)}</a>
                 </p>
               </div>
-              <p class="text-xs leading-5 text-fg-muted">
-                {label('owner.card.printHint')}
-              </p>
+              <p class="text-xs leading-5 text-ink-fg/60">{label('owner.card.printHint')}</p>
               <a
-                class="inline-flex h-9 items-center gap-2 rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
+                class="inline-flex h-9 items-center gap-2 rounded-md border border-mark bg-mark px-3.5 text-sm font-medium text-mark-fg no-underline hover:brightness-[1.03]"
                 href="/dashboard/card/card.jpg"
                 target="_blank"
                 rel="noopener"
@@ -373,4 +383,5 @@ const panelClass =
       }
     </div>
   </section>
+  </div>
 </Plain>

@@ -84,6 +84,14 @@ const offered = cardLanguages(card);
             </span>
           )}
         </div>
+        {/* For someone who cannot hear, the constraint is the first thing to say: a responder
+            about to press a phone icon should know before they look for it. */}
+        {contact.textOnly && (
+          <p class="alert" role="note">
+            <span class="muted" aria-hidden="true">🔇</span>
+            <span>{label('view.text_only')}</span>
+          </p>
+        )}
         <div class={`phone${contact.textOnly ? '' : ' callable'}`}>
           {/* For someone who cannot hear, the number is text to copy, not a button to
               press: a tappable dialler here contradicts the alert right below it. */}
@@ -93,15 +101,7 @@ const offered = cardLanguages(card);
             <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
           )}
         </div>
-        {contact.textOnly && (
-          <p class="alert" role="note">
-            {/* A muted speaker: the shorthand for "cannot hear", and the one glyph every
-                platform already has. */}
-            <span class="muted" aria-hidden="true">🔇</span>
-            <span>{label('view.text_only')}</span>
-          </p>
-        )}
-        <div class="actions">
+        <div class={`actions${contact.textOnly ? ' text-only' : ''}`}>
           {offeredChannels(contact).map((channel) => (
             <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
               <ChannelIcon channel={channel} size={20} />

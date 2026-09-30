@@ -46,10 +46,17 @@ test.describe('things axe cannot see', () => {
     const ratio = contrast(bg, surface);
     expect(ratio, `page ${bg} vs card ${surface}`).toBeGreaterThan(1.1);
 
-    // And it is the card, not the body, that carries the surface colour.
-    const card = page.locator('#card > div').first();
-    expect(await card.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(surface);
+    // A quiet section is what carries the surface colour...
+    const notes = page.locator('#notes-section > div').first();
+    expect(await notes.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(surface);
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(bg);
+
+    // ...and the card is deliberately the one ink plate on the page, which is why it is
+    // asserted against the ink token rather than the surface one. It used to be just another
+    // white card, which is how it ended up reading as one more settings section.
+    const ink = await resolved(page, '--noka-ink');
+    const plate = page.locator('#card > div').first();
+    expect(await plate.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(ink);
   });
 
   test('the wordmark is legible in both themes', async ({ page }) => {
@@ -109,8 +116,11 @@ test.describe('things axe cannot see', () => {
         expect(numberBox!.y).toBeGreaterThan(countryBox!.y);
         expect(countryBox!.width, `${width}px: stacked country`).toBeGreaterThan(row.width * 0.8);
       } else {
-        // Side by side: the country stays a fixed, narrow control.
-        expect(countryBox!.width, `${width}px: country select`).toBeLessThan(row.width * 0.4);
+        // Side by side: the country is the small control and the number takes the room.
+        // Compared against each other rather than against a fraction of an ancestor: the
+        // ancestor's width follows the page grid, so a proportion here failed when the
+        // dashboard grew a second column without anything about the form changing.
+        expect(countryBox!.width, `${width}px: country select`).toBeLessThan(numberBox!.width);
         expect(numberBox!.x, `${width}px: input starts after the select`).toBeGreaterThanOrEqual(
           right(countryBox!),
         );

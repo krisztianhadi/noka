@@ -53,7 +53,9 @@ const { lang, title } = Astro.props;
     --t-meta: 1.125rem; /* 18px — relation and spoken languages, on one line */
     --t-phone: 2.5rem; /* 40px — the phone number, the loudest datum in a contact */
     --t-xl: 1.625rem; /* 26px — page heading */
-    --t-2xl: 2.5rem; /* 40px — contact name */
+    --t-page: 1.375rem; /* 22px — page heading */
+    --t-name: 2rem; /* 32px — contact name */
+    --t-2xl: 2.5rem; /* 40px — kept for the card page if it ever needs it */
     --t-pin: 2.125rem; /* 34px — the PIN input */
 
     /* Line heights, by job. */
@@ -99,9 +101,9 @@ const { lang, title } = Astro.props;
     text-wrap: balance;
   }
   h1 {
-    /* One line, heading size, whether or not the owner's name is in it. */
+    /* Context, not the destination: the contacts are the page. */
     margin: 0 0 var(--s6);
-    font-size: var(--t-xl);
+    font-size: var(--t-page);
   }
   p {
     margin: var(--s2) 0;
@@ -156,17 +158,17 @@ const { lang, title } = Astro.props;
 
   /* ── One contact ─────────────────────────────────────────────────────────── */
   .contact {
-    padding: var(--s6) 0;
+    padding: var(--s5) 0;
     border-bottom: 2px solid var(--rule);
   }
   /* Read in this order, at these sizes: who they are, how to reach them, then what to do. */
   .name {
-    font-size: var(--t-2xl);
+    /* 32px, not 40: the number below it is what a stranger has to act on, and it needs the
+       room. A long name still wraps to two lines without taking the first screen. */
+    font-size: var(--t-name);
     font-weight: 700;
     line-height: var(--lh-solid);
-    /* A two-word name across two lines reads better balanced than ragged. */
     text-wrap: balance;
-    /* A long name must not push the number off the screen. */
     overflow-wrap: anywhere;
   }
   /* Relation and languages share one line: they describe the same person, and a stranger
@@ -176,7 +178,7 @@ const { lang, title } = Astro.props;
     flex-wrap: wrap;
     align-items: baseline;
     gap: var(--s2);
-    margin-top: var(--s2);
+    margin-top: var(--s1);
     font-size: var(--t-meta);
     line-height: var(--lh-tight);
     color: var(--ink-soft);
@@ -197,14 +199,15 @@ const { lang, title } = Astro.props;
     margin: 0 0.15em;
   }
   .phone {
-    margin-top: var(--s4);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    /* 40px wherever the whole number fits on one line, which is every screen from about
-       460px up. Below that it scales down only as far as it must: a phone number split
-       across two lines is worse than a slightly smaller one. */
-    /* The handset before it costs a few pixels, so the number scales a touch earlier. */
-    font-size: min(var(--t-phone), 7.8vw);
-    font-weight: 600;
+    margin-top: var(--s3);
+    /* Proportional, not monospace, and that is a deliberate trade: at 40px the monospace face
+       needs 360px for a full international number and a 390px phone only has 318, so mono meant
+       either 34px or a number broken across two lines. The sans face fits at 40px in one line,
+       and tabular figures keep the digits aligned. */
+    font-size: min(var(--t-phone), 10.5vw);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: var(--lh-solid);
     white-space: nowrap;
     line-height: var(--lh-solid);
     /* Easy to read aloud and to copy: this is the point of the page. */
@@ -228,7 +231,7 @@ const { lang, title } = Astro.props;
     line-height: 1;
   }
   .notes-heading {
-    margin: var(--s7) 0 var(--s3);
+    margin: var(--s6) 0 var(--s2);
     font-size: var(--t-lg);
   }
   .on-channels {
@@ -243,8 +246,8 @@ const { lang, title } = Astro.props;
      to hit with a shaking hand than two half-width ones side by side. */
   .actions {
     display: grid;
-    gap: var(--s3);
-    margin-top: var(--s5);
+    gap: var(--s2);
+    margin-top: var(--s4);
   }
   .actions a {
     min-height: 3.25rem;
@@ -285,10 +288,16 @@ const { lang, title } = Astro.props;
     color: #fff;
     background: var(--ink);
   }
+  /* For someone who cannot hear, the solid button is the one that works. */
+  .actions.text-only a.sms {
+    color: #fff;
+    background: var(--ink);
+  }
 
   /* ── Notes, alerts, language ─────────────────────────────────────────────── */
   .notes {
-    margin-top: var(--s7);
+    /* The heading owns the gap above this panel; two 32px margins made an 80px hole. */
+    margin-top: 0;
     padding: var(--s5);
     background: #f6f6f6;
     border: 2px solid #ddd;
@@ -324,7 +333,7 @@ const { lang, title } = Astro.props;
     border-color: #a00;
   }
   .langs {
-    margin-top: var(--s8);
+    margin-top: var(--s5);
     padding-top: var(--s5);
     border-top: 1px solid var(--rule);
   }
