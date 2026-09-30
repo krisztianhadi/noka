@@ -15,6 +15,7 @@ const zh: Record<MessageKey, string> = {
   'view.whatsapp': 'WhatsApp',
   'view.speaks': '会说的语言',
   'view.notes': '备注',
+  'view.exit': '退出',
   'view.on': '可通过',
   'view.text_only': '仅限短信 — 无法说话或听见',
   'lang.change': '更改',

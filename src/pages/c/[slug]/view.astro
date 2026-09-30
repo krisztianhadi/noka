@@ -86,14 +86,23 @@ const offered = cardLanguages(card);
         </div>
         {contact.textOnly && (
           <p class="alert" role="note">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-              <path
-                d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linejoin="round"></path>
-              <path d="M8.5 10.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+            {/* The hearing-impaired mark: an ear with a stroke through it, drawn inline in the
+                same monochrome line style as the channel icons. */}
+            <svg
+              viewBox="0 0 24 24"
+              width="28"
+              height="28"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M8.5 10.2a4.2 4.2 0 0 1 8.3.6c0 2.4-1.7 3-2.5 4.5-.5.9-.4 2.3-1.5 3" />
+              <path d="M11 10.6a1.7 1.7 0 0 1 3 .9c0 1.3-1 1.7-1.5 2.5" />
+              <path d="M4.5 4.5 19.5 19.5" />
             </svg>
             <span>{label('view.text_only')}</span>
           </p>
@@ -119,6 +128,10 @@ const offered = cardLanguages(card);
     )
   }
 
+
+  <form method="post" action={`/c/${card.slug}/exit`}>
+    <button type="submit" class="exit">{label('view.exit')}</button>
+  </form>
 
   {
     offered.length > 1 && (

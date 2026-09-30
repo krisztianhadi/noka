@@ -19,6 +19,7 @@ const en = {
   'view.whatsapp': 'WhatsApp',
   'view.speaks': 'Speaks',
   'view.notes': 'Notes',
+  'view.exit': 'Exit',
   'view.on': 'Available on',
   'view.text_only': 'Text message only — cannot speak or hear',
   'lang.change': 'change',

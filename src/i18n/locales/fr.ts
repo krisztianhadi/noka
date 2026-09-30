@@ -15,6 +15,7 @@ const fr: Record<MessageKey, string> = {
   'view.whatsapp': 'WhatsApp',
   'view.speaks': 'Parle',
   'view.notes': 'Notes',
+  'view.exit': 'Quitter',
   'view.on': 'Disponible sur',
   'view.text_only': 'SMS uniquement — ne peut ni parler ni entendre',
   'lang.change': 'changer',

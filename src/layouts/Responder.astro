@@ -196,14 +196,14 @@ const { lang, title } = Astro.props;
   }
 
   /* ── Actions ─────────────────────────────────────────────────────────────── */
+  /* One channel per row: a stranger reads down the list, and a full-width target is easier
+     to hit with a shaking hand than two half-width ones side by side. */
   .actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     gap: var(--s3);
     margin-top: var(--s5);
   }
   .actions a {
-    flex: 1 1 8rem;
     min-height: 3.25rem;
     display: flex;
     align-items: center;
@@ -259,7 +259,14 @@ const { lang, title } = Astro.props;
   }
   .alert svg {
     flex: 0 0 auto;
-    margin-top: 0.15rem;
+    /* Sits on the first line's cap height rather than its ascender. */
+    margin-top: -0.15rem;
+  }
+  .exit {
+    margin-top: var(--s5);
+    background: #fff;
+    color: #7a0000;
+    border-color: #a00;
   }
   .langs {
     margin-top: var(--s8);
