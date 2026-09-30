@@ -40,6 +40,9 @@
 
     /* One shadow, used by things that actually float (menus, modals). */
     --noka-shadow: 0 10px 30px -12px rgb(16 20 28 / 28%);
+    /* Cards sit on the page rather than float above it: a hairline lift, enough to separate
+       white from the page background where a border alone almost disappears. */
+    --noka-shadow-card: 0 1px 2px rgb(16 20 28 / 7%), 0 1px 3px rgb(16 20 28 / 5%);
 
     color-scheme: light;
   }
@@ -65,6 +68,7 @@
     --noka-ink-fg: #f4f5f8;
 
     --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
+    --noka-shadow-card: 0 1px 2px rgb(0 0 0 / 40%);
 
     color-scheme: dark;
   }
@@ -87,6 +91,7 @@
       --noka-ink: #1b1f26;
       --noka-ink-fg: #f4f5f8;
       --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
+      --noka-shadow-card: 0 1px 2px rgb(0 0 0 / 40%);
       color-scheme: dark;
     }
   }
@@ -112,6 +117,7 @@
     --color-mark-fg: var(--noka-mark-fg);
 
     --shadow-float: var(--noka-shadow);
+    --shadow-card: var(--noka-shadow-card);
 
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;

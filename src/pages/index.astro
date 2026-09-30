@@ -32,13 +32,6 @@ const deleted = Astro.url.searchParams.get('deleted') === '1';
 const eyebrow = 'font-mono text-[0.7rem] tracking-[0.18em] text-fg-muted uppercase';
 const h2 = 'mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl';
 
-const trust = [
-  'Your details are encrypted',
-  'No tracking on the card page',
-  'Five languages, more to come',
-  'MIT licensed',
-];
-
 const features = [
   {
     icon: 'phone' as const,
@@ -69,14 +62,17 @@ const features = [
 
 const everyday = [
   {
+    icon: 'card' as const,
     title: 'Lost wallet or bag',
     body: 'Keep it in a wallet, bag, phone case or passport holder. Whoever finds it can call a person you chose.',
   },
   {
+    icon: 'refresh' as const,
     title: 'When a contact changes their number',
     body: 'Edit a contact once, and every card you have already printed shows the new number the next time it is opened.',
   },
   {
+    icon: 'edit' as const,
     title: 'A short note from you',
     body: 'The page shows the short note and the contacts you chose to share — nothing more.',
   },
@@ -84,18 +80,22 @@ const everyday = [
 
 const notDoing = [
   {
+    icon: 'x' as const,
     title: 'Noka is not an emergency service',
     body: 'Call the local emergency number first. The card is for reaching the people you would want told afterwards.',
   },
   {
+    icon: 'x' as const,
     title: 'Noka is not a medical record',
     body: 'It has no fields for diagnoses, medication doses or allergies. It shows the short note you write.',
   },
   {
+    icon: 'lock' as const,
     title: 'Noka does not hide the card from whoever holds it',
     body: 'Anyone with the card and its PIN can read the contacts and the note. That is what lets a stranger help without installing an app or making an account.',
   },
   {
+    icon: 'eye-off' as const,
     title: 'Noka does not track the person who opens it',
     body: 'No app to install, no account to create, and no tracking of whoever opens the page.',
   },
@@ -103,14 +103,17 @@ const notDoing = [
 
 const steps = [
   {
+    icon: 'edit' as const,
     title: 'Set it up',
     body: 'Add your contacts and one short note. Choose which languages are printed on the card.',
   },
   {
+    icon: 'print' as const,
     title: 'Print it yourself',
     body: 'Print the card and keep it with you. It holds a QR code and a six-digit PIN.',
   },
   {
+    icon: 'phone' as const,
     title: 'Someone scans it',
     body: 'The person helping you scans the QR code, enters the PIN and sees your contacts and note. They tap a name to call. An internet connection is needed.',
   },
@@ -159,10 +162,13 @@ const faq = [
   },
 ];
 
+// The primary action wears the post-it colour, the same one the closing banner uses: the page
+// has exactly one loud colour and it should mean "this is the thing to press".
 const buttonPrimary =
-  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-accent bg-accent px-5 text-sm font-medium text-accent-fg no-underline transition hover:-translate-y-px hover:opacity-90';
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-mark bg-mark px-5 text-sm font-semibold text-mark-fg no-underline shadow-card transition hover:-translate-y-px hover:brightness-[1.03]';
+// Same call to action, same colour, whether it sits on the ink hero or the light page.
 const buttonOnInk =
-  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/25 bg-white px-5 text-sm font-medium text-ink no-underline transition hover:-translate-y-px hover:bg-white/90';
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-mark bg-mark px-5 text-sm font-semibold text-mark-fg no-underline transition hover:-translate-y-px hover:brightness-[1.03]';
 const buttonGhostOnInk =
   'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-medium text-ink-fg no-underline transition hover:border-white/60 hover:bg-white/10';
 ---
@@ -245,9 +251,6 @@ const buttonGhostOnInk =
               <a class={buttonGhostOnInk} href="#how">See how it works <Icon name="arrow-right" size={16} /></a>
             </div>
 
-            <ul class="mt-10 grid gap-y-2 font-mono text-[0.7rem] tracking-wider text-ink-fg/60 uppercase sm:flex sm:flex-wrap sm:gap-x-6">
-              {trust.map((item) => <li>{item}</li>)}
-            </ul>
           </div>
 
           <!-- The product is a thing you hold, so on mobile it comes before any prose. -->
@@ -267,9 +270,6 @@ const buttonGhostOnInk =
               />
             </div>
             <figcaption class="mx-auto mt-6 max-w-xs text-center text-xs leading-5 text-ink-fg/60">
-              <span class="mb-2 inline-block rounded-full bg-mark px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wider text-mark-fg uppercase">
-                Sample card
-              </span>
               <span class="block">
                 You print this yourself, on a standard printer, at bank-card size.
               </span>
@@ -281,7 +281,7 @@ const buttonGhostOnInk =
 
       <div class="mx-auto w-full max-w-5xl px-4 sm:px-6">
       <!-- What this is -->
-      <section id="what" class="reveal py-16 sm:py-24">
+      <section id="what" class="reveal scroll-mt-24 py-16 sm:py-24">
         <p class={eyebrow}>What this is</p>
         <h2 class={h2}>A simple way to share who to call.</h2>
         <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
@@ -293,7 +293,7 @@ const buttonGhostOnInk =
         <div class="mt-10 grid gap-4 sm:grid-cols-2">
           {
             features.map((feature) => (
-              <div class="group rounded-2xl border border-line bg-surface p-6 transition hover:-translate-y-0.5 hover:border-line-strong">
+              <div class="group rounded-2xl border border-line-strong bg-surface p-6 shadow-card transition hover:-translate-y-0.5">
                 <span class="inline-flex size-10 items-center justify-center rounded-xl bg-muted text-fg">
                   <Icon name={feature.icon} size={18} />
                 </span>
@@ -317,8 +317,11 @@ const buttonGhostOnInk =
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
           {
             everyday.map((item) => (
-              <div class="rounded-2xl border border-line bg-surface p-5">
-                <h3 class="text-sm font-semibold text-fg">{item.title}</h3>
+              <div class="rounded-2xl border border-line-strong bg-surface p-5 shadow-card">
+                <span class="inline-flex size-9 items-center justify-center rounded-xl bg-muted text-fg">
+                  <Icon name={item.icon} size={17} />
+                </span>
+                <h3 class="mt-3 text-sm font-semibold text-fg">{item.title}</h3>
                 <p class="mt-1.5 text-sm leading-6 text-fg-muted">{item.body}</p>
               </div>
             ))
@@ -326,38 +329,76 @@ const buttonGhostOnInk =
         </div>
       </section>
 
-      <!-- What we are not doing: the section that earns the rest of the page. -->
-      <section id="limits" class="reveal rounded-3xl border border-line bg-surface p-6 sm:p-10">
-        <p class={eyebrow}>What noka does not do</p>
-        <h2 class={h2}>This is a small tool. Its limits are part of the design.</h2>
-        <dl class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
-          <div class="rounded-2xl bg-mark/15 p-5 sm:col-span-2 sm:flex sm:items-baseline sm:gap-6">
-            <dt class="text-base font-semibold text-fg">{notDoing[0].title}</dt>
-            <dd class="mt-2 text-sm leading-6 text-fg-muted sm:mt-0">{notDoing[0].body}</dd>
-          </div>
-          {
-            notDoing.slice(1).map((limit) => (
-              <div class="border-t border-line pt-5">
-                <dt class="text-sm font-semibold text-fg">{limit.title}</dt>
-                <dd class="mt-2 text-sm leading-6 text-fg-muted">{limit.body}</dd>
-              </div>
-            ))
-          }
-        </dl>
+      <!-- What we are not doing: the page's character, so it gets its own weight — a full-width
+           band rather than another card, and no highlight box inside it. -->
+      <section
+        id="limits"
+        class="reveal relative -mx-4 scroll-mt-24 overflow-hidden border-y border-line bg-ink text-ink-fg sm:-mx-6"
+      >
+        <div
+          class="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 22px 22px"
+          aria-hidden="true"
+        >
+        </div>
+        <div class="relative mx-auto w-full max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
+          <p class="font-mono text-[0.7rem] tracking-[0.18em] text-ink-fg/60 uppercase">
+            What noka does not do
+          </p>
+          <h2 class="mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            This is a small tool. Its limits are part of the design.
+          </h2>
+          <dl class="mt-10 grid gap-x-12 gap-y-8 sm:grid-cols-2">
+            {
+              notDoing.map((limit) => (
+                <div class="border-t border-white/15 pt-5">
+                  <dt class="flex items-center gap-2.5 text-base font-semibold text-ink-fg">
+                    <span class="text-ink-fg/60">
+                      <Icon name={limit.icon} size={17} />
+                    </span>
+                    {limit.title}
+                  </dt>
+                  <dd class="mt-2 text-sm leading-6 text-ink-fg/70">{limit.body}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
       </section>
 
-      <!-- How it works -->
-      <section id="how" class="reveal py-16 sm:py-24">
+      <!-- How it works: three steps on one line, connected, so they read as a sequence rather
+           than three unrelated cards. -->
+      <section id="how" class="reveal scroll-mt-24 py-16 sm:py-24">
         <p class={eyebrow}>How it works</p>
         <h2 class={h2}>Three simple steps.</h2>
-        <ol class="mt-10 grid gap-8 sm:grid-cols-3">
+        <ol class="mt-12 space-y-8 sm:grid sm:grid-cols-3 sm:gap-8 sm:space-y-0">
           {
             steps.map((step, index) => (
-              <li class="relative">
-                <span class="font-mono text-4xl font-semibold text-fg-muted/80" aria-hidden="true">
-                  0{index + 1}
+              <li class="relative pl-16 sm:pl-0 sm:pt-14">
+                <span
+                  class="absolute top-0 left-0 flex size-11 items-center justify-center rounded-full border border-line-strong bg-surface font-mono text-sm font-semibold text-fg shadow-card"
+                  aria-hidden="true"
+                >
+                  {index + 1}
                 </span>
-                <h3 class="mt-3 text-base font-semibold text-fg">{step.title}</h3>
+                {/* The rule runs from this node to the next one, and stops at the last: a line
+                    trailing off the end of a sequence reads as a mistake. */}
+                {index < steps.length - 1 && (
+                  <span
+                    class="absolute top-[1.375rem] left-14 hidden h-px w-[calc(100%-2rem)] bg-line-strong sm:block"
+                    aria-hidden="true"
+                  />
+                )}
+                {index < steps.length - 1 && (
+                  <span
+                    class="absolute top-12 left-[1.375rem] h-[calc(100%-2.5rem)] w-px bg-line-strong sm:hidden"
+                    aria-hidden="true"
+                  />
+                )}
+                <h3 class="flex items-center gap-2 text-base font-semibold text-fg">
+                  <span class="text-fg-muted"><Icon name={step.icon} size={16} /></span>
+                  {step.title}
+                </h3>
                 <p class="mt-1.5 text-sm leading-6 text-fg-muted">{step.body}</p>
               </li>
             ))
@@ -367,11 +408,11 @@ const buttonGhostOnInk =
 
       <!-- Privacy and ownership -->
       <section
-        class="reveal rounded-3xl bg-ink p-6 text-ink-fg sm:flex sm:items-center sm:gap-10 sm:p-10"
+        class="reveal rounded-3xl border border-line-strong bg-ink p-6 text-ink-fg shadow-card sm:flex sm:items-center sm:gap-10 sm:p-10"
       >
         <div class="sm:flex-1">
-          <p class="font-mono text-[0.7rem] tracking-[0.18em] text-ink-fg/60 uppercase">
-            Privacy and ownership
+          <p class="flex items-center gap-2 font-mono text-[0.7rem] tracking-[0.18em] text-ink-fg/60 uppercase">
+            <Icon name="lock" size={13} /> Privacy and ownership
           </p>
           <h2 class="mt-3 text-xl font-semibold tracking-tight text-balance sm:text-2xl">
             Your details are protected. The code is open to inspect.
@@ -410,7 +451,7 @@ const buttonGhostOnInk =
       </section>
 
       <!-- Questions -->
-      <section id="questions" class="reveal py-16 sm:py-24">
+      <section id="questions" class="reveal scroll-mt-24 py-16 sm:py-24">
         <p class={eyebrow}>Questions, answered</p>
         <h2 class={h2}>Common questions</h2>
         <div class="mt-8 grid gap-3 sm:grid-cols-2">
