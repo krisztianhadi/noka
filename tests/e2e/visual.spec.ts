@@ -138,7 +138,7 @@ test.describe('things axe cannot see', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     // Open the folded form: a hidden field cannot be measured, and the add/edit form
     // is where the field heights actually live.
-    await page.locator('.add-more > summary').click();
+    await page.locator('#contacts .add-more > summary').click();
 
     // Consistency, not absolute pixels: this survives a padding change and still
     // catches "the UI element sizes are off", which is what was actually reported.

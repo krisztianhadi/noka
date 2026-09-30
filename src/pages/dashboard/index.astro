@@ -34,7 +34,6 @@ const label = (key: Parameters<typeof t>[1], values?: Record<string, string | nu
 const contacts = await listContacts(owner.id);
 const notes = await getNotes(owner.id);
 const card = await getCardForOwner(owner.id);
-const count = await countContacts(owner.id);
 
 // Keys, not sentences: the catalogue renders them in the owner's language.
 const notice = noticeKey(Astro.url.searchParams.get('notice'));
@@ -134,13 +133,9 @@ const panelClass =
     </div>
 
     {
-      contacts.length === 0 ? (
-        <div class={cardClass}>
-          <p class="text-sm text-fg-muted">
-            {label('owner.contacts.empty')}
-          </p>
-        </div>
-      ) : (
+      /* Nothing at all is said about having no contacts: the form below is the answer, and a
+         sentence explaining that a card needs a contact explained a rule nobody asked about. */
+      contacts.length > 0 && (
         <ul class="contacts divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
           {contacts.map((contact) => (
             <li class="p-4">
@@ -248,7 +243,8 @@ const panelClass =
     {
       contacts.length === 0 ? (
         /* First run: the contact and the note in one form with one save button. They are two
-           tables and two writes, but the owner typed one screen, so they get one button. */
+           tables and two writes, but the owner typed one screen, so they get one button — and
+           saving it makes the card, so there is nothing else to press. */
         <div class={cardClass}>
           <h2 class={`${sectionTitle} mb-4`}>{label('owner.contacts.addTitle')}</h2>
           <form method="post" action="/dashboard/start" class="contact-form space-y-6">
@@ -360,21 +356,28 @@ const panelClass =
             </details>
           </div>
         ) : (
-          <form method="post" action="/dashboard/notes" class="mt-3 space-y-3">
-            <label class="block" for="notes">
-              <span class="mb-1.5 block text-sm font-medium text-fg">{label('owner.notes.label')}</span>
-              <textarea
-                id="notes"
-                class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
-                name="notes"
-                rows="3"
-                maxlength="2000"></textarea>
-            </label>
-            <p class="text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
-            <div class="flex justify-end">
-              <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
-            </div>
-          </form>
+          /* Adding a note looks like adding a contact: the same disclosure, closed until asked
+             for, so the page is a list of what exists rather than a form waiting to be filled. */
+          <details class="add-more mt-3 -mb-1 overflow-hidden rounded-lg border border-line bg-surface">
+            <summary class="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-medium marker:content-none hover:bg-muted">
+              <Icon name="plus" size={16} /> {label('owner.notes.add')}
+            </summary>
+            <form method="post" action="/dashboard/notes" class="space-y-3 border-t border-line p-4">
+              <label class="block" for="notes">
+                <span class="mb-1.5 block text-sm font-medium text-fg">{label('owner.notes.label')}</span>
+                <textarea
+                  id="notes"
+                  class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
+                  name="notes"
+                  rows="3"
+                  maxlength="2000"></textarea>
+              </label>
+              <p class="text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
+              <div class="flex justify-end">
+                <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
+              </div>
+            </form>
+          </details>
         )
       }
     </div>
@@ -386,6 +389,10 @@ const panelClass =
 
   <!-- The card is the output of the workflow beside it, so on a wide screen it parks: the
        contacts an owner is editing are what they are looking at, and the card follows. -->
+  {
+    /* No contact yet: the first-run form's save makes the card, so this block has nothing to
+       say and is not on the page. A card without contacts is not a state the product has. */
+    (card || contacts.length > 0) && (
   <section id="card" class="xl:sticky xl:top-6">
     <div class="rounded-lg border border-ink bg-ink p-5 text-ink-fg">
       <div class="section-head mb-4 flex items-center justify-between gap-3">
@@ -426,11 +433,9 @@ const panelClass =
       {
         !card && (
           <div class="space-y-4">
-            <p class="text-sm text-ink-fg/70">
-              {count === 0 ? label('owner.card.needsContact') : label('owner.card.ready')}
-            </p>
+            <p class="text-sm text-ink-fg/70">{label('owner.card.ready')}</p>
             <form method="post" action="/dashboard/card/create">
-              <Button type="submit" disabled={count === 0}>
+              <Button type="submit">
                 <Icon name="card" size={16} /> {label('owner.card.make')}
               </Button>
             </form>
@@ -479,5 +484,7 @@ const panelClass =
       }
     </div>
   </section>
+    )
+  }
   </div>
 </Plain>

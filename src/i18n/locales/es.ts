@@ -62,8 +62,6 @@ const es: Record<MessageKey, string> = {
   'owner.contacts.title': 'Contactos de emergencia',
   'owner.contacts.one': '1 persona',
   'owner.contacts.many': '{count} personas',
-  'owner.contacts.empty':
-    'Todavía no hay nadie. Añade a la persona a la que debería llamar quien te ayuda — sin ella, no puedes crear una tarjeta.',
   'owner.contacts.services': 'Servicios',
   'owner.contacts.spoken': 'Habla',
   'owner.contacts.textOnly': 'Solo mensajes de texto',
@@ -87,6 +85,7 @@ const es: Record<MessageKey, string> = {
   'owner.notes.hint':
     'Se muestran debajo de los contactos en la página de la tarjeta. Dónde está la medicación, a quién llamar primero. No incluyas datos de otras personas.',
   'owner.notes.save': 'Guardar notas',
+  'owner.notes.add': 'Añadir una nota',
   'owner.notes.optional': 'Opcional',
   'owner.notes.actions': 'Acciones de la nota',
   'owner.notes.edit': 'Editar nota',
@@ -97,7 +96,8 @@ const es: Record<MessageKey, string> = {
   'owner.notes.none': 'Todavía no hay nota.',
   'owner.start.save': 'Guardar',
 
-  'owner.card.title': 'Tu tarjeta',
+    'owner.card.ready': 'Todo listo. La tarjeta tendrá un enlace y un PIN de seis dígitos, y quedará activa de inmediato.',
+'owner.card.title': 'Tu tarjeta',
   'owner.card.actions': 'Acciones de la tarjeta',
   'owner.card.new': 'Nueva tarjeta',
   'owner.card.newTitle': '¿Crear una tarjeta nueva?',
@@ -109,8 +109,6 @@ const es: Record<MessageKey, string> = {
   'owner.card.deleteConfirm':
     '¿Eliminar la tarjeta y su enlace? Tus contactos y notas se conservan, y podrás crear una tarjeta nueva más adelante.',
   'owner.card.deleteOk': 'Eliminar tarjeta',
-  'owner.card.needsContact': 'Una tarjeta necesita al menos un contacto detrás. Añade a alguien arriba y vuelve después.',
-  'owner.card.ready': 'Todo listo. La tarjeta tendrá un enlace y un PIN de seis dígitos, y quedará activa de inmediato.',
   'owner.card.make': 'Crear mi tarjeta',
   'owner.card.pin': 'PIN',
   'owner.card.link': 'Enlace',

@@ -62,8 +62,6 @@ const fr: Record<MessageKey, string> = {
   'owner.contacts.title': "Contacts d'urgence",
   'owner.contacts.one': '1 personne',
   'owner.contacts.many': '{count} personnes',
-  'owner.contacts.empty':
-    "Personne pour l'instant. Ajoutez la personne qu'un secouriste doit appeler — une carte ne peut exister sans elle.",
   'owner.contacts.services': 'Services',
   'owner.contacts.spoken': 'Parle',
   'owner.contacts.textOnly': 'SMS uniquement',
@@ -87,6 +85,7 @@ const fr: Record<MessageKey, string> = {
   'owner.notes.hint':
     "Affichées sous les contacts sur la page de la carte. Où sont les médicaments, qui appeler en premier. N'indiquez les données de personne d'autre.",
   'owner.notes.save': 'Enregistrer les notes',
+  'owner.notes.add': 'Ajouter une note',
   'owner.notes.optional': 'Facultatif',
   'owner.notes.actions': 'Actions de la note',
   'owner.notes.edit': 'Modifier la note',
@@ -97,7 +96,8 @@ const fr: Record<MessageKey, string> = {
   'owner.notes.none': 'Pas encore de note.',
   'owner.start.save': 'Enregistrer',
 
-  'owner.card.title': 'Votre carte',
+    'owner.card.ready': 'Prête. La carte reçoit un lien et un code PIN à six chiffres, et elle est active immédiatement.',
+'owner.card.title': 'Votre carte',
   'owner.card.actions': 'Actions sur la carte',
   'owner.card.new': 'Nouvelle carte',
   'owner.card.newTitle': 'Faire une nouvelle carte ?',
@@ -109,8 +109,6 @@ const fr: Record<MessageKey, string> = {
   'owner.card.deleteConfirm':
     'Supprimer la carte et son lien ? Vos contacts et vos notes sont conservés, et vous pourrez faire une nouvelle carte plus tard.',
   'owner.card.deleteOk': 'Supprimer la carte',
-  'owner.card.needsContact': 'Une carte a besoin d\'au moins un contact. Ajoutez quelqu\'un ci-dessus, puis revenez.',
-  'owner.card.ready': 'Prête. La carte reçoit un lien et un code PIN à six chiffres, et elle est active immédiatement.',
   'owner.card.make': 'Créer ma carte',
   'owner.card.pin': 'Code PIN',
   'owner.card.link': 'Lien',

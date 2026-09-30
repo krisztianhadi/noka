@@ -62,8 +62,6 @@ const ru: Record<MessageKey, string> = {
   'owner.contacts.title': 'Экстренные контакты',
   'owner.contacts.one': '1 человек',
   'owner.contacts.many': '{count} человек',
-  'owner.contacts.empty':
-    'Пока никого нет. Добавьте человека, которому должен позвонить тот, кто помогает, — без этого карта не может существовать.',
   'owner.contacts.services': 'Способы связи',
   'owner.contacts.spoken': 'Говорит на',
   'owner.contacts.textOnly': 'Только СМС',
@@ -87,6 +85,7 @@ const ru: Record<MessageKey, string> = {
   'owner.notes.hint':
     'Показываются под контактами на странице карты. Где лежат лекарства, кому звонить первым. Не указывайте здесь чужие данные.',
   'owner.notes.save': 'Сохранить заметки',
+  'owner.notes.add': 'Добавить заметку',
   'owner.notes.optional': 'Необязательно',
   'owner.notes.actions': 'Действия с заметкой',
   'owner.notes.edit': 'Изменить заметку',
@@ -97,7 +96,8 @@ const ru: Record<MessageKey, string> = {
   'owner.notes.none': 'Заметки пока нет.',
   'owner.start.save': 'Сохранить',
 
-  'owner.card.title': 'Ваша карта',
+    'owner.card.ready': 'Готово. Карта получит ссылку и шестизначный PIN-код и сразу станет действующей.',
+'owner.card.title': 'Ваша карта',
   'owner.card.actions': 'Действия с картой',
   'owner.card.new': 'Новая карта',
   'owner.card.newTitle': 'Сделать новую карту?',
@@ -109,8 +109,6 @@ const ru: Record<MessageKey, string> = {
   'owner.card.deleteConfirm':
     'Удалить карту и её ссылку? Контакты и заметки сохранятся, и позже вы сможете сделать новую карту.',
   'owner.card.deleteOk': 'Удалить карту',
-  'owner.card.needsContact': 'Для карты нужен хотя бы один контакт. Добавьте кого-нибудь выше и возвращайтесь.',
-  'owner.card.ready': 'Готово. Карта получит ссылку и шестизначный PIN-код и сразу станет действующей.',
   'owner.card.make': 'Сделать мою карту',
   'owner.card.pin': 'PIN-код',
   'owner.card.link': 'Ссылка',

@@ -62,8 +62,6 @@ const zh: Record<MessageKey, string> = {
   'owner.contacts.title': '紧急联系人',
   'owner.contacts.one': '1 人',
   'owner.contacts.many': '{count} 人',
-  'owner.contacts.empty':
-    '还没有联系人。请添加救援者应该联系的人 — 没有联系人就无法生成卡片。',
   'owner.contacts.services': '联系方式',
   'owner.contacts.spoken': '会说的语言',
   'owner.contacts.textOnly': '仅限短信',
@@ -87,6 +85,7 @@ const zh: Record<MessageKey, string> = {
   'owner.notes.hint':
     '会显示在卡片页面联系人下方。例如药物存放位置、优先联系谁。请不要填写他人的信息。',
   'owner.notes.save': '保存备注',
+  'owner.notes.add': '添加备注',
   'owner.notes.optional': '可选',
   'owner.notes.actions': '备注操作',
   'owner.notes.edit': '编辑备注',
@@ -97,7 +96,8 @@ const zh: Record<MessageKey, string> = {
   'owner.notes.none': '还没有备注。',
   'owner.start.save': '保存',
 
-  'owner.card.title': '你的卡片',
+    'owner.card.ready': '准备就绪。卡片会生成一个链接和一个 6 位 PIN 码，制作后立即生效。',
+'owner.card.title': '你的卡片',
   'owner.card.actions': '卡片操作',
   'owner.card.new': '新建卡片',
   'owner.card.newTitle': '制作新卡片？',
@@ -109,8 +109,6 @@ const zh: Record<MessageKey, string> = {
   'owner.card.deleteConfirm':
     '删除卡片及其链接？你的联系人和备注会保留，以后可以随时制作新卡片。',
   'owner.card.deleteOk': '删除卡片',
-  'owner.card.needsContact': '卡片至少需要一位联系人。请先在上方添加，再回到这里。',
-  'owner.card.ready': '准备就绪。卡片会生成一个链接和一个 6 位 PIN 码，制作后立即生效。',
   'owner.card.make': '制作我的卡片',
   'owner.card.pin': 'PIN 码',
   'owner.card.link': '链接',

@@ -25,7 +25,7 @@ test.describe('the dashboard', () => {
     // both live — and the note heading sits inside it, a step down, because it is a field of
     // the same form rather than a section of its own.
     await expect(page.locator('section h1')).toHaveText(['Emergency contacts']);
-    await expect(page.locator('section h2')).toHaveText(['Add a contact', 'Your card']);
+    await expect(page.locator('section h2')).toHaveText(['Add a contact']);
     await expect(page.locator('form[action="/dashboard/start"] h3')).toHaveText([
       'Notes for a responder',
     ]);
@@ -58,10 +58,20 @@ test.describe('the dashboard', () => {
     await expect(row.locator('.panel .danger')).toContainText('Delete contact');
   });
 
-  test('cannot make a card before there is a contact', async ({ page }) => {
+  test('the first save makes the card, so there is no second step', async ({ page }) => {
     await signUp(page);
-    await expect(page.getByRole('button', { name: 'Make my card' })).toBeDisabled();
-    await expect(page.locator('#card')).toContainText('at least one contact');
+
+    // Nothing to make yet, and nothing on the page asking to be made: a card with nobody
+    // behind it is not a state the product has.
+    await expect(page.locator('#card')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Make my card' })).toHaveCount(0);
+
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+
+    // The card came with the contact: a PIN and a link, live, without another press.
+    await expect(page.locator('#card .pin')).toBeVisible();
+    await expect(page.locator('#card .url')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Make my card' })).toHaveCount(0);
   });
 
   test('opens the add form for the first contact and folds it away afterwards', async ({ page }) => {
@@ -78,7 +88,7 @@ test.describe('the dashboard', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
     // Afterwards it folds away behind a button, so the list owns the space.
-    const disclosure = page.locator('.add-more');
+    const disclosure = page.locator('#contacts .add-more');
     await expect(disclosure).toHaveCount(1);
     const open = await disclosure.evaluate((element) => (element as HTMLDetailsElement).open);
     expect(open).toBe(false);
@@ -181,8 +191,12 @@ test.describe('the dashboard', () => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
+    // No note yet: adding one is a disclosure, the same as adding a contact.
+    await expect(page.locator('#notes-section .notes')).toHaveCount(0);
+    await page.locator('#notes-section .add-more > summary').click();
+
     // Nothing to save until something changed.
-    const save = page.locator('#notes-section button[type="submit"]');
+    const save = page.locator('#notes-section form[action="/dashboard/notes"] button[type="submit"]');
     await expect(save).toBeDisabled();
     await page.fill('#notes', 'x');
     await expect(save).toBeEnabled();
@@ -210,7 +224,8 @@ test.describe('the dashboard', () => {
     expect(message).toContain('delete your card');
     await expect(page).toHaveURL(/notice=contact-and-card-deleted$/);
     await expect(page.locator('.contacts > li')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Make my card' })).toBeDisabled();
+    await expect(page.locator('#card')).toHaveCount(0);
+    await expect(page.locator('form[action="/dashboard/start"]')).toBeVisible();
   });
 
   test('cancelling the confirmation keeps contact and card', async ({ page }) => {
@@ -300,13 +315,13 @@ test.describe('the dashboard', () => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
-    await page.locator('.add-more > summary').click();
+    await page.locator('#contacts .add-more > summary').click();
     const form = page.locator('form[action="/dashboard/contacts/new"]');
     await form.locator('input[name="name"]').fill('Discarded');
     await form.locator('a[data-cancel]').click();
 
-    await expect(page.locator('.add-more')).not.toHaveAttribute('open', '');
-    await page.locator('.add-more > summary').click();
+    await expect(page.locator('#contacts .add-more')).not.toHaveAttribute('open', '');
+    await page.locator('#contacts .add-more > summary').click();
     await expect(page.locator('form[action="/dashboard/contacts/new"] input[name="name"]')).toHaveValue('');
   });
 

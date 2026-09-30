@@ -65,8 +65,6 @@ const en = {
   'owner.contacts.title': 'Emergency contacts',
   'owner.contacts.one': '1 person',
   'owner.contacts.many': '{count} people',
-  'owner.contacts.empty':
-    'Nobody yet. Add the person a responder should call — a card cannot exist until one does.',
   'owner.contacts.services': 'Services',
   'owner.contacts.spoken': 'Spoken',
   'owner.contacts.textOnly': 'Text only',
@@ -90,6 +88,7 @@ const en = {
   'owner.notes.hint':
     "Shown under the contacts on the card page. Where the medication is, who to call first. Do not enter anyone else's data.",
   'owner.notes.save': 'Save notes',
+  'owner.notes.add': 'Add a note',
   'owner.notes.optional': 'Optional',
   'owner.notes.actions': 'Note actions',
   'owner.notes.edit': 'Edit note',
@@ -100,7 +99,8 @@ const en = {
   'owner.notes.none': 'No note yet.',
   'owner.start.save': 'Save',
 
-  'owner.card.title': 'Your card',
+    'owner.card.ready': 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.',
+'owner.card.title': 'Your card',
   'owner.card.actions': 'Card actions',
   'owner.card.new': 'New card',
   'owner.card.newTitle': 'Make a new card?',
@@ -112,8 +112,6 @@ const en = {
   'owner.card.deleteConfirm':
     'Delete the card and its link? Your contacts and notes are kept, and you can make a new card later.',
   'owner.card.deleteOk': 'Delete card',
-  'owner.card.needsContact': 'A card needs at least one contact behind it. Add someone above, then come back.',
-  'owner.card.ready': 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.',
   'owner.card.make': 'Make my card',
   'owner.card.pin': 'PIN',
   'owner.card.link': 'Link',

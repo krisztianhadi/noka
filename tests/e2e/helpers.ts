@@ -55,7 +55,8 @@ export interface ContactSpec {
 
 /** The add form: open for the first contact, folded behind a button afterwards. */
 export async function openAddForm(page: Page): Promise<void> {
-  const disclosure = page.locator('.add-more');
+  // Scoped: 'Add a note' is the same disclosure pattern below the contacts.
+  const disclosure = page.locator('#contacts .add-more');
   if (await disclosure.count()) {
     const open = await disclosure.evaluate((element) => (element as HTMLDetailsElement).open);
     if (!open) await disclosure.locator('> summary').click();
@@ -90,9 +91,16 @@ export function kebab(page: Page, scope = 'body') {
   return page.locator(`${scope} .kebab > summary`).first();
 }
 
+/**
+ * The card exists as soon as there is a contact — the first save makes it. This only presses
+ * the button in the one state that still has one: a card the owner deleted by hand.
+ */
 export async function makeCard(page: Page): Promise<{ slug: string; pin: string }> {
-  await page.getByRole('button', { name: 'Make my card' }).click();
-  await expect(page).toHaveURL(/notice=card-made$/);
+  const make = page.getByRole('button', { name: 'Make my card' });
+  if ((await make.count()) > 0) {
+    await make.click();
+    await expect(page).toHaveURL(/notice=card-made$/);
+  }
   return readCard(page);
 }
 
@@ -145,7 +153,13 @@ export function unexpectedNavigations(html: string): string[] {
 }
 
 export async function saveNotes(page: Page, text: string): Promise<void> {
+  // The note form lives behind 'Add a note' until there is a note to show.
+  const add = page.locator('#notes-section .add-more');
+  if (await add.count()) {
+    const open = await add.evaluate((element) => (element as HTMLDetailsElement).open);
+    if (!open) await add.locator('> summary').click();
+  }
   await page.fill('#notes', text);
-  await page.getByRole('button', { name: 'Save notes' }).click();
+  await page.locator('#notes-section form[action="/dashboard/notes"] button[type="submit"]').click();
   await expect(page).toHaveURL(/notice=notes-saved$/);
 }
