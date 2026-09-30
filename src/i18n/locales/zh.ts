@@ -13,7 +13,6 @@ const zh: Record<MessageKey, string> = {
   'view.headingFor': "{name} 的紧急联系人",
   'view.call': '拨打电话',
   'view.whatsapp': 'WhatsApp',
-  'view.speaks': '会说的语言',
   'view.notes': '备注',
   'view.exit': '退出',
   'view.on': '可通过',

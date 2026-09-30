@@ -13,7 +13,6 @@ const fr: Record<MessageKey, string> = {
   'view.headingFor': "Contact d'urgence de {name}",
   'view.call': 'Appeler',
   'view.whatsapp': 'WhatsApp',
-  'view.speaks': 'Parle',
   'view.notes': 'Notes',
   'view.exit': 'Quitter',
   'view.on': 'Disponible sur',

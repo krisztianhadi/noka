@@ -17,7 +17,6 @@ const en = {
   'view.headingFor': "Emergency contact for {name}",
   'view.call': 'Call',
   'view.whatsapp': 'WhatsApp',
-  'view.speaks': 'Speaks',
   'view.notes': 'Notes',
   'view.exit': 'Exit',
   'view.on': 'Available on',

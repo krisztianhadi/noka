@@ -158,7 +158,8 @@ test.describe('the responder page', () => {
     await guest.getByRole('button', { name: 'Русский' }).click();
     await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
     await expect(guest.locator('a.call')).toContainText('Позвонить');
-    await expect(guest.locator('body')).toContainText('Говорит на');
+    // The spoken languages sit beside the relation, with their flags.
+    await expect(maria.locator('.meta')).toContainText('тайский');
 
     // 5. "Exit" clears both cookies, so a handed-over phone stops showing the contacts.
     await guest.getByRole('button', { name: 'Выйти' }).click();

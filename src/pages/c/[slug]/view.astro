@@ -6,6 +6,7 @@ import ChannelIcon from '@/components/ChannelIcon.astro';
 import LanguageSwitcher from '@/components/LanguageSwitcher.astro';
 import type { ContactView } from '@/lib/contacts';
 import { channelHref, type Channel } from '@/lib/channels';
+import { flagForLanguage } from '@/lib/flags';
 import {
   cardLanguages,
   findCardBySlug,
@@ -66,15 +67,23 @@ const offered = cardLanguages(card);
     contacts.map((contact) => (
       <div class="contact">
         <div class="name">{contact.name}</div>
-        <div class="relation">{label(`relation.${contact.relation}` as MessageKey)}</div>
-        {contact.spokenLanguages.length > 0 && (
-          <div class="speaks">
-            {label('view.speaks')}:{' '}
-            {contact.spokenLanguages
-              .map((code) => label(`spoken.${code}` as MessageKey))
-              .join(' · ')}
-          </div>
-        )}
+        <div class="meta">
+          <span class="relation">{label(`relation.${contact.relation}` as MessageKey)}</span>
+          {contact.spokenLanguages.length > 0 && <span class="sep" aria-hidden="true">·</span>}
+          {/* No "speaks" label: next to the relation, the flags and the language names read
+              as the languages this person speaks, and the word pushed the line onto two. */}
+          {contact.spokenLanguages.length > 0 && (
+            <span class="speaks">
+              {contact.spokenLanguages.map((code, index) => (
+                <>
+                  {index > 0 && ', '}
+                  <span class="flag" aria-hidden="true">{flagForLanguage(code)}</span>{' '}
+                  {label(`spoken.${code}` as MessageKey)}
+                </>
+              ))}
+            </span>
+          )}
+        </div>
         <div class="phone">
           {/* For someone who cannot hear, the number is text to copy, not a button to
               press: a tappable dialler here contradicts the alert right below it. */}

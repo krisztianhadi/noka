@@ -13,7 +13,6 @@ const ru: Record<MessageKey, string> = {
   'view.headingFor': "Экстренный контакт: {name}",
   'view.call': 'Позвонить',
   'view.whatsapp': 'WhatsApp',
-  'view.speaks': 'Говорит на',
   'view.notes': 'Заметки',
   'view.exit': 'Выйти',
   'view.on': 'Доступно в',

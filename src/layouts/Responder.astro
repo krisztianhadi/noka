@@ -48,9 +48,10 @@ const { lang, title } = Astro.props;
     --t-sm: 1rem; /* 16px — relation, owner, alert, language buttons */
     --t-md: 1.1875rem; /* 19px — body copy, notes, labels */
     --t-lg: 1.375rem; /* 22px — section headings */
-    --t-phone: 1.625rem; /* 26px — the phone number, the loudest datum in a contact */
+    --t-meta: 1.125rem; /* 18px — relation and spoken languages, on one line */
+    --t-phone: 2.5rem; /* 40px — the phone number, the loudest datum in a contact */
     --t-xl: 1.625rem; /* 26px — page heading */
-    --t-2xl: 2rem; /* 32px — contact name, the loudest thing here */
+    --t-2xl: 2.5rem; /* 40px — contact name */
     --t-pin: 2.125rem; /* 34px — the PIN input */
 
     /* Line heights, by job. */
@@ -166,16 +167,42 @@ const { lang, title } = Astro.props;
     /* A long name must not push the number off the screen. */
     overflow-wrap: anywhere;
   }
-  .relation {
+  /* Relation and languages share one line: they describe the same person, and a stranger
+     reads them together. */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s2);
     margin-top: var(--s2);
-    font-size: var(--t-sm);
+    font-size: var(--t-meta);
+    line-height: var(--lh-tight);
     color: var(--ink-soft);
+  }
+  /* Plain inline, not flex: a flex container discards whitespace-only text nodes, so the
+     spaces between a flag and its language name disappeared and the emoji touched the words. */
+  .speaks {
+    display: inline;
+  }
+  .sep {
+    color: #b9b9b9;
+  }
+  .flag {
+    /* Emoji render slightly small beside text at the same size, and their glyph is wider than
+       its box; a little air on both sides keeps them from crowding the words. */
+    font-size: 1.1em;
+    line-height: 1;
+    margin: 0 0.15em;
   }
   .phone {
     margin-top: var(--s4);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: var(--t-phone);
+    /* 40px wherever the whole number fits on one line, which is every screen from about
+       460px up. Below that it scales down only as far as it must: a phone number split
+       across two lines is worse than a slightly smaller one. */
+    font-size: min(var(--t-phone), 8.6vw);
     font-weight: 600;
+    white-space: nowrap;
     line-height: var(--lh-solid);
     /* Easy to read aloud and to copy: this is the point of the page. */
     overflow-wrap: anywhere;
@@ -187,7 +214,6 @@ const { lang, title } = Astro.props;
     margin: var(--s7) 0 var(--s3);
     font-size: var(--t-lg);
   }
-  .speaks,
   .on-channels {
     margin-top: var(--s3);
     font-size: var(--t-xs);
