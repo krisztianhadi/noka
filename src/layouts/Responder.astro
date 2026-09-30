@@ -283,10 +283,12 @@ const { lang, title } = Astro.props;
     border-left-width: 6px;
     border-radius: 5px;
   }
-  .alert svg {
+  .alert .muted {
     flex: 0 0 auto;
+    font-size: 1.6rem;
+    line-height: 1;
     /* Sits on the first line's cap height rather than its ascender. */
-    margin-top: -0.15rem;
+    margin-top: -0.1rem;
   }
   .exit {
     margin-top: var(--s5);

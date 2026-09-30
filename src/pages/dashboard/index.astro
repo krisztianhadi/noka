@@ -195,7 +195,7 @@ const panelClass =
                     ))}
                     {contact.textOnly && (
                       <span class="tag text-only inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs">
-                        <Icon name="sms" size={13} /> {label('owner.contacts.textOnly')}
+                        <span aria-hidden="true">🔇</span> {label('owner.contacts.textOnly')}
                       </span>
                     )}
                   </dd>

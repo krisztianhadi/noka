@@ -150,8 +150,8 @@ test.describe('the dashboard', () => {
     await addContact(page, { name: 'Ana Hadi', phone: '30 123 4567', channels: ['telegram'], textOnly: true });
 
     const row = page.locator('.contacts > li').first();
-    await expect(row.locator('.text-only')).toHaveText('Text only');
-    await expect(row.locator('.tags .tag')).toHaveText(['Call', 'Telegram', 'Text only']);
+    await expect(row.locator('.text-only')).toHaveText('🔇 Text only');
+    await expect(row.locator('.tags .tag')).toHaveText(['Call', 'Telegram', '🔇 Text only']);
   });
 
   test('saves notes for a responder', async ({ page }) => {

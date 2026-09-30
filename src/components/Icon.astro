@@ -31,7 +31,6 @@ interface Props {
     | 'card'
     | 'save'
     | 'chevron'
-    | 'sms'
     | 'download'
     | 'globe'
     | 'x'
@@ -69,7 +68,6 @@ const PATHS: Record<Props['name'], string> = {
   card: '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/>',
   save: '<path d="M5 3.5h11l3 3v14H5z"/><path d="M8.5 3.5v5h6v-5M8.5 20v-6h7v6"/>',
   chevron: '<path d="m6 9.5 6 6 6-6"/>',
-  sms: '<path d="M4 5.5h16v10H12l-4.5 3.5v-3.5H4z"/><path d="M8.5 10.5h7"/>',
   download: '<path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
