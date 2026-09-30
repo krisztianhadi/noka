@@ -33,6 +33,31 @@ test.describe('landing', () => {
   });
 });
 
+test.describe('the demo', () => {
+  test('runs the whole flow: PIN, contacts, exit', async ({ page }) => {
+    // The landing shows a card with a QR code. Someone will scan it, and what they meet has to
+    // be the real sequence — a picture of a contact list answers the wrong question.
+    await page.goto('/demo');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Emergency contacts');
+    await expect(page.getByRole('note')).toContainText('Example card');
+
+    await page.getByRole('button', { name: 'Open' }).click();
+    await expect(page).toHaveURL(/\/demo\/view$/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Sample Card');
+    await expect(page.locator('.contact')).toHaveCount(2);
+    await expect(page.locator('.notes')).toContainText('Blood type O+');
+
+    await page.getByRole('button', { name: 'Exit' }).click();
+    await expect(page).toHaveURL(/\/demo$/);
+    await expect(page.locator('.contact')).toHaveCount(0);
+  });
+
+  test('keeps the contacts behind the PIN', async ({ page }) => {
+    await page.goto('/demo/view');
+    await expect(page).toHaveURL(/\/demo$/);
+  });
+});
+
 test.describe('the footer belongs to the owner surfaces only', () => {
   test('every owner page carries it, and the card page never does', async ({ page, request }) => {
     for (const path of ['/', '/login', '/signup', '/privacy', '/terms', '/imprint']) {

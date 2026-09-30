@@ -1,0 +1,31 @@
+/*
+ * The demo's two additions to the responder stylesheet. Everything else on those pages is the
+ * real card plane — same layout, same type scale, same colours.
+ */
+.demo-banner {
+  margin: 0 0 1.5rem;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: #fff8e1;
+  border: 2px solid #111;
+  border-left-width: 6px;
+  border-radius: 5px;
+}
+.demo-back {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  font-size: 1rem;
+  border-top: 1px solid #e5e5e5;
+}
+.demo-pin-hint {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  color: #555;
+}
+/* The responder plane has no other links, so the browser default would show through. */
+.demo-back a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

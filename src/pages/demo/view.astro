@@ -1,0 +1,80 @@
+---
+import Responder from '@/layouts/Responder.astro';
+import ChannelIcon from '@/components/ChannelIcon.astro';
+import { t, type MessageKey } from '@/i18n/catalogue';
+import { LANGUAGE_INFO } from '@/i18n/languages';
+import { channelHref } from '@/lib/channels';
+import { flagForLanguage } from '@/lib/flags';
+import { DEMO_BANNER_ON_VIEW, DEMO_CONTACTS, DEMO_NOTES, DEMO_OWNER, demoChannels } from '@/lib/demo';
+import '@/styles/demo.css';
+
+/**
+ * Step three of the demo: what the contacts look like once the PIN is in.
+ *
+ * Rendered by the responder layout and its stylesheet, so this is the real page's typography,
+ * spacing and button behaviour — the same page a stranger sees, with invented people.
+ */
+const lang = LANGUAGE_INFO.en.htmlLang;
+const label = (key: MessageKey, values?: Record<string, string | number>) => t('en', key, values);
+
+if (Astro.cookies.get('noka_demo')?.value !== 'ok') {
+  return Astro.redirect('/demo');
+}
+---
+
+<Responder lang={lang} title={label('view.heading')}>
+  <p class="demo-banner" role="note">{DEMO_BANNER_ON_VIEW}</p>
+
+  <h1>{label('view.headingFor', { name: DEMO_OWNER })}</h1>
+
+  {
+    DEMO_CONTACTS.map((contact) => (
+      <div class="contact">
+        <div class="name">{contact.name}</div>
+        <div class="meta">
+          <span class="relation">{contact.relation}</span>
+          <span class="sep" aria-hidden="true">·</span>
+          <span class="speaks">
+            {contact.spoken.map((spoken, index) => (
+              <>
+                {index > 0 && ', '}
+                <span class="flag" aria-hidden="true">{flagForLanguage(spoken.code)}</span>{' '}
+                {spoken.label}
+              </>
+            ))}
+          </span>
+        </div>
+        <div class={`phone${contact.textOnly ? '' : ' callable'}`}>
+          {contact.textOnly ? (
+            <span>{contact.phoneDisplay}</span>
+          ) : (
+            <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
+          )}
+        </div>
+        {contact.textOnly && (
+          <p class="alert" role="note">
+            <span class="muted" aria-hidden="true">🔇</span>
+            <span>{label('view.text_only')}</span>
+          </p>
+        )}
+        <div class="actions">
+          {demoChannels(contact).map((channel) => (
+            <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
+              <ChannelIcon channel={channel} size={20} />
+              <span>{label(`channel.${channel}` as MessageKey)}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))
+  }
+
+  <h2 class="notes-heading">{label('view.notes')}</h2>
+  <div class="notes">{DEMO_NOTES}</div>
+
+  <form method="post" action="/demo/exit">
+    <button type="submit" class="exit">{label('view.exit')}</button>
+  </form>
+
+  <p class="demo-back"><a href="/">← Back to noka</a></p>
+</Responder>

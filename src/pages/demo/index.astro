@@ -1,0 +1,53 @@
+---
+import Responder from '@/layouts/Responder.astro';
+import { t } from '@/i18n/catalogue';
+import { LANGUAGE_INFO } from '@/i18n/languages';
+import { DEMO_BANNER_ON_PIN, DEMO_PIN_DISPLAY } from '@/lib/demo';
+import '@/styles/demo.css';
+
+/**
+ * Step one of the demo: the PIN page, exactly as a real card shows it.
+ *
+ * The visitor scanned the sample card, so this is the first thing they should meet — not a
+ * finished contact list. The PIN is printed here because the sample card is a picture: nobody
+ * can read it off a screen, and the point is to let them finish the flow.
+ */
+const lang = LANGUAGE_INFO.en.htmlLang;
+const error = Astro.url.searchParams.get('error') === '1';
+
+// Already entered: skip straight to the contacts.
+if (Astro.cookies.get('noka_demo')?.value === 'ok') {
+  return Astro.redirect('/demo/view');
+}
+---
+
+<Responder lang={lang} title={t('en', 'pin.title')}>
+  <p class="demo-banner" role="note">{DEMO_BANNER_ON_PIN}</p>
+
+  <h1>{t('en', 'pin.title')}</h1>
+  <p>{t('en', 'pin.prompt')}</p>
+
+  {error && <p class="error" role="alert">{t('en', 'pin.error')}</p>}
+
+  <form method="post" action="/demo/enter">
+    <label for="pin">{t('en', 'pin.label')}</label>
+    <input
+      id="pin"
+      name="pin"
+      type="text"
+      inputmode="numeric"
+      maxlength="7"
+      autocomplete="one-time-code"
+      required
+      autofocus
+      value={error ? '' : DEMO_PIN_DISPLAY}
+    />
+    <button type="submit">{t('en', 'pin.submit')}</button>
+  </form>
+
+  <p class="demo-pin-hint">
+    The PIN is <strong>{DEMO_PIN_DISPLAY}</strong>, and it is already typed in for you.
+  </p>
+
+  <p class="demo-back"><a href="/">← Back to noka</a></p>
+</Responder>
