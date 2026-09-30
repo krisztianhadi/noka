@@ -48,15 +48,18 @@ const madeBy = label('footer.madeBy').split('{studio}');
 
       <details class="languages relative">
         <summary
-          class="flex cursor-pointer list-none items-center gap-1 whitespace-nowrap marker:content-none hover:text-fg"
+          class="flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-2 py-1 marker:content-none hover:bg-muted hover:text-fg"
         >
           <Icon name="globe" size={12} />
           {LANGUAGE_INFO[locale].endonym}
+          <Icon name="chevron" size={12} class="opacity-70" />
         </summary>
+        <!-- Opens upwards: a footer sits at the bottom of the page, so a downward panel
+             either runs off the viewport or makes the page scroll to reach it. -->
         <form
           method="post"
           action="/language"
-          class="panel absolute right-0 z-20 mt-1 min-w-44 rounded-lg border border-line bg-surface p-1 shadow-float"
+          class="panel absolute right-0 bottom-full z-20 mb-1 min-w-44 rounded-lg border border-line bg-surface p-1 shadow-float"
         >
           <input type="hidden" name="next" value={next} />
           {
