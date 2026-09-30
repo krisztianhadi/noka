@@ -3,8 +3,7 @@
  * Generate `src/lib/brand-icons.ts` from simple-icons (CC0-1.0).
  *
  * The responder page must be self-contained — no webfont, no sprite request — so the
- * four brand marks are inlined as path data at build time rather than loaded from
- * anywhere. Generating the file (instead of hand-copying the paths) keeps the shapes
+ * brand marks are inlined as path data at build time rather than loaded from anywhere. Generating the file (instead of hand-copying the paths) keeps the shapes
  * exactly as published and makes the provenance reproducible:
  *
  *     pnpm add -D simple-icons && node scripts/make-brand-icons.mjs
@@ -15,7 +14,8 @@
 import { writeFileSync } from 'node:fs';
 import * as simpleIcons from 'simple-icons';
 
-const WANTED = ['whatsapp', 'signal', 'telegram', 'viber'];
+// Channel marks for the card page, plus the repository mark for the footer's Source link.
+const WANTED = ['whatsapp', 'signal', 'telegram', 'viber', 'github'];
 
 const entries = WANTED.map((slug) => {
   const key = Object.keys(simpleIcons).find((name) => name.toLowerCase() === `si${slug}`);

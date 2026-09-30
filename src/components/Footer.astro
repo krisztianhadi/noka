@@ -1,6 +1,7 @@
 ---
 import Icon from '@/components/Icon.astro';
 import { t } from '@/i18n/catalogue';
+import { brandIcon } from '@/lib/brand-icons';
 import { LANGUAGE_INFO, type CardLanguage } from '@/i18n/languages';
 
 /**
@@ -40,10 +41,13 @@ const madeBy = label('footer.madeBy').split('{studio}');
       <a class="whitespace-nowrap hover:text-fg" href="/terms">{label('footer.terms')}</a>
       <a class="whitespace-nowrap hover:text-fg" href="/imprint">{label('footer.imprint')}</a>
       <a
-        class="inline-flex items-center gap-1 whitespace-nowrap hover:text-fg"
+        class="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-fg"
         href="https://github.com/krisztianhadi/noka"
       >
-        <Icon name="link" size={12} /> {label('footer.source')}
+        <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false" class="shrink-0">
+          <path d={brandIcon('github')?.path} fill="currentColor" />
+        </svg>
+        {label('footer.source')}
       </a>
 
       <details class="languages relative">
