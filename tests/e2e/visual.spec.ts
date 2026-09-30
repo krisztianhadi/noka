@@ -57,7 +57,8 @@ test.describe('things axe cannot see', () => {
       await page.goto('/');
       await page.evaluate((value) => document.documentElement.setAttribute('data-theme', value), theme);
 
-      const heading = page.getByRole('heading', { name: 'noka' });
+      // The wordmark is the home link, not a heading; the h1 carries the page's message.
+      const heading = page.getByRole('link', { name: 'noka' });
       const [ink, background] = await heading.evaluate((element) => [
         getComputedStyle(element).color,
         getComputedStyle(document.body).backgroundColor,

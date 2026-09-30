@@ -30,6 +30,14 @@
     --noka-success: #0a6039;
     --noka-focus: #2563eb;
 
+    /* The marketing plane gets two more tokens, because it is the one surface allowed to
+       have a mood: an ink panel for the hero, and the colour of a post-it. Everything else
+       stays on the app scale above. */
+    --noka-ink: #14161a;
+    --noka-ink-fg: #f4f5f8;
+    --noka-mark: #f5c451;
+    --noka-mark-fg: #14161a;
+
     /* One shadow, used by things that actually float (menus, modals). */
     --noka-shadow: 0 10px 30px -12px rgb(16 20 28 / 28%);
 
@@ -51,6 +59,11 @@
     --noka-success: #4ade80;
     --noka-focus: #60a5fa;
 
+    /* In dark mode the ink panel becomes slightly lighter than the page, so it still reads
+       as a panel rather than a hole. */
+    --noka-ink: #1b1f26;
+    --noka-ink-fg: #f4f5f8;
+
     --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
 
     color-scheme: dark;
@@ -71,6 +84,8 @@
       --noka-danger-fg: #2a0d0c;
       --noka-success: #4ade80;
       --noka-focus: #60a5fa;
+      --noka-ink: #1b1f26;
+      --noka-ink-fg: #f4f5f8;
       --noka-shadow: 0 10px 30px -12px rgb(0 0 0 / 60%);
       color-scheme: dark;
     }
@@ -91,6 +106,10 @@
     --color-danger-fg: var(--noka-danger-fg);
     --color-success: var(--noka-success);
     --color-focus: var(--noka-focus);
+    --color-ink: var(--noka-ink);
+    --color-ink-fg: var(--noka-ink-fg);
+    --color-mark: var(--noka-mark);
+    --color-mark-fg: var(--noka-mark-fg);
 
     --shadow-float: var(--noka-shadow);
 

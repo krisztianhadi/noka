@@ -9,48 +9,77 @@ import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
 import cardShot from '../../assets/brand/noka-card-sample.jpg';
 
 /**
- * The landing page: the owner plane's front door.
+ * The landing page: the owner plane's front door, and the only surface in the product
+ * allowed to have a mood.
  *
- * Structure follows the sibling project's rhythm — hero, what it is, an explicit "what we
- * are not doing", how it works, questions, one closing action — because that page does the
- * hard part well: it states the limits as plainly as the features.
+ * The responder plane's rules — no JavaScript, no outside anything, tiny and instant —
+ * apply to `/c/*`, where a stranger is in a hurry on a bad connection. They were never
+ * meant for here, and applying them here is what produced a wireframe: this page may use
+ * fonts, texture, motion and colour, and it should.
  *
- * Copy is English-only for now, deliberately inline rather than in the catalogue: the wording
- * is waiting on his read, and translating a draft into four more languages is work that gets
- * thrown away if a headline changes. It moves into `src/i18n/locales/` and is translated in
- * the same pass that approves it (ADR-032).
+ * Structure follows the sibling project's rhythm: hero, what this is, what we are not
+ * doing, how it works, questions, one closing action. The honesty is the design.
  *
- * No tracking, no sponsor content until there is a sponsor (§18), and no claim about speed or
- * uptime that has not been measured — "built to load in under a second", not "loads in".
+ * Copy is English-only for now, inline rather than in the catalogue: the wording waits on
+ * his read, and translating a draft into four more languages is work thrown away if a
+ * headline changes (ADR-032).
  */
 const locale = Astro.locals.locale;
+// Deleting an account lands here, so the page has to say it happened.
+const deleted = Astro.url.searchParams.get('deleted') === '1';
 
-const isWhat = [
-  'Tap-to-call contacts, on any phone with a network connection.',
-  'English, Spanish, French, Simplified Chinese and Russian.',
-  'No app or account for the person opening the card.',
-  'No JavaScript, analytics, outside fonts or outside images on the card page.',
+const eyebrow = 'font-mono text-[0.7rem] tracking-[0.18em] text-fg-muted uppercase';
+const h2 = 'mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl';
+
+const trust = [
+  'Encrypted before storage',
+  'No tracking on the card page',
+  'Five languages',
+  'MIT licensed',
+];
+
+const features = [
+  {
+    icon: 'phone' as const,
+    title: 'Tap to call',
+    body: 'Whoever is helping you gets the people to call, with buttons that work on any phone.',
+  },
+  {
+    icon: 'lock' as const,
+    title: 'Encrypted first',
+    body: 'Contacts and notes are encrypted before they reach the database. The key is not stored there.',
+  },
+  {
+    icon: 'globe' as const,
+    title: 'Five languages',
+    body: 'English, Spanish, French, Simplified Chinese and Russian — you choose which appear.',
+  },
+  {
+    icon: 'eye-off' as const,
+    title: 'Nothing watching',
+    body: 'The card page has no JavaScript, no analytics, no outside fonts or images. It does not log the view.',
+  },
 ];
 
 const notDoing = [
   {
-    title: 'Replacing emergency services.',
+    title: 'Replacing emergency services',
     body: 'Noka is not an emergency service or a substitute for one. Call the local emergency number first.',
   },
   {
-    title: 'Keeping a medical record.',
+    title: 'Keeping a medical record',
     body: 'There are no diagnoses, medication doses or allergies database. A note is a note.',
   },
   {
-    title: 'Hiding access from the holder.',
-    body: 'The responder needs the physical card and PIN. Anyone with both can read the contacts. That is the design.',
+    title: 'Hiding access from the holder',
+    body: 'The responder needs the physical card and the PIN. Anyone with both can read the contacts. That is the design.',
   },
   {
-    title: 'Tracking the responder.',
-    body: 'There is no app to install, no account to create and no tracking of whoever opened the page.',
+    title: 'Tracking the responder',
+    body: 'No app to install, no account to create, and no tracking of whoever opens the page.',
   },
   {
-    title: 'Emailing password resets.',
+    title: 'Emailing password resets',
     body: 'Self-service password reset email is not available yet. Do not rely on an account you cannot access.',
   },
 ];
@@ -58,7 +87,7 @@ const notDoing = [
 const steps = [
   {
     title: 'Set it up',
-    body: 'Add your contacts and a short note. Choose the languages you want to offer.',
+    body: 'Add your contacts and one short note. Choose the languages you want to offer.',
   },
   {
     title: 'Carry the card',
@@ -66,7 +95,7 @@ const steps = [
   },
   {
     title: 'Let them call',
-    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note. Their phone needs a network connection.',
+    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note.',
   },
 ];
 
@@ -105,11 +134,12 @@ const faq = [
   },
 ];
 
-const h2 = 'text-xl font-semibold tracking-tight text-fg sm:text-2xl';
 const buttonPrimary =
-  'inline-flex h-10 items-center justify-center gap-2 rounded-md border border-accent bg-accent px-4 text-sm font-medium text-accent-fg no-underline hover:opacity-90';
-const buttonQuiet =
-  'inline-flex h-10 items-center justify-center gap-2 rounded-md border border-line-strong bg-surface px-4 text-sm font-medium text-fg no-underline hover:bg-muted';
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-accent bg-accent px-5 text-sm font-medium text-accent-fg no-underline transition hover:-translate-y-px hover:opacity-90';
+const buttonOnInk =
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/25 bg-white px-5 text-sm font-medium text-ink no-underline transition hover:-translate-y-px hover:bg-white/90';
+const buttonGhostOnInk =
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-medium text-ink-fg no-underline transition hover:border-white/60 hover:bg-white/10';
 ---
 
 <!doctype html>
@@ -125,82 +155,149 @@ const buttonQuiet =
     <link rel="icon" href="data:," />
   </head>
   <body class="min-h-dvh">
-    <header class="border-b border-line">
-      <div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <header class="sticky top-0 z-30 border-b border-line bg-surface">
+      <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <a class="w-20 text-fg [&_svg]:h-auto [&_svg]:w-full" href="/" aria-label="noka" set:html={wordmark} />
-        <nav class="hidden items-center gap-5 text-sm sm:flex" aria-label="Sections">
-          <a class="text-fg-muted no-underline hover:text-fg" href="#how">How it works</a>
-          <a class="text-fg-muted no-underline hover:text-fg" href="#limits">Limits</a>
-          <a class="text-fg-muted no-underline hover:text-fg" href="#questions">Questions</a>
+        <nav class="hidden items-center gap-6 text-sm sm:flex" aria-label="Sections">
+          <a class="text-fg-muted no-underline transition hover:text-fg" href="#what">What it is</a>
+          <a class="text-fg-muted no-underline transition hover:text-fg" href="#limits">Limits</a>
+          <a class="text-fg-muted no-underline transition hover:text-fg" href="#how">How it works</a>
+          <a class="text-fg-muted no-underline transition hover:text-fg" href="#questions">Questions</a>
         </nav>
-        <a class="text-sm font-medium text-fg" href="/signup">Create an account</a>
+        <div class="flex items-center gap-2">
+          <a class="hidden text-sm font-medium text-fg no-underline sm:inline" href="/login">Sign in</a>
+          <a class={`${buttonPrimary} h-9 px-4`} href="/signup">Create an account</a>
+        </div>
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-      <!-- Hero. The card comes next on mobile, before any further prose: the product is a thing. -->
-      <section class="sm:flex sm:items-start sm:gap-10">
-        <div class="sm:flex-1">
-          <h1 class="text-3xl leading-tight font-bold tracking-tight text-fg sm:text-4xl">
-            A note in your wallet, made easier to find.
-          </h1>
-          <p class="mt-4 text-base leading-7 text-fg-muted">
-            Noka is a bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
-            you, it shows them who to call and the note you chose to leave.
+    <main class="w-full">
+      {
+        deleted && (
+          <p
+            class="border-b border-success/40 bg-success/10 px-4 py-3 text-center text-sm text-success sm:px-6"
+            role="status"
+          >
+            Your account and everything in it has been deleted.
           </p>
-          <div class="mt-6 flex flex-wrap items-center gap-3">
-            <a class={buttonPrimary} href="/signup"><Icon name="plus" size={16} /> Create an account</a>
-            <a class={buttonQuiet} href="#how">See how it works</a>
-          </div>
-        </div>
+        )
+      }
 
-        <figure class="mx-auto mt-10 w-[72%] shrink-0 sm:mt-0 sm:w-56">
-          <img
-            class="w-full rounded-lg border border-line shadow-float"
-            src={cardShot.src}
-            width="638"
-            height="1011"
-            alt="The noka card: a five-language heading, a QR code and a six-digit PIN"
-          />
-          <figcaption class="mt-3 text-xs leading-5 text-fg-muted">
-            The physical card and PDF printing pipeline are still being built. Accounts work today.
-          </figcaption>
-        </figure>
-      </section>
-
-      <!-- What this is -->
-      <section class="mt-16 border-t border-line pt-10">
-        <h2 class={h2}>The useful part of a note, without the handwriting.</h2>
-        <p class="mt-4 max-w-prose text-sm leading-6 text-fg-muted">
-          Add the people to call. Add one short note. Choose which of five languages appear. Noka puts
-          that information behind the code and PIN on your card.
-        </p>
-        <div class="mt-6 sm:flex sm:gap-10">
-          <p class="text-sm leading-6 text-fg-muted sm:w-1/3">
-            Contacts and notes are encrypted before they reach the database. The key is not stored there.
-          </p>
-          <div class="mt-4 sm:mt-0 sm:w-2/3">
-            <ul class="space-y-2">
-              {isWhat.map((item) => <li class="border-b border-line pb-2 text-sm leading-6 text-fg">{item}</li>)}
-            </ul>
-            <p class="mt-3 text-xs text-fg-muted">It does not even log the page view.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- What we are not doing -->
-      <section
-        id="limits"
-        class="mt-16 rounded-lg border border-line border-t-4 border-t-accent bg-surface p-5 sm:p-7"
+    <!-- Hero: the one loud surface in the product. Ink panel, dot texture, and the card. -->
+    <section class="relative overflow-hidden bg-ink text-ink-fg">
+      <div
+        class="pointer-events-none absolute inset-0 opacity-[0.14]"
+        style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 22px 22px"
+        aria-hidden="true"
       >
-        <h2 class={h2}>What we&rsquo;re not doing</h2>
-        <p class="mt-3 text-sm leading-6 text-fg-muted">This is a small tool. Its limits are part of the design.</p>
-        <dl class="mt-6 divide-y divide-line">
+      </div>
+      <div
+        class="pointer-events-none absolute -top-32 -right-20 hidden size-[26rem] rounded-full opacity-[0.18] blur-[80px] sm:block"
+        style="background: radial-gradient(closest-side, var(--noka-mark), transparent)"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="relative mx-auto w-full max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
+        <div class="items-center gap-12 sm:grid sm:grid-cols-[1.1fr_0.9fr]">
+          <div class="reveal">
+            <p class="font-mono text-[0.7rem] tracking-[0.2em] text-ink-fg/60 uppercase">
+              Emergency contact card
+            </p>
+            <h1
+              class="mt-5 text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl"
+            >
+              A note in your wallet, made easier to find.
+            </h1>
+            <p class="mt-6 max-w-xl text-base leading-7 text-ink-fg/75 sm:text-lg">
+              Noka is a bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
+              you, it shows them who to call and the note you chose to leave.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+              <a class={buttonOnInk} href="/signup">Create an account</a>
+              <a class={buttonGhostOnInk} href="#how">See how it works <Icon name="arrow-right" size={16} /></a>
+            </div>
+
+            <ul class="mt-10 grid gap-y-2 font-mono text-[0.7rem] tracking-wider text-ink-fg/60 uppercase sm:flex sm:flex-wrap sm:gap-x-6">
+              {trust.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+
+          <!-- The product is a physical object, so on mobile it comes before any prose. -->
+          <figure class="reveal mt-10 sm:mt-0">
+            <div class="group relative mx-auto w-[68%] max-w-[19rem] sm:w-full sm:max-w-none">
+              <div
+                class="absolute inset-0 translate-y-3 rounded-2xl bg-black/40 blur-2xl"
+                aria-hidden="true"
+              >
+              </div>
+              <img
+                class="relative w-full rotate-[-1.5deg] rounded-2xl shadow-2xl transition duration-500 group-hover:rotate-0 group-hover:scale-[1.02]"
+                src={cardShot.src}
+                width="638"
+                height="1011"
+                alt="The noka card: a five-language heading, a QR code and a six-digit PIN"
+              />
+            </div>
+            <figcaption class="mx-auto mt-6 max-w-xs text-center text-xs leading-5 text-ink-fg/60">
+              <span class="mb-2 inline-block rounded-full bg-mark px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wider text-mark-fg uppercase">
+                Sample card
+              </span>
+              <span class="block">
+                The physical card and PDF printing pipeline are still being built. Accounts work today.
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+      <div class="mx-auto w-full max-w-5xl px-4 sm:px-6">
+      <!-- What this is -->
+      <section id="what" class="reveal py-16 sm:py-24">
+        <p class={eyebrow}>What this is</p>
+        <h2 class={h2}>The useful part of a note, without the handwriting.</h2>
+        <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
+          Add the people to call. Add one short note. Choose which of five languages appear. Noka puts that
+          information behind the code and PIN on your card — and the note stays exactly as you wrote it.
+        </p>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-2">
           {
-            notDoing.map((limit) => (
-              <div class="py-4 sm:flex sm:gap-6">
-                <dt class="text-sm font-medium text-fg sm:w-1/3">{limit.title}</dt>
-                <dd class="mt-1 text-sm leading-6 text-fg-muted sm:mt-0 sm:w-2/3">{limit.body}</dd>
+            features.map((feature) => (
+              <div class="group rounded-2xl border border-line bg-surface p-6 transition hover:-translate-y-0.5 hover:border-line-strong">
+                <span class="inline-flex size-10 items-center justify-center rounded-xl bg-muted text-fg">
+                  <Icon name={feature.icon} size={18} />
+                </span>
+                <h3 class="mt-4 text-base font-semibold text-fg">{feature.title}</h3>
+                <p class="mt-1.5 text-sm leading-6 text-fg-muted">{feature.body}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- What we are not doing: the section that earns the rest of the page. -->
+      <section id="limits" class="reveal rounded-3xl border border-line bg-surface p-6 sm:p-10">
+        <p class={eyebrow}>What we&rsquo;re not doing</p>
+        <h2 class={h2}>This is a small tool. Its limits are part of the design.</h2>
+        <dl class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
+          <div class="rounded-2xl bg-mark/15 p-5 sm:col-span-2 sm:flex sm:items-baseline sm:gap-6">
+            <dt class="flex items-center gap-2 text-base font-semibold text-fg">
+              <Icon name="x" size={16} /> {notDoing[0].title}
+            </dt>
+            <dd class="mt-2 text-sm leading-6 text-fg-muted sm:mt-0">{notDoing[0].body}</dd>
+          </div>
+          {
+            notDoing.slice(1).map((limit) => (
+              <div class="border-t border-line pt-5">
+                <dt class="flex items-center gap-2 text-sm font-semibold text-fg">
+                  <span class="text-fg-muted">
+                    <Icon name="x" size={14} />
+                  </span>
+                  {limit.title}
+                </dt>
+                <dd class="mt-2 text-sm leading-6 text-fg-muted">{limit.body}</dd>
               </div>
             ))
           }
@@ -208,77 +305,142 @@ const buttonQuiet =
       </section>
 
       <!-- How it works -->
-      <section id="how" class="mt-16 border-t border-line pt-10">
+      <section id="how" class="reveal py-16 sm:py-24">
+        <p class={eyebrow}>How it works</p>
         <h2 class={h2}>A scan, a PIN, a useful page.</h2>
-        <ol class="mt-6 space-y-6 sm:flex sm:gap-6 sm:space-y-0">
+        <ol class="mt-10 grid gap-8 sm:grid-cols-3">
           {
             steps.map((step, index) => (
-              <li class="sm:flex-1">
-                <span class="block text-3xl font-semibold text-fg-muted" aria-hidden="true">
-                  {index + 1}
+              <li class="relative">
+                <span class="font-mono text-4xl font-semibold text-fg-muted/80" aria-hidden="true">
+                  0{index + 1}
                 </span>
-                <h3 class="mt-2 text-sm font-semibold text-fg">{step.title}</h3>
-                <p class="mt-1 text-sm leading-6 text-fg-muted">{step.body}</p>
+                <h3 class="mt-3 text-base font-semibold text-fg">{step.title}</h3>
+                <p class="mt-1.5 text-sm leading-6 text-fg-muted">{step.body}</p>
               </li>
             ))
           }
         </ol>
-        <p class="mt-6 border-t border-line pt-4 text-xs leading-5 text-fg-muted">
-          The responder page carries no JavaScript and no outside fonts or images, and is built to load in
-          under a second on a normal connection.
-        </p>
       </section>
 
       <!-- Privacy and ownership -->
-      <section class="mt-16 rounded-lg border border-line bg-muted p-5 sm:flex sm:items-center sm:gap-6 sm:p-6">
+      <section
+        class="reveal rounded-3xl bg-ink p-6 text-ink-fg sm:flex sm:items-center sm:gap-10 sm:p-10"
+      >
         <div class="sm:flex-1">
-          <h2 class="text-base font-semibold text-fg">Private by construction. Open by choice.</h2>
-          <p class="mt-2 text-sm leading-6 text-fg-muted">
-            Contacts and notes are encrypted before they reach the database. The key is not stored there.
-            Scan attempts keep an HMAC of the network prefix, never a raw IP address, and are deleted after
-            30 days.
+          <p class="font-mono text-[0.7rem] tracking-[0.18em] text-ink-fg/60 uppercase">
+            Privacy and ownership
+          </p>
+          <h2 class="mt-3 text-xl font-semibold tracking-tight text-balance sm:text-2xl">
+            Private by construction. Open by choice.
+          </h2>
+          <p class="mt-4 text-sm leading-6 text-ink-fg/75">
+            Contacts and notes are encrypted before they reach the database, and the key is not stored
+            there. Scan attempts keep an HMAC of the network prefix, never a raw IP address, and are
+            deleted after 30 days.
           </p>
         </div>
-        <div class="mt-4 sm:mt-0 sm:text-right">
+        <div class="mt-6 sm:mt-0 sm:text-right">
           <a
-            class="inline-flex items-center gap-1.5 text-sm text-fg no-underline hover:underline"
+            class="inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-sm no-underline text-ink-fg transition hover:border-white/60 hover:bg-white/10"
             href="https://github.com/krisztianhadi/noka"
           >
             <Icon name="link" size={14} /> Read the code on GitHub
           </a>
-          <p class="mt-1 text-xs text-fg-muted">MIT licensed and developed in the open.</p>
+          <p class="mt-2 font-mono text-[0.65rem] tracking-wider text-ink-fg/50 uppercase">
+            MIT licensed · developed in the open
+          </p>
         </div>
       </section>
 
       <!-- Questions -->
-      <section id="questions" class="mt-16 border-t border-line pt-10">
-        <h2 class={h2}>Questions, answered</h2>
-        <dl class="mt-6 sm:columns-2 sm:gap-10">
+      <section id="questions" class="reveal py-16 sm:py-24">
+        <p class={eyebrow}>Questions, answered</p>
+        <h2 class={h2}>Asked the way people actually ask.</h2>
+        <div class="mt-8 grid gap-3 sm:grid-cols-2">
           {
             faq.map((item) => (
-              <div class="mb-5 break-inside-avoid border-b border-line pb-4">
-                <dt class="text-sm font-medium text-fg">{item.q}</dt>
-                <dd class="mt-1.5 text-sm leading-6 text-fg-muted">{item.a}</dd>
-              </div>
+              <details class="group rounded-2xl border border-line bg-surface px-5 py-4 transition open:border-line-strong hover:border-line-strong">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-fg marker:content-none">
+                  {item.q}
+                  <span class="shrink-0 text-fg-muted transition group-open:rotate-45">
+                    <Icon name="plus" size={16} />
+                  </span>
+                </summary>
+                <p class="mt-3 text-sm leading-6 text-fg-muted">{item.a}</p>
+              </details>
             ))
           }
-        </dl>
+        </div>
       </section>
 
-      <!-- Closing action -->
-      <section class="mt-16 border-t border-line pt-10 text-center">
-        <h2 class={h2}>Set up the note. The card will follow.</h2>
-        <p class="mx-auto mt-3 max-w-prose text-sm leading-6 text-fg-muted">
-          Accounts work today. Add your contacts and note now; the physical card and PDF printing pipeline
-          are still being built.
-        </p>
-        <div class="mt-5">
-          <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
+      <!-- Closing action, on a post-it. -->
+      <section class="reveal pb-16 sm:pb-24">
+        <div
+          class="relative mx-auto max-w-2xl rotate-[-0.6deg] rounded-3xl bg-mark p-8 text-center text-mark-fg shadow-float sm:p-12"
+        >
+          <h2 class="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            Set up the note. The card will follow.
+          </h2>
+          <p class="mx-auto mt-4 max-w-md text-sm leading-6 text-mark-fg/80">
+            Accounts work today. Add your contacts and note now; the physical card and PDF printing
+            pipeline are still being built.
+          </p>
+          <div class="mt-7">
+            <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
+          </div>
+          <p class="mt-4 font-mono text-[0.65rem] tracking-wider text-mark-fg/70 uppercase">
+            No tier · No trial · Nothing to charge
+          </p>
         </div>
-        <p class="mt-3 text-xs text-fg-muted">No tier. No trial. Nothing to charge.</p>
       </section>
 
       <Footer />
+      </div>
     </main>
+
+    <script>
+      // Reveal on scroll, and nothing else: no tracking, no third party, and it degrades to
+      // "everything is visible" when the observer is missing or motion is not wanted.
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const targets = document.querySelectorAll<HTMLElement>('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        for (const target of targets) target.dataset.shown = 'true';
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                (entry.target as HTMLElement).dataset.shown = 'true';
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -10% 0px' },
+        );
+        for (const target of targets) observer.observe(target);
+      }
+    </script>
+
+    <style>
+      /* Landing-only polish, kept here rather than in the app scale: the dashboard has no use
+         for a reveal animation, and the tokens above are the parts worth sharing. */
+      .reveal {
+        /* Movement only, no fade: colour contrast is not affected by a transform, so the
+           content stays legible to axe — and to anyone reading before the animation
+           settles. */
+        translate: 0 10px;
+        transition: translate 0.5s ease;
+      }
+      .reveal[data-shown='true'] {
+        translate: 0;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reveal {
+          translate: none;
+          transition: none;
+        }
+      }
+    </style>
   </body>
 </html>

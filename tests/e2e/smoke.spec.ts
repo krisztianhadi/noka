@@ -19,9 +19,10 @@ test.describe('landing', () => {
 
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
-    // The heading is the wordmark, inlined so it can follow the theme; its accessible
-    // name comes from the SVG's own role and label.
-    await expect(page.getByRole('heading', { name: 'noka' })).toBeVisible();
+    // The wordmark is a link home, inlined so it can follow the theme; the h1 is the
+    // page's message, which is what a heading is for.
+    await expect(page.getByRole('link', { name: 'noka' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('made easier to find');
     expect(external).toEqual([]);
   });
 
