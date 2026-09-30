@@ -98,10 +98,6 @@ const notDoing = [
     title: 'Tracking the responder',
     body: 'No app to install, no account to create, and no tracking of whoever opens the page.',
   },
-  {
-    title: 'Emailing password resets',
-    body: 'Self-service password reset email is not available yet. Do not rely on an account you cannot access.',
-  },
 ];
 
 const steps = [
@@ -141,16 +137,12 @@ const faq = [
     a: 'No. The card page has no JavaScript, analytics or page-view logging. Scan attempts store an HMAC of the network prefix, never a raw IP address, and are deleted after 30 days.',
   },
   {
-    q: 'Can I order a card now?',
-    a: 'You print it yourself. The card image is ready to print today; the exact-size PDF sheet is still being built.',
+    q: 'Can I order a plastic or metal card?',
+    a: 'No, and nothing is planned. You print the card yourself — that is the design: nothing to order, nothing to ship, nothing to renew. A durable card is something that might be looked at much later; treat it as a possibility, not a roadmap.',
   },
   {
     q: 'Will I be charged later?',
     a: 'Nobody can be charged today. There is no tier and no trial.',
-  },
-  {
-    q: 'Can I get a plastic or metal card?',
-    a: 'Not today, and nothing is planned. The design is that you print the card yourself. A durable card is something that might be looked at much later — treat it as a possibility, not a roadmap.',
   },
   {
     q: 'What if I just lose my wallet?',
@@ -159,10 +151,6 @@ const faq = [
   {
     q: 'My brother changed his number. Do I need a new card?',
     a: 'No. Edit the contact and every card you have already printed shows the new number the next time it is opened. A new card is only needed if you want a new link or PIN — and that retires the old one immediately.',
-  },
-  {
-    q: 'What if I forget my password?',
-    a: 'There is no self-service password reset email yet. Do not rely on an account you cannot access.',
   },
 ];
 
@@ -276,8 +264,7 @@ const buttonGhostOnInk =
                 Sample card
               </span>
               <span class="block">
-                You print this yourself. The card image prints today; the exact-size PDF sheet is still
-                being built.
+                You print it yourself: bank-card size, ready for any printer.
               </span>
             </figcaption>
           </figure>
@@ -443,8 +430,7 @@ const buttonGhostOnInk =
             Set up the note. The card will follow.
           </h2>
           <p class="mx-auto mt-4 max-w-md text-sm leading-6 text-mark-fg/80">
-            Accounts work today. Add your contacts and note now and print the card yourself; the
-            exact-size PDF sheet is still being built.
+            Add your contacts, write the note, print the card. Bank-card size, ready for any printer.
           </p>
           <div class="mt-7">
             <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
