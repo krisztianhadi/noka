@@ -42,7 +42,7 @@ const features = [
   {
     icon: 'phone' as const,
     title: 'Tap to call',
-    body: 'Whoever is helping you gets the people to call, with buttons that work on any phone.',
+    body: 'Whoever is helping you gets the people to call, with tap-to-call buttons on any smartphone with an internet connection.',
   },
   {
     icon: 'lock' as const,
@@ -58,6 +58,26 @@ const features = [
     icon: 'eye-off' as const,
     title: 'Nothing watching',
     body: 'The card page has no JavaScript, no analytics, no outside fonts or images. It does not log the view.',
+  },
+  {
+    icon: 'bars' as const,
+    title: 'Built for bad signal',
+    body: 'It needs a connection — that cannot be avoided — so it is plain server-rendered HTML, as small as a page can be made for the slowest, choppiest connection.',
+  },
+];
+
+const everyday = [
+  {
+    title: 'Lost wallet or bag',
+    body: 'Whoever finds it can call a number you chose, instead of guessing who you are from a bank card.',
+  },
+  {
+    title: 'A number that changed',
+    body: 'Edit a contact once. Every card already printed shows the new number, with no reprinting.',
+  },
+  {
+    title: 'Someone else\'s eyes',
+    body: 'The card carries the note you wrote for that moment, and nothing else about you.',
   },
 ];
 
@@ -95,7 +115,7 @@ const steps = [
   },
   {
     title: 'Let them call',
-    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note.',
+    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note — on any smartphone with an internet connection.',
   },
 ];
 
@@ -114,7 +134,7 @@ const faq = [
   },
   {
     q: 'Does the card work without a signal?',
-    a: 'No. The responder page needs a network connection.',
+    a: 'No, and nothing can change that. It needs an internet connection. The page is plain server-rendered HTML with no JavaScript and no outside files, so it is as small and as fast as possible on a slow or choppy connection — but no connection means no page.',
   },
   {
     q: 'Are you tracking the person who opens it?',
@@ -131,6 +151,14 @@ const faq = [
   {
     q: 'Can I get a plastic or metal card?',
     a: 'Not today, and nothing is planned. The design is that you print the card yourself. A durable card is something that might be looked at much later — treat it as a possibility, not a roadmap.',
+  },
+  {
+    q: 'What if I just lose my wallet?',
+    a: 'That is the everyday case, not the exception. Whoever finds it can reach the people you listed without your phone, your password or an app. Keep a card in a wallet, a passport holder, a bag or under a phone case.',
+  },
+  {
+    q: 'My brother changed his number. Do I need a new card?',
+    a: 'No. Edit the contact and every card you have already printed shows the new number the next time it is opened. A new card is only needed if you want a new link or PIN — and that retires the old one immediately.',
   },
   {
     q: 'What if I forget my password?',
@@ -265,6 +293,8 @@ const buttonGhostOnInk =
         <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
           Add the people to call. Add one short note. Choose which of five languages appear. Noka puts that
           information behind the code and PIN on your card — and the note stays exactly as you wrote it.
+          Editing a contact needs no new card: change a number once and every card you have already printed
+          shows it the next time somebody opens it.
         </p>
 
         <div class="mt-10 grid gap-4 sm:grid-cols-2">
@@ -276,6 +306,27 @@ const buttonGhostOnInk =
                 </span>
                 <h3 class="mt-4 text-base font-semibold text-fg">{feature.title}</h3>
                 <p class="mt-1.5 text-sm leading-6 text-fg-muted">{feature.body}</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- The everyday case: most cards never meet an emergency. -->
+      <section class="reveal pb-16 sm:pb-24">
+        <p class={eyebrow}>Where it helps</p>
+        <h2 class={h2}>Not only for the worst day.</h2>
+        <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
+          Most cards never meet an accident. A wallet left on a bus, a bag that went to the wrong carousel,
+          a phone handed in at a hotel desk — the card gives whoever finds your things a way to reach
+          someone who knows you, without unlocking anything of yours.
+        </p>
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          {
+            everyday.map((item) => (
+              <div class="rounded-2xl border border-line bg-surface p-5">
+                <h3 class="text-sm font-semibold text-fg">{item.title}</h3>
+                <p class="mt-1.5 text-sm leading-6 text-fg-muted">{item.body}</p>
               </div>
             ))
           }
