@@ -119,7 +119,7 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
         >
           {
             COUNTRIES.map((entry) => (
-              <option value={entry.code} selected={entry.code === country}>
+              <option value={entry.code} data-dial={entry.dial} selected={entry.code === country}>
                 {flagFor(entry.code)} +{entry.dial} {entry.name}
               </option>
             ))
@@ -136,6 +136,10 @@ const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
         autocomplete="tel-national"
         inputmode="tel"
         data-phone
+        {/* 15 digits, 4 spaces between the groups of three, and a leading plus: the longest
+            E.164 number there can be. The mask caps the digits per country; this is the
+            no-JavaScript guard, and a smaller number here silently ate pasted digits. */}
+        maxlength="20"
         aria-label={label('form.phoneLocal')}
         value={national}
       />

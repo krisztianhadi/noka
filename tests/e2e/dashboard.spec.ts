@@ -159,6 +159,32 @@ test.describe('the dashboard', () => {
     await expect(page.locator('.contacts > li').first().locator('.phone')).toHaveText('+36 301 234 567');
   });
 
+  test('the phone field cannot be filled with a number the server would refuse', async ({ page }) => {
+    await signUp(page);
+    const form = page.locator('form[action="/dashboard/start"]');
+    const country = form.locator('select[name="country"]');
+    const phone = form.locator('input[name="phone"]');
+
+    // E.164 allows 15 digits including the country code, so the country code is what is left
+    // over for the national part. Typing past it does nothing: a limit the form accepts and the
+    // server refuses is not a limit, and the message it produced explained the form's mistake.
+    for (const [code, national] of [
+      ['TH', 13],
+      ['US', 14],
+    ] as const) {
+      await country.selectOption(code);
+      await phone.fill('');
+      await phone.pressSequentially('1234567890123456789');
+      const digits = (await phone.inputValue()).replace(/\D/g, '');
+      expect(digits, `${code}: national digits`).toHaveLength(national);
+    }
+
+    // A pasted international number carries its own country code, so it gets all 15.
+    await phone.fill('');
+    await phone.pressSequentially('+1234567890123456789');
+    expect((await phone.inputValue()).replace(/\D/g, '')).toHaveLength(15);
+  });
+
   test('edits from the kebab, with the form opening in the page', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });

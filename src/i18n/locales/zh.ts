@@ -122,10 +122,10 @@ const zh: Record<MessageKey, string> = {
   'form.name': '姓名',
   'form.relation': '关系',
   'form.phone': '电话',
-  'form.phoneLocal': '本地号码',
+  'form.phoneLocal': '电话号码',
   'form.countryCode': '国家代码',
   'form.phoneHint':
-    '请选择国家并输入本地号码 — 开头的 0 会自动去除。若以 + 开头输入完整的国际号码，则按原样使用。',
+    '先选择国家，然后输入不带首位 0 的号码。号码以完整国际格式保存：包含国家代码在内最多 15 位数字。',
   'form.services': '联系方式',
   'form.servicesHint':
     '以下每一项都会在卡片页面上生成一个按钮。普通电话通话始终可用，因此默认勾选。',

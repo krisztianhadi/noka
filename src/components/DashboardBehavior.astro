@@ -93,12 +93,25 @@
   }
 
   // 5. Space a phone number as it is typed, and never eat a deliberate "+": a value that
-  //    starts with one is already international and is sent as typed.
+  //    starts with one is already international and is sent as typed. The digits are capped at
+  //    what E.164 can hold — 15 including the country code — so the field cannot be filled with
+  //    something the server would refuse. Typing past the limit does nothing rather than
+  //    failing later, which is the whole point of a limit.
+  const E164_MAX_DIGITS = 15;
   for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {
-    input.addEventListener('input', () => {
+    const country = input.closest('form')?.querySelector<HTMLSelectElement>('select[name="country"]');
+    const cap = () => {
+      const dial = country?.selectedOptions[0]?.dataset.dial ?? '';
+      // The dial code counts towards the 15. An international value already contains it.
+      return input.value.trimStart().startsWith('+') ? E164_MAX_DIGITS : E164_MAX_DIGITS - dial.length;
+    };
+    const format = () => {
       const international = input.value.trimStart().startsWith('+');
-      const digits = input.value.replace(/[^\d]/g, '').slice(0, 15);
+      const digits = input.value.replace(/[^\d]/g, '').slice(0, cap());
       input.value = `${international ? '+' : ''}${digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim()}`;
-    });
+    };
+    input.addEventListener('input', format);
+    // Changing the country changes how many digits fit: a three-digit dial code leaves twelve.
+    country?.addEventListener('change', format);
   }
 </script>

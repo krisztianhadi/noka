@@ -122,10 +122,10 @@ const fr: Record<MessageKey, string> = {
   'form.name': 'Nom',
   'form.relation': 'Lien de parenté',
   'form.phone': 'Téléphone',
-  'form.phoneLocal': 'Numéro local',
+  'form.phoneLocal': 'Numéro de téléphone',
   'form.countryCode': 'Indicatif du pays',
   'form.phoneHint':
-    "Choisissez le pays et saisissez le numéro local — un zéro initial est retiré automatiquement. Un numéro international complet saisi avec + est utilisé tel quel.",
+    'Choisissez le pays, puis saisissez le numéro sans le zéro initial. Il est enregistré au format international complet : jusqu’à 15 chiffres, indicatif pays compris.',
   'form.services': 'Services',
   'form.servicesHint':
     'Chacun de ces services devient un bouton sur la page de la carte. Un appel téléphonique classique est toujours proposé, il est donc cochée par défaut.',

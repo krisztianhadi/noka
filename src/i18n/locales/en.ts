@@ -125,10 +125,10 @@ const en = {
   'form.name': 'Name',
   'form.relation': 'Relation',
   'form.phone': 'Phone',
-  'form.phoneLocal': 'Local number',
+  'form.phoneLocal': 'Phone number',
   'form.countryCode': 'Country calling code',
   'form.phoneHint':
-    'Pick the country and type the local number — a leading zero is dropped for you. A full international number typed with + is used exactly as typed.',
+    'Choose the country, then type the number without its leading zero. Numbers are stored in full international form: up to 15 digits including the country code.',
   'form.services': 'Services',
   'form.servicesHint':
     'Every one of these becomes a button on the card page. A plain phone call is always an option, so it starts checked.',

@@ -122,10 +122,10 @@ const es: Record<MessageKey, string> = {
   'form.name': 'Nombre',
   'form.relation': 'Relación',
   'form.phone': 'Teléfono',
-  'form.phoneLocal': 'Número local',
+  'form.phoneLocal': 'Número de teléfono',
   'form.countryCode': 'Código de país',
   'form.phoneHint':
-    'Elige el país y escribe el número local — el cero inicial se quita automáticamente. Un número internacional completo escrito con + se usa tal cual.',
+    'Elige el país y escribe el número sin el cero inicial. Se guarda en formato internacional completo: hasta 15 dígitos incluido el código del país.',
   'form.services': 'Servicios',
   'form.servicesHint':
     'Cada uno de estos se convierte en un botón en la página de la tarjeta. Siempre se puede llamar por teléfono, así que empieza marcado.',
