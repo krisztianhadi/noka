@@ -72,7 +72,7 @@ const notDoing = [
   },
   {
     title: 'Hiding access from the holder',
-    body: 'The responder needs the physical card and the PIN. Anyone with both can read the contacts. That is the design.',
+    body: 'The responder needs the card and the PIN. Anyone holding both can read the contacts. That is the design.',
   },
   {
     title: 'Tracking the responder',
@@ -91,7 +91,7 @@ const steps = [
   },
   {
     title: 'Carry the card',
-    body: 'The card holds a QR code and a six-digit PIN. The physical card is still being built.',
+    body: 'Print the card yourself and keep it with you. It holds a QR code and a six-digit PIN.',
   },
   {
     title: 'Let them call',
@@ -106,7 +106,7 @@ const faq = [
   },
   {
     q: 'What if someone steals the card?',
-    a: 'Anyone with the physical card and its PIN can read the contacts and note. That is the trade-off that lets a stranger help without an app or account.',
+    a: 'Anyone with the card and its PIN can read the contacts and note. That is the trade-off that lets a stranger help without an app or account.',
   },
   {
     q: 'Is this my medical record?',
@@ -122,11 +122,15 @@ const faq = [
   },
   {
     q: 'Can I order a card now?',
-    a: 'No. The physical card and PDF printing pipeline are still being built. You can create an account and set up your information today.',
+    a: 'You print it yourself. The card image is ready to print today; the exact-size PDF sheet is still being built.',
   },
   {
     q: 'Will I be charged later?',
     a: 'Nobody can be charged today. There is no tier and no trial.',
+  },
+  {
+    q: 'Can I get a plastic or metal card?',
+    a: 'Not today, and nothing is planned. The design is that you print the card yourself. A durable card is something that might be looked at much later — treat it as a possibility, not a roadmap.',
   },
   {
     q: 'What if I forget my password?',
@@ -210,7 +214,7 @@ const buttonGhostOnInk =
               A note in your wallet, made easier to find.
             </h1>
             <p class="mt-6 max-w-xl text-base leading-7 text-ink-fg/75 sm:text-lg">
-              Noka is a bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
+              Noka prints a bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
               you, it shows them who to call and the note you chose to leave.
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
@@ -223,7 +227,7 @@ const buttonGhostOnInk =
             </ul>
           </div>
 
-          <!-- The product is a physical object, so on mobile it comes before any prose. -->
+          <!-- The product is a thing you hold, so on mobile it comes before any prose. -->
           <figure class="reveal mt-10 sm:mt-0">
             <div class="group relative mx-auto w-[68%] max-w-[19rem] sm:w-full sm:max-w-none">
               <div
@@ -244,7 +248,8 @@ const buttonGhostOnInk =
                 Sample card
               </span>
               <span class="block">
-                The physical card and PDF printing pipeline are still being built. Accounts work today.
+                You print this yourself. The card image prints today; the exact-size PDF sheet is still
+                being built.
               </span>
             </figcaption>
           </figure>
@@ -383,8 +388,8 @@ const buttonGhostOnInk =
             Set up the note. The card will follow.
           </h2>
           <p class="mx-auto mt-4 max-w-md text-sm leading-6 text-mark-fg/80">
-            Accounts work today. Add your contacts and note now; the physical card and PDF printing
-            pipeline are still being built.
+            Accounts work today. Add your contacts and note now and print the card yourself; the
+            exact-size PDF sheet is still being built.
           </p>
           <div class="mt-7">
             <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>

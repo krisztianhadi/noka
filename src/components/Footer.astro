@@ -26,7 +26,7 @@ const next = Astro.url.pathname + Astro.url.search;
 const madeBy = label('footer.madeBy').split('{studio}');
 ---
 
-<footer class="mt-12 border-t border-line pt-5">
+<footer class="mt-12 border-t border-line pt-5 pb-10">
   <div class="flex flex-col items-center gap-3 text-xs text-fg-muted sm:flex-row sm:justify-between">
     <p class="flex flex-wrap items-center justify-center gap-1.5">
       {madeBy[0]}<a
