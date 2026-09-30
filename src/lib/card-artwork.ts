@@ -92,10 +92,13 @@ export async function cardSvg(input: CardArtworkInput): Promise<string> {
   // it was — it is what a stranger reads first from arm's length — which costs 31px of the
   // fixed 1011px card, paid for below by a slightly smaller QR and PIN.
   const heading: string[] = [];
-  let y = 76;
+  // Balanced white space: 87px of clear card above the first line and the same below the
+  // wordmark, which is what the sides get from the longest heading line. The card is a printed
+  // object; ink near an edge looks like a printing mistake.
+  let y = 112;
   for (const phrase of phrases) {
     heading.push(centeredText(phrase.title, y, 34, { weight: 'bold', scale: phrase.scale ?? 1 }));
-    y += Math.round(44 * (phrase.scale ?? 1));
+    y += Math.round(41 * (phrase.scale ?? 1));
   }
 
   const ruleY = y + 6;
@@ -108,12 +111,12 @@ export async function cardSvg(input: CardArtworkInput): Promise<string> {
   const scanBottom = secondLine ? scanTop + scanLineHeight : scanTop;
 
   // Room to breathe: the QR sits well clear of the text above and the PIN below.
-  const qrSize = 320;
+  const qrSize = 285;
   const qrX = Math.round((CARD_WIDTH_PX - qrSize) / 2);
-  const qrY = scanBottom + 46;
+  const qrY = scanBottom + 36;
   const qr = await qrSvg(input.url, qrSize);
 
-  const pinRuleY = qrY + qrSize + 54;
+  const pinRuleY = qrY + qrSize + 42;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${CARD_WIDTH_PX}" height="${CARD_HEIGHT_PX}" viewBox="0 0 ${CARD_WIDTH_PX} ${CARD_HEIGHT_PX}">
   <rect width="100%" height="100%" fill="#ffffff"/>
@@ -124,8 +127,8 @@ export async function cardSvg(input: CardArtworkInput): Promise<string> {
   <g transform="translate(${qrX}, ${qrY})">${qr}</g>
   <line x1="${CARD_WIDTH_PX / 2 - 46}" y1="${pinRuleY}" x2="${CARD_WIDTH_PX / 2 + 46}" y2="${pinRuleY}" stroke="${LINE}" stroke-width="3"/>
   ${centeredText('PIN', pinRuleY + 42, 17, { font: MONO_FONT, fill: SOFT, tracking: 6 })}
-  ${centeredText(input.pin, pinRuleY + 100, 54, { font: MONO_FONT, weight: 'bold', tracking: 9 })}
-  ${wordmarkSvg(CARD_WIDTH_PX / 2, CARD_HEIGHT_PX - 56, 30)}
+  ${centeredText(input.pin, pinRuleY + 96, 54, { font: MONO_FONT, weight: 'bold', tracking: 9 })}
+  ${wordmarkSvg(CARD_WIDTH_PX / 2, CARD_HEIGHT_PX - 115, 30)}
 </svg>`;
 }
 
