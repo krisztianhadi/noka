@@ -1,0 +1,141 @@
+---
+import Responder from '@/layouts/Responder.astro';
+import ChannelIcon from '@/components/ChannelIcon.astro';
+import { t, type MessageKey } from '@/i18n/catalogue';
+import { LANGUAGE_INFO } from '@/i18n/languages';
+import { channelHref, type Channel } from '@/lib/channels';
+import { flagForLanguage } from '@/lib/flags';
+
+/**
+ * What a scan shows (§3, §9), on a page anyone can open.
+ *
+ * The card on the landing page carries a QR code, and a code that leads nowhere when somebody
+ * actually scans it is a worse advertisement than no code at all. This is that destination: the
+ * responder view with invented people, rendered by the same layout and the same stylesheet as
+ * the real thing, so what a visitor sees here is what a visitor sees on a real card — minus the
+ * PIN step and minus any real data.
+ *
+ * It is a fictional card, and it says so. The numbers are from the ranges reserved for drama
+ * (555 in North America, 0123456789 elsewhere), which nobody can dial by accident.
+ */
+const language = 'en' as const;
+const label = (key: MessageKey, values?: Record<string, string | number>) => t(language, key, values);
+
+const owner = 'Sample Card';
+
+const contacts: Array<{
+  name: string;
+  relation: string;
+  phoneDisplay: string;
+  phoneE164: string;
+  channels: Channel[];
+  spoken: string[];
+  textOnly?: boolean;
+}> = [
+  {
+    name: 'Maria Silva',
+    relation: 'Partner',
+    phoneDisplay: '+66 555 123 456',
+    phoneE164: '+66555123456',
+    channels: ['call', 'whatsapp', 'signal'],
+    spoken: ['th', 'en'],
+  },
+  {
+    name: 'János Kovács',
+    relation: 'Brother',
+    phoneDisplay: '+36 555 987 654',
+    phoneE164: '+36555987654',
+    channels: ['telegram', 'viber'],
+    spoken: ['hu', 'en'],
+    textOnly: true,
+  },
+];
+
+/** Same rule as the real page: someone who cannot hear is not offered a call. */
+function offeredChannels(contact: (typeof contacts)[number]): Channel[] {
+  if (!contact.textOnly) return contact.channels;
+  return ['sms', ...contact.channels.filter((channel) => channel !== 'call')];
+}
+
+const notes = 'This is an example. The note the owner writes appears here — insulin is in the fridge door, blood type O+, who to call first.';
+---
+
+<Responder lang={LANGUAGE_INFO[language].htmlLang} title={label('view.heading')}>
+  <p class="demo-banner" role="note">
+    <strong>Example card.</strong> Nobody real is listed here and the numbers are fictional. A real
+    card opens behind a six-digit PIN.
+  </p>
+
+  <h1>{label('view.headingFor', { name: owner })}</h1>
+
+  {
+    contacts.map((contact) => (
+      <div class="contact">
+        <div class="name">{contact.name}</div>
+        <div class="meta">
+          <span class="relation">{contact.relation}</span>
+          {contact.spoken.length > 0 && <span class="sep" aria-hidden="true">·</span>}
+          {contact.spoken.length > 0 && (
+            <span class="speaks">
+              {contact.spoken.map((code, index) => (
+                <>
+                  {index > 0 && ', '}
+                  <span class="flag" aria-hidden="true">{flagForLanguage(code)}</span>{' '}
+                  {code === 'th' ? 'Thai' : code === 'hu' ? 'Hungarian' : 'English'}
+                </>
+              ))}
+            </span>
+          )}
+        </div>
+        <div class={`phone${contact.textOnly ? '' : ' callable'}`}>
+          {contact.textOnly ? (
+            <span>{contact.phoneDisplay}</span>
+          ) : (
+            <a href={channelHref('call', contact.phoneE164)}>{contact.phoneDisplay}</a>
+          )}
+        </div>
+        {contact.textOnly && (
+          <p class="alert" role="note">
+            <span class="muted" aria-hidden="true">🔇</span>
+            <span>{label('view.text_only')}</span>
+          </p>
+        )}
+        <div class="actions">
+          {offeredChannels(contact).map((channel) => (
+            <a class={`action ${channel}`} href={channelHref(channel, contact.phoneE164)}>
+              <ChannelIcon channel={channel} size={20} />
+              <span>{label(`channel.${channel}` as MessageKey)}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))
+  }
+
+  <h2 class="notes-heading">{label('view.notes')}</h2>
+  <div class="notes">{notes}</div>
+
+  <p class="demo-back">
+    <a href="/">← Back to noka</a>
+  </p>
+</Responder>
+
+<style>
+  /* The two additions to the responder stylesheet; everything else is the real card page. */
+  .demo-banner {
+    margin: 0 0 1.5rem;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    background: #fff8e1;
+    border: 2px solid #111;
+    border-left-width: 6px;
+    border-radius: 5px;
+  }
+  .demo-back {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    font-size: 1rem;
+    border-top: 1px solid #e5e5e5;
+  }
+</style>

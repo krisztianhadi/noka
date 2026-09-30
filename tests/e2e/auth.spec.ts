@@ -90,8 +90,8 @@ test.describe('owner plane', () => {
     await thai.close();
   });
 
-  test('signup, login and the legal pages are accessible', async ({ page }) => {
-    for (const path of ['/signup', '/login', '/privacy', '/terms', '/imprint']) {
+  test('signup, login, the legal pages and the demo are accessible', async ({ page }) => {
+    for (const path of ['/signup', '/login', '/privacy', '/terms', '/imprint', '/demo']) {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations, `${path} violations`).toEqual([]);
