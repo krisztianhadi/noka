@@ -78,6 +78,15 @@ key. Placeholders are `{name}` and `{count}`, never string concatenation, becaus
 universal. `pnpm i18n:report` prints coverage per language so a translator working on a partial file
 can see where they are.
 
+**What the translation cost, corrected.** My first version of this post said the five-language batch
+cost "under two cents". It did not: my cost report priced every session with DeepSeek's rate table,
+and those four runs went out over OpenRouter on Claude Sonnet 5 at twenty times the rate. The batch
+cost **$0.375**. I re-ran the Spanish half on the cheap route with the identical prompt to see
+whether the premium bought anything: 100 of 145 strings came back byte-identical, and the 44
+differences were stylistic rather than fixes. That is a real result — premium models buy polish, not
+correctness, on mechanical bulk — and it is also a lesson about tooling, because the number that
+misled me was produced by my own script and looked authoritative.
+
 One small thing I enjoyed: the test that rejects untranslated leftovers matched *any* string
 starting with the letters "TODO", which failed Spanish "Todo listo" — "all ready". A translation
 gate that blocks correct copy is a bug in the gate, so it now matches marker tokens rather than
@@ -101,6 +110,8 @@ the page. If you take one thing from this, take the cheap habit — take the scr
 at it. Or better: measure the thing you care about, in the suite, so the next person cannot ship the
 regression either.
 
-*Built with DeepSeek V4.1 Flash in DeepSeek Harness. Code at
-[github.com/krisztianhadi/noka](https://github.com/krisztianhadi/noka), MIT licensed. Estimated
-inference cost for the whole build: about three dollars.*
+*Built with DeepSeek V4.1 Flash in DeepSeek Harness, with translations and two end-of-day reviews
+delegated to Claude Sonnet 5 and GPT-5.6 Sol over OpenRouter. Code at
+[github.com/krisztianhadi/noka](https://github.com/krisztianhadi/noka), MIT licensed. Cost: roughly
+three dollars on DeepSeek for the build, plus about a dollar on OpenRouter for the translations and
+the reviews — of which the reviews were the better dollar.*

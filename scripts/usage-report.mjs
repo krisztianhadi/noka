@@ -37,6 +37,12 @@ const USAGE_END = '<!-- usage:end -->';
 const LEDGER_START = '<!-- ledger:start -->';
 const LEDGER_END = '<!-- ledger:end -->';
 
+/**
+ * Sessions that did not run on DeepSeek cannot be priced from DeepSeek's rate table. The log
+ * records which model and provider each session used, so those runs are detected and excluded
+ * from the USD estimate instead of being quietly priced at 1/8th of what they cost — which is
+ * exactly the mistake that made a `$0.375` translation batch look like "under two cents".
+ */
 /** Per 1M tokens, peak; off-peak is exactly half. */
 const RATES = {
   cacheHit: { peak: 0.006, offPeak: 0.003 },
@@ -75,7 +81,20 @@ function readLog(file) {
  */
 function recordsOf(file) {
   const text = readLog(file);
-  if (!text) return { rows: [], boundaries: [] };
+  if (!text) return { rows: [], boundaries: [], foreign: false };
+  /**
+   * Which model actually ran, taken as the most frequent concrete `"model":"…"` value in the
+   * log. Not a keyword search: the tool descriptions list every route the harness *could*
+   * use, so a text match calls every session foreign — the first version of this check
+   * declared the whole project unpriced.
+   */
+  const tally = new Map();
+  for (const match of text.matchAll(/"model":"([^"]+)"/g)) {
+    const id = match[1] ?? '';
+    tally.set(id, (tally.get(id) ?? 0) + 1);
+  }
+  const model = [...tally.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'unknown';
+  const foreign = !/deepseek/i.test(model);
   const rows = [];
   const boundaries = [];
   for (const line of text.split('\n')) {
@@ -106,7 +125,7 @@ function recordsOf(file) {
       cacheWrite: Number(usage.cacheWriteTokens ?? 0),
     });
   }
-  return { rows, boundaries: boundaries.sort((a, b) => a - b) };
+  return { rows, boundaries: boundaries.sort((a, b) => a - b), foreign, model };
 }
 
 function costOf(rows) {
@@ -140,8 +159,8 @@ function sessionDirs(dir = storeDir) {
 function sessions(dir = storeDir) {
   return sessionDirs(dir)
     .map((entry) => {
-      const { rows, boundaries } = recordsOf(entry.file);
-      return { ...entry, rows, boundaries };
+      const { rows, boundaries, foreign, model } = recordsOf(entry.file);
+      return { ...entry, rows, boundaries, foreign, model };
     })
     .filter((entry) => entry.rows.length > 0)
     .map((entry) => {
@@ -152,6 +171,16 @@ function sessions(dir = storeDir) {
       const cost = costOf(entry.rows);
       return {
         id: entry.id,
+        /**
+         * True when the session ran on a route other than DeepSeek. Its token counts are
+         * real, its USD is not: the rate table below belongs to DeepSeek. Kept visible in
+         * the table and excluded from every total, because a silently under-priced run is
+         * worse than an unpriced one.
+         */
+        foreign: entry.foreign,
+        model: entry.model,
+        /** What this session would cost on the cheap DeepSeek route, for comparison. */
+        foreignUsd: entry.foreign ? costOf(entry.rows).usd : 0,
         // kept so --by-block can split without re-reading the log
         rows: entry.rows,
         boundaries: entry.boundaries,
@@ -277,22 +306,33 @@ function readLedger() {
 
 function usageTable(list) {
   const lines = [
-    '| Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |',
-    '|---|---|---:|---:|---:|---:|---:|---:|---:|',
+    '| Session (UTC) | Local (+07) | Route | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |',
+    '|---|---|---|---:|---:|---:|---:|---:|---:|---:|',
   ];
   let totals = { turns: 0, cacheMiss: 0, cacheHit: 0, output: 0, peakUsd: 0, offPeakUsd: 0, usd: 0 };
+  let foreignUsd = 0;
+  let foreignRuns = 0;
   for (const entry of list) {
+    // A foreign session's tokens are counted; its USD is not, because the rate table is
+    // DeepSeek's. The column shows what it would have cost on DeepSeek, clearly marked.
+    const route = entry.model.replace(/^.*\//, '');
+    const estUsd = entry.foreign ? `not priced (≈${usd(entry.foreignUsd)} on DeepSeek)` : usd(entry.usd);
     lines.push(
-      `| ${utc(entry.first)} → ${utc(entry.last).slice(11)} (${entry.id}) | ${local(entry.first)} | ${entry.turns} | ${fmt(entry.cacheMiss)} | ${fmt(entry.cacheHit)} | ${fmt(entry.output)} | ${usd(entry.peakUsd)} | ${usd(entry.offPeakUsd)} | ${usd(entry.usd)} |`,
+      `| ${utc(entry.first)} → ${utc(entry.last).slice(11)} (${entry.id}) | ${local(entry.first)} | ${route} | ${entry.turns} | ${fmt(entry.cacheMiss)} | ${fmt(entry.cacheHit)} | ${fmt(entry.output)} | ${entry.foreign ? '—' : usd(entry.peakUsd)} | ${entry.foreign ? '—' : usd(entry.offPeakUsd)} | ${estUsd} |`,
     );
-    for (const key of Object.keys(totals)) {
-      if (key in entry) totals[key] += entry[key];
+    if (entry.foreign) {
+      foreignUsd += entry.foreignUsd;
+      foreignRuns += 1;
+    } else {
+      for (const key of Object.keys(totals)) {
+        if (key in entry) totals[key] += entry[key];
+      }
     }
   }
   lines.push(
-    `| **Total** | | **${fmt(totals.turns)}** | **${fmt(totals.cacheMiss)}** | **${fmt(totals.cacheHit)}** | **${fmt(totals.output)}** | **${usd(totals.peakUsd)}** | **${usd(totals.offPeakUsd)}** | **${usd(totals.usd)}** |`,
+    `| **Total (DeepSeek only)** | | | **${fmt(totals.turns)}** | **${fmt(totals.cacheMiss)}** | **${fmt(totals.cacheHit)}** | **${fmt(totals.output)}** | **${usd(totals.peakUsd)}** | **${usd(totals.offPeakUsd)}** | **${usd(totals.usd)}** |`,
   );
-  return { table: lines.join('\n'), totals };
+  return { table: lines.join('\n'), totals, foreignUsd, foreignRuns };
 }
 
 function ledgerTable(rows) {
@@ -318,7 +358,7 @@ function replaceBlock(text, start, end, body) {
 }
 
 const list = sessions();
-const { table, totals } = usageTable(list);
+const { table, totals, foreignUsd, foreignRuns } = usageTable(list);
 const ledger = readLedger();
 const ledgerView = ledgerTable(ledger);
 
@@ -341,6 +381,10 @@ if (process.argv.includes('--write')) {
     table,
     '',
     `_Estimated from the published deepseek-flash rates, peak and off-peak; generated ${new Date().toISOString().slice(0, 10)} by \`node scripts/usage-report.mjs --write\`._`,
+    '',
+    foreignRuns > 0
+      ? `_${foreignRuns} session(s) ran on another provider (they show \`other\` in the Route column). Their token counts are real and included; **their USD is not priced here**, because this table's rates belong to DeepSeek. On DeepSeek rates those runs would have been ≈${usd(foreignUsd)} — which is not what they cost. Price them from the other provider's own dashboard or its \`/credits\` endpoint._`
+      : '_Every session in this table ran on DeepSeek, so the rates apply to all of them._',
   ].join('\n');
   const ledgerBody = [
     ledgerView.table,

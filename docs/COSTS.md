@@ -24,39 +24,42 @@ the figures below are read rather than remembered:
 `~/.dsh/sessions/--home-k-Code-noka--/*/session.v4.jsonl.zstd`.
 
 <!-- usage:start -->
-| Session (UTC) | Local (+07) | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 15:35Z (c9b83d6c) | 2026-09-29 15:20+07 | 1130 | 2,990,743 | 425,290,752 | 928,402 | $1.1112 | $1.7259 | $2.8371 |
-| 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
-| 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
-| 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
-| 2026-09-29 10:00Z → 10:00Z (0cc33cd9) | 2026-09-29 17:00+07 | 1 | 5,704 | 128 | 4,108 | $0.0000 | $0.0033 | $0.0033 |
-| 2026-09-29 10:01Z → 10:01Z (967dd579) | 2026-09-29 17:01+07 | 2 | 15,149 | 14,336 | 2,107 | $0.0000 | $0.0036 | $0.0036 |
-| 2026-09-29 10:09Z → 10:09Z (14dc1a86) | 2026-09-29 17:09+07 | 3 | 30,974 | 31,232 | 2,893 | $0.0000 | $0.0065 | $0.0065 |
-| 2026-09-29 10:21Z → 10:21Z (4762b4ef) | 2026-09-29 17:21+07 | 3 | 32,367 | 34,048 | 3,458 | $0.0000 | $0.0070 | $0.0070 |
-| 2026-09-29 10:28Z → 10:28Z (5b9c7522) | 2026-09-29 17:28+07 | 4 | 31,527 | 50,816 | 4,291 | $0.0000 | $0.0075 | $0.0075 |
-| 2026-09-29 10:57Z → 10:57Z (5fe5cb5e) | 2026-09-29 17:57+07 | 3 | 31,106 | 32,768 | 4,171 | $0.0000 | $0.0073 | $0.0073 |
-| 2026-09-29 11:25Z → 11:25Z (18869cd8) | 2026-09-29 18:25+07 | 3 | 31,223 | 32,768 | 3,627 | $0.0000 | $0.0070 | $0.0070 |
-| 2026-09-29 12:27Z → 12:27Z (21f1faef) | 2026-09-29 19:27+07 | 4 | 32,205 | 71,680 | 5,039 | $0.0000 | $0.0081 | $0.0081 |
-| 2026-09-29 12:50Z → 12:50Z (4fee3188) | 2026-09-29 19:50+07 | 3 | 15,366 | 32,896 | 3,746 | $0.0000 | $0.0047 | $0.0047 |
-| 2026-09-29 13:00Z → 13:00Z (9f0c9e79) | 2026-09-29 20:00+07 | 3 | 31,830 | 31,360 | 2,577 | $0.0000 | $0.0064 | $0.0064 |
-| 2026-09-29 13:10Z → 13:10Z (f86c360d) | 2026-09-29 20:10+07 | 3 | 31,459 | 33,408 | 3,631 | $0.0000 | $0.0070 | $0.0070 |
-| 2026-09-29 13:17Z → 13:17Z (3f5494e6) | 2026-09-29 20:17+07 | 3 | 31,076 | 30,208 | 2,467 | $0.0000 | $0.0062 | $0.0062 |
-| 2026-09-29 13:28Z → 13:28Z (0cb81499) | 2026-09-29 20:28+07 | 3 | 31,625 | 30,976 | 2,476 | $0.0000 | $0.0063 | $0.0063 |
-| 2026-09-29 13:37Z → 13:37Z (f61b59d6) | 2026-09-29 20:37+07 | 3 | 31,897 | 32,000 | 2,852 | $0.0000 | $0.0066 | $0.0066 |
-| 2026-09-29 13:57Z → 13:57Z (7d0b7e74) | 2026-09-29 20:57+07 | 2 | 15,285 | 13,696 | 979 | $0.0000 | $0.0029 | $0.0029 |
-| 2026-09-29 14:14Z → 14:14Z (34cdfff6) | 2026-09-29 21:14+07 | 3 | 30,925 | 31,872 | 3,399 | $0.0000 | $0.0068 | $0.0068 |
-| 2026-09-29 15:08Z → 15:08Z (6f4344c9) | 2026-09-29 22:08+07 | 3 | 29,912 | 29,568 | 2,273 | $0.0000 | $0.0059 | $0.0059 |
-| 2026-09-29 15:20Z → 15:20Z (de6bf717) | 2026-09-29 22:20+07 | 3 | 30,356 | 30,464 | 2,794 | $0.0000 | $0.0063 | $0.0063 |
-| 2026-09-29 15:28Z → 15:29Z (379dad09) | 2026-09-29 22:28+07 | 6 | 12 | 146,335 | 6,097 | $0.0000 | $0.0041 | $0.0041 |
-| 2026-09-29 15:28Z → 15:29Z (5472fadc) | 2026-09-29 22:28+07 | 8 | 16 | 207,838 | 6,121 | $0.0000 | $0.0043 | $0.0043 |
-| 2026-09-29 15:28Z → 15:29Z (fc28992e) | 2026-09-29 22:28+07 | 6 | 12 | 144,459 | 5,362 | $0.0000 | $0.0037 | $0.0037 |
-| 2026-09-29 15:28Z → 15:29Z (0d274ff5) | 2026-09-29 22:28+07 | 7 | 14 | 180,208 | 6,334 | $0.0000 | $0.0043 | $0.0043 |
-| 2026-09-29 15:35Z → 15:35Z (d13d4683) | 2026-09-29 22:35+07 | 8 | 24 | 317,913 | 1,865 | $0.0000 | $0.0021 | $0.0021 |
-| 2026-09-29 15:35Z → 15:35Z (399d8d63) | 2026-09-29 22:35+07 | 6 | 12 | 333,770 | 2,648 | $0.0000 | $0.0026 | $0.0026 |
-| **Total** | | **1,231** | **3,542,488** | **427,263,323** | **1,024,140** | **$1.1426** | **$1.8563** | **$2.9990** |
+| Session (UTC) | Local (+07) | Route | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 2026-09-29 08:20Z → 01:42Z (c9b83d6c) | 2026-09-29 15:20+07 | deepseek-flash | 1179 | 3,275,549 | 438,217,472 | 957,155 | $1.2588 | $1.7509 | $3.0097 |
+| 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | deepseek-flash | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
+| 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | deepseek-flash | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
+| 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | deepseek-flash | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
+| 2026-09-29 10:00Z → 10:00Z (0cc33cd9) | 2026-09-29 17:00+07 | deepseek-flash | 1 | 5,704 | 128 | 4,108 | $0.0000 | $0.0033 | $0.0033 |
+| 2026-09-29 10:01Z → 10:01Z (967dd579) | 2026-09-29 17:01+07 | deepseek-flash | 2 | 15,149 | 14,336 | 2,107 | $0.0000 | $0.0036 | $0.0036 |
+| 2026-09-29 10:09Z → 10:09Z (14dc1a86) | 2026-09-29 17:09+07 | deepseek-flash | 3 | 30,974 | 31,232 | 2,893 | $0.0000 | $0.0065 | $0.0065 |
+| 2026-09-29 10:21Z → 10:21Z (4762b4ef) | 2026-09-29 17:21+07 | deepseek-flash | 3 | 32,367 | 34,048 | 3,458 | $0.0000 | $0.0070 | $0.0070 |
+| 2026-09-29 10:28Z → 10:28Z (5b9c7522) | 2026-09-29 17:28+07 | deepseek-flash | 4 | 31,527 | 50,816 | 4,291 | $0.0000 | $0.0075 | $0.0075 |
+| 2026-09-29 10:57Z → 10:57Z (5fe5cb5e) | 2026-09-29 17:57+07 | deepseek-flash | 3 | 31,106 | 32,768 | 4,171 | $0.0000 | $0.0073 | $0.0073 |
+| 2026-09-29 11:25Z → 11:25Z (18869cd8) | 2026-09-29 18:25+07 | deepseek-flash | 3 | 31,223 | 32,768 | 3,627 | $0.0000 | $0.0070 | $0.0070 |
+| 2026-09-29 12:27Z → 12:27Z (21f1faef) | 2026-09-29 19:27+07 | deepseek-flash | 4 | 32,205 | 71,680 | 5,039 | $0.0000 | $0.0081 | $0.0081 |
+| 2026-09-29 12:50Z → 12:50Z (4fee3188) | 2026-09-29 19:50+07 | deepseek-flash | 3 | 15,366 | 32,896 | 3,746 | $0.0000 | $0.0047 | $0.0047 |
+| 2026-09-29 13:00Z → 13:00Z (9f0c9e79) | 2026-09-29 20:00+07 | deepseek-flash | 3 | 31,830 | 31,360 | 2,577 | $0.0000 | $0.0064 | $0.0064 |
+| 2026-09-29 13:10Z → 13:10Z (f86c360d) | 2026-09-29 20:10+07 | deepseek-flash | 3 | 31,459 | 33,408 | 3,631 | $0.0000 | $0.0070 | $0.0070 |
+| 2026-09-29 13:17Z → 13:17Z (3f5494e6) | 2026-09-29 20:17+07 | deepseek-flash | 3 | 31,076 | 30,208 | 2,467 | $0.0000 | $0.0062 | $0.0062 |
+| 2026-09-29 13:28Z → 13:28Z (0cb81499) | 2026-09-29 20:28+07 | deepseek-flash | 3 | 31,625 | 30,976 | 2,476 | $0.0000 | $0.0063 | $0.0063 |
+| 2026-09-29 13:37Z → 13:37Z (f61b59d6) | 2026-09-29 20:37+07 | deepseek-flash | 3 | 31,897 | 32,000 | 2,852 | $0.0000 | $0.0066 | $0.0066 |
+| 2026-09-29 13:57Z → 13:57Z (7d0b7e74) | 2026-09-29 20:57+07 | deepseek-flash | 2 | 15,285 | 13,696 | 979 | $0.0000 | $0.0029 | $0.0029 |
+| 2026-09-29 14:14Z → 14:14Z (34cdfff6) | 2026-09-29 21:14+07 | deepseek-flash | 3 | 30,925 | 31,872 | 3,399 | $0.0000 | $0.0068 | $0.0068 |
+| 2026-09-29 15:08Z → 15:08Z (6f4344c9) | 2026-09-29 22:08+07 | deepseek-flash | 3 | 29,912 | 29,568 | 2,273 | $0.0000 | $0.0059 | $0.0059 |
+| 2026-09-29 15:20Z → 15:20Z (de6bf717) | 2026-09-29 22:20+07 | deepseek-flash | 3 | 30,356 | 30,464 | 2,794 | $0.0000 | $0.0063 | $0.0063 |
+| 2026-09-29 15:28Z → 15:29Z (379dad09) | 2026-09-29 22:28+07 | claude-sonnet-5 | 6 | 12 | 146,335 | 6,097 | — | — | not priced (≈$0.0041 on DeepSeek) |
+| 2026-09-29 15:28Z → 15:29Z (5472fadc) | 2026-09-29 22:28+07 | claude-sonnet-5 | 8 | 16 | 207,838 | 6,121 | — | — | not priced (≈$0.0043 on DeepSeek) |
+| 2026-09-29 15:28Z → 15:29Z (fc28992e) | 2026-09-29 22:28+07 | claude-sonnet-5 | 6 | 12 | 144,459 | 5,362 | — | — | not priced (≈$0.0037 on DeepSeek) |
+| 2026-09-29 15:28Z → 15:29Z (0d274ff5) | 2026-09-29 22:28+07 | claude-sonnet-5 | 7 | 14 | 180,208 | 6,334 | — | — | not priced (≈$0.0043 on DeepSeek) |
+| 2026-09-29 15:35Z → 15:36Z (d13d4683) | 2026-09-29 22:35+07 | gpt-5.6-sol | 17 | 51 | 1,113,058 | 4,527 | — | — | not priced (≈$0.0061 on DeepSeek) |
+| 2026-09-29 15:35Z → 15:37Z (399d8d63) | 2026-09-29 22:35+07 | claude-sonnet-5 | 19 | 38 | 1,736,513 | 9,977 | — | — | not priced (≈$0.0112 on DeepSeek) |
+| 2026-09-30 01:41Z → 01:41Z (1a53b19f) | 2026-09-30 08:41+07 | deepseek-flash | 6 | 7,610 | 134,144 | 8,935 | $0.0138 | $0.0000 | $0.0138 |
+| **Total (DeepSeek only)** | | | **1,245** | **3,834,814** | **438,993,664** | **1,033,401** | **$1.3041** | **$1.8602** | **$3.1643** |
 
-_Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-29 by `node scripts/usage-report.mjs --write`._
+_Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-30 by `node scripts/usage-report.mjs --write`._
+
+_6 session(s) ran on another provider (they show `other` in the Route column). Their token counts are real and included; **their USD is not priced here**, because this table's rates belong to DeepSeek. On DeepSeek rates those runs would have been ≈$0.0337 — which is not what they cost. Price them from the other provider's own dashboard or its `/credits` endpoint._
 <!-- usage:end -->
 
 **How the estimate is built.** Rates are `deepseek-flash` per 1M tokens, from
@@ -79,11 +82,11 @@ rates. The error is on the safe side.
 | 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 3% |
 | 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 2% |
 | 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 3% |
-| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 8% |
-| 09:08–15:35Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 865 | 365,352,946 | $2.0147 | 71% |
-| **Total** | | **1,130** | **429,209,897** | **$2.8371** | |
+| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 7% |
+| 09:08–01:42Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 914 | 378,593,225 | $2.1873 | 73% |
+| **Total** | | **1,179** | **442,450,176** | **$3.0097** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1619 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1546 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
@@ -128,22 +131,42 @@ inside peak is not worth scheduling around.
   the logs below because it does not cost anything.
 - **Writing is paid.** Every file edit, test run, migration and container build
   went through the harness, and that is what the tables measure.
-- **Fan-out arrived on day two, and it was worth it.** Everything up to the first
+- **Fan-out arrived on day two, and I mispriced it.** Everything up to the first
   phase was one model in one context. The five-language translation was the first
   genuine fan-out: four subagents, one per language, each given the English key set
   and the existing responder strings as the terminology reference, all running at
-  once. That is bulk mechanical work with a checkable result, and it cost under two
-  cents for 145 keys × 4 languages. **A five-language owner plane for the price of a
-  coffee is the single most convincing number in this file.**
-- **More than one route now.** The build runs on `deepseek-flash`; the translation
-  batch and the two end-of-day reviews went out over OpenRouter — Claude Sonnet 5
-  for the translations (terminology and register matter), Claude Sonnet 5 and
-  GPT-5.6 Sol for the reviews. The token counts for those runs are in the table
-  above under their own session ids; the harness cannot see the OpenRouter balance,
-  so only the DeepSeek side has a ledger.
-- **Review is cheap, and cheap on purpose.** Two independent reviews of the whole
-  codebase cost less than two cents. Neither model's opinion was treated as a
-  finding until the claim could be checked against the code.
+  once.
+- **Two providers, and the estimate only covers one of them.** The build runs on
+  `deepseek-flash`. The translation batch and the two end-of-day reviews went out
+  over OpenRouter. The earlier version of this file priced *everything* with
+  DeepSeek's rate table and told the story of "a five-language owner plane for under
+  two cents". That was wrong by roughly a factor of twenty: those sessions ran on
+  Claude Sonnet 5 at $2 / $10 per million tokens.
+
+  | Batch | Tokens (in / cached / out) | Actual at the route's rates | On deepseek-chat |
+  |---|---|---:|---:|
+  | es / fr / zh / ru translation | 54 in-cache-miss, 678,840 cached, 23,914 out | **$0.375** | ≈$0.050 |
+  | Claude review | 1,736,513 cached, 9,977 out | **$0.715** | ≈$0.059 |
+  | GPT-5.6 Sol review | 1,113,058 cached, 4,527 out | (included above) | ≈$0.036 |
+
+  The Route column in the usage table now says which model each session ran on, and
+  anything that is not DeepSeek is left **unpriced** rather than under-priced: the
+  table shows the DeepSeek-rate equivalent in brackets, clearly labelled as not the
+  bill.
+
+- **Was the expensive translation route worth 7.5×?** Tested, rather than argued:
+  the same Spanish batch was re-run on `deepseek-flash` with the identical prompt. 100
+  of 145 strings came back byte-identical; the 44 differences were stylistic — "quien
+  te ayuda" against "quien te auxilie", "Actualizar correo electrónico" against
+  "Actualizar correo". Both passed every mechanical gate (parity, placeholders, empty
+  values, destructive wording). So the premium bought polish, not correctness, and
+  the honest split is a cheap first pass plus a careful read of the handful of strings
+  where wording is a safety property — not four premium agents for mechanical bulk.
+- **Review is where the money was worth it.** Two independent reviews cost ≈$0.72 and
+  found a shipped bug (a text-only contact's number was still a dialler) plus five
+  non-transactional write paths. `$0.36` per review for that is the cheapest thing in
+  this file. Neither model's opinion was treated as a finding until the claim could be
+  checked against the code.
 
 ## What I would not do again
 
@@ -168,6 +191,12 @@ That is not tidiness, it is accuracy. Session logs get lost — a month of work 
 sibling project left no logs at all, so its true spend is unknown and any combined
 figure would silently under-report both projects. An honest per-project number
 beats a wrong aggregate.
+
+The same reasoning applies inside this file: OpenRouter's per-account `total_usage`
+is **not** a noka number, because that account has served other work. Only the two
+DeepSeek balance samples above are measured; every OpenRouter figure here is the
+provider's published rates applied to token counts from the harness log, and it is
+labelled as an estimate accordingly.
 
 The method is packaged as the `project-costs` skill, so every project gets the same
 file, the same script and the same rules, with its own ledger.

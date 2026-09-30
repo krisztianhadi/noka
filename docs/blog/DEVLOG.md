@@ -637,8 +637,13 @@ and I read rendered pages in Spanish and Chinese before believing any of it.
 with the letters "TODO" — and failed Spanish "Todo listo" ("all ready"). A gate that rejects correct
 copy is a bug in the gate: it now matches marker tokens, not letter prefixes.
 
-**Cost, told honestly.** A five-language owner plane — 145 keys × 4 languages — cost under two
-cents in translation subagents. The whole build is at roughly three dollars estimated. The one
+**Cost, told honestly — and then corrected.** I first wrote that the five-language owner plane cost
+"under two cents". It cost **$0.375**: the subagents ran on Claude Sonnet 5 over OpenRouter, and my
+own cost report priced every session with DeepSeek's rate table, so the estimate was wrong by a
+factor of twenty and looked authoritative while being wrong. The report now names the model each
+session ran on and leaves non-DeepSeek runs *unpriced* rather than under-priced. Tested rather than
+argued: re-running Spanish on the cheap route with the same prompt returned 100 of 145 strings
+byte-identical, with the rest stylistic. The premium bought polish, not correctness. The whole build is at roughly three dollars estimated. The one
 expensive block is a long interactive session that was never restarted; its cache-hit input dwarfs
 everything else, which is a lesson about restarting at phase boundaries rather than about the work.
 
