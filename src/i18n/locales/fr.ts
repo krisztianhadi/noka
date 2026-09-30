@@ -115,6 +115,10 @@ const fr: Record<MessageKey, string> = {
   'owner.card.pin': 'Code PIN',
   'owner.card.link': 'Lien',
   'owner.card.printHint': 'Imprimez l\'image, ou copiez le lien et le code PIN à la main. Le QR code renvoie vers le lien.',
+  'owner.card.printTitle': 'Imprimer',
+  'owner.card.printCard': 'Format carte uniquement',
+  'owner.card.printA4': 'A4 — une carte',
+  'owner.card.printSheet': 'A4 — 10 cartes',
   'owner.card.openImage': "Ouvrir l'image de la carte",
   'owner.card.imageAlt':
     'Votre carte : le titre en cinq langues, un QR code, le code PIN et le logo noka',

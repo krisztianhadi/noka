@@ -452,6 +452,32 @@ test.describe('the card', () => {
     await expect(page.getByRole('button', { name: 'Make my card' })).toBeEnabled();
   });
 
+  test('offers the three print masters, and they are real PDFs', async ({ page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    await makeCard(page);
+
+    const links = page.locator('#card a[href^="/dashboard/card/pdf"]');
+    await expect(links).toHaveCount(3);
+    await expect(links).toHaveText([/one card/, /Card size only/, /10 cards/]);
+
+    // Each one answers with a PDF, not with an HTML page or an error.
+    for (const href of await links.evaluateAll((all) =>
+      all.map((a) => (a as HTMLAnchorElement).getAttribute('href')!),
+    )) {
+      const response = await page.request.get(href);
+      expect(response.status(), href).toBe(200);
+      expect(response.headers()['content-type'], href).toContain('application/pdf');
+      const body = await response.body();
+      expect(body.subarray(0, 5).toString(), href).toBe('%PDF-');
+    }
+
+    // An unknown layout is not an error: it falls back to the one a home printer wants.
+    const fallback = await page.request.get('/dashboard/card/pdf?layout=nonsense');
+    expect(fallback.status()).toBe(200);
+    expect(fallback.headers()['content-type']).toContain('application/pdf');
+  });
+
   test('signing out and back in keeps the same card', async ({ page }) => {
     const email = await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });

@@ -45,6 +45,7 @@ better-auth session, SSR forms, origin-checked POSTs.
 | POST | `/dashboard/card/create` | Make the card. **Refused with no contacts**; live immediately (ADR-020). | ✅ |
 | POST | `/dashboard/card/new` | "New card": new slug and new PIN together, killing the printed one. | ✅ |
 | GET | `/dashboard/card/card.jpg` | The card as a 300 dpi JPEG (QR + PIN), `no-store`, never cached. | ✅ |
+| GET | `/dashboard/card/pdf?layout=card\|a4\|sheet` | Print masters, 600 dpi artwork: the card at exactly 53.98 × 85.60 mm, one card on A4, or ten on A4 (2 × 5, rotated) with corner cut marks. `no-store`. An unknown layout falls back to `a4`. | ✅ |
 | POST | `/dashboard/contacts/new` | Add a contact: name, relation, phone (E.164), channels, spoken languages. | ✅ |
 | POST | `/dashboard/contacts/{id}/edit` | Edit; same validation. | ✅ |
 | POST | `/dashboard/contacts/{id}/delete` | Refused while a card exists and this is the last contact. | ✅ |

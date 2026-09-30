@@ -115,6 +115,10 @@ const zh: Record<MessageKey, string> = {
   'owner.card.pin': 'PIN 码',
   'owner.card.link': '链接',
   'owner.card.printHint': '可以打印图片，或手动复制链接和 PIN 码。二维码指向该链接。',
+  'owner.card.printTitle': '打印',
+  'owner.card.printCard': '仅卡片尺寸',
+  'owner.card.printA4': 'A4 — 一张卡片',
+  'owner.card.printSheet': 'A4 — 10 张卡片',
   'owner.card.openImage': '打开卡片图片',
   'owner.card.imageAlt':
     '你的卡片：五种语言的标题、一个二维码、PIN 码和 noka 标志',

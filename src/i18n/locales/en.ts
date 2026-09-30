@@ -118,6 +118,10 @@ const en = {
   'owner.card.pin': 'PIN',
   'owner.card.link': 'Link',
   'owner.card.printHint': 'Print the image, or copy the link and PIN by hand. The QR points at the link.',
+  'owner.card.printTitle': 'Print',
+  'owner.card.printCard': 'Card size only',
+  'owner.card.printA4': 'A4 — one card',
+  'owner.card.printSheet': 'A4 — 10 cards',
   'owner.card.openImage': 'Open the card image',
   'owner.card.imageAlt':
     'Your card: the five-language heading, a QR code, the PIN and the noka wordmark',

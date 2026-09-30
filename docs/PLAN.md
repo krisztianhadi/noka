@@ -586,14 +586,22 @@ capped-backoff behaviour asserted (no permanent lock); the purge deletes exactly
 rows past 30 days and nothing else.
 
 ### Phase 7 — Print, preview and reprint (5–6 h)
-**D30 first:** the card's visual identity is agreed as an image before any pipeline
-code. Then: server-rendered preview, card-size PDF, A4 10-up landscape PDF,
-subset-embedded Noto fonts, print instructions read from the **same catalogue** as
-the responder page, deterministic reprint (D29), the no-PIN variant behind a blunt
-warning, and the physical print/scan test with three phones.
-Exit: PDFs measure exactly 53.98 × 85.60 mm; the A4 sheet has 10 correct positions;
-two renders of the same card are byte-identical; every printed language matches the
-card's own set; QR scans at 10–30 cm.
+**Done (2026-10-01):** server-rendered preview (JPEG, 300 dpi), the three print masters
+(§ `docs/API.md`), print instructions read from the **same catalogue** as the responder page.
+
+Layout facts worth keeping: the artwork is rasterised at **600 dpi** (one image per document,
+drawn as many times as the layout needs, so the ten-card sheet is the same size as the single
+one); a card is **53.98 × 85.60 mm** (ISO/IEC 7810 ID-1) and A4 is **210 × 297 mm** (ISO 216);
+**ten cards fit** on A4, rotated a quarter turn and laid out 2 × 5. Portrait cards fit only nine
+(three across, three down) — rotation is what buys the tenth.
+
+**Left in this phase:** the no-PIN variant behind a blunt warning, deterministic PDF bytes (the
+JPEG preview is already deterministic; the PDFs carry a creation timestamp on purpose, so a print
+master says when it was made), and the physical print/scan test with three phones at 10–30 cm.
+The last one needs hands, not code.
+
+Exit: PDFs measure exactly 53.98 × 85.60 mm ✅; the A4 sheet has 10 correct positions ✅;
+every printed language matches the card's own set ✅; QR scans at 10–30 cm ⬜ (physical).
 
 ### Phase 8 — Sponsor logos (1–2 h)
 Static self-hosted SVGs on the landing page and the auth pages, a checked-in config,

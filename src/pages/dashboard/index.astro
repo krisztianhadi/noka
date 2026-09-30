@@ -488,14 +488,45 @@ const panelClass =
                   <a class="text-ink-fg/80 underline underline-offset-2" href={cardUrl(card)}>{cardUrl(card)}</a>
                 </p>
               </div>
+              <div class="space-y-2">
+                <p class="text-xs font-medium tracking-wide text-ink-fg/60 uppercase">
+                  {label('owner.card.printTitle')}
+                </p>
+                {/* Three files, because there are three ways to print: a print shop wants the
+                    card and nothing else, a home printer wants A4, and a stack wants the sheet.
+                    The A4 one card is the default — it is what a home printer does — so it is
+                    the mustard one. */}
+                <a
+                  class="flex h-9 items-center justify-between gap-2 rounded-md border border-mark bg-mark px-3 text-sm font-medium text-mark-fg no-underline hover:brightness-[1.03]"
+                  href="/dashboard/card/pdf?layout=a4"
+                >
+                  {label('owner.card.printA4')}
+                  <span class="text-mark-fg/70">PDF</span>
+                </a>
+                <a
+                  class="flex h-9 items-center justify-between gap-2 rounded-md border border-ink-fg/25 px-3 text-sm font-medium text-ink-fg no-underline hover:bg-white/10"
+                  href="/dashboard/card/pdf?layout=card"
+                >
+                  {label('owner.card.printCard')}
+                  <span class="text-ink-fg/50">54 × 86 mm</span>
+                </a>
+                <a
+                  class="flex h-9 items-center justify-between gap-2 rounded-md border border-ink-fg/25 px-3 text-sm font-medium text-ink-fg no-underline hover:bg-white/10"
+                  href="/dashboard/card/pdf?layout=sheet"
+                >
+                  {label('owner.card.printSheet')}
+                  <span class="text-ink-fg/50">PDF</span>
+                </a>
+              </div>
+
               <p class="text-xs leading-5 text-ink-fg/60">{label('owner.card.printHint')}</p>
               <a
-                class="inline-flex h-9 items-center gap-2 rounded-md border border-mark bg-mark px-3.5 text-sm font-medium text-mark-fg no-underline hover:brightness-[1.03]"
+                class="text-xs text-ink-fg/60 underline underline-offset-2 hover:text-ink-fg"
                 href="/dashboard/card/card.jpg"
                 target="_blank"
                 rel="noopener"
               >
-                <Icon name="print" size={16} /> {label('owner.card.openImage')}
+                {label('owner.card.openImage')} (JPG)
               </a>
             </div>
           </div>
