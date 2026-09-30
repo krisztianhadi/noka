@@ -76,6 +76,22 @@
     sync();
   }
 
+  // 5. A contact form's save is dead until the form is valid. `checkValidity` asks the fields
+  //    themselves, so this follows the same rules the browser and the server enforce — a name
+  //    and a number — instead of a second copy of them that can drift.
+  //    The note-only form is not a `.contact-form`: it has no required fields, and its own rule
+  //    below is about having changed something rather than about being complete.
+  for (const form of document.querySelectorAll<HTMLFormElement>('form.contact-form')) {
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if (!submit) continue;
+    const sync = () => {
+      submit.disabled = !form.checkValidity();
+    };
+    form.addEventListener('input', sync);
+    form.addEventListener('change', sync);
+    sync();
+  }
+
   // 5. Space a phone number as it is typed, and never eat a deliberate "+": a value that
   //    starts with one is already international and is sent as typed.
   for (const input of document.querySelectorAll<HTMLInputElement>('input[data-phone]')) {

@@ -82,6 +82,17 @@ test.describe('the dashboard', () => {
     await expect(first).toBeVisible();
     await expect(first.locator('#notes')).toBeVisible();
     await expect(first.locator('button[type="submit"]')).toHaveCount(1);
+
+    // An empty form cannot be submitted: the one button is dead until there is a name and a
+    // number, which is what the server would refuse anyway.
+    const save = first.locator('button[type="submit"]');
+    await expect(save).toBeDisabled();
+    await first.locator('input[name="name"]').fill('Maria Silva');
+    await expect(save).toBeDisabled();
+    await first.locator('input[name="phone"]').fill('812 345 678');
+    await expect(save).toBeEnabled();
+    await first.locator('input[name="phone"]').fill('');
+    await expect(save).toBeDisabled();
     await expect(page.locator('#notes-section')).toHaveCount(0);
     await expect(page.locator('.add-more')).toHaveCount(0);
 
