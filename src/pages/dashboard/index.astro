@@ -2,6 +2,7 @@
 import Button from '@/components/Button.astro';
 import ChannelIcon from '@/components/ChannelIcon.astro';
 import ConfirmDialog from '@/components/ConfirmDialog.astro';
+import ContactFields from '@/components/ContactFields.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Icon from '@/components/Icon.astro';
 import DashboardBehavior from '@/components/DashboardBehavior.astro';
@@ -246,9 +247,32 @@ const panelClass =
 
     {
       contacts.length === 0 ? (
+        /* First run: the contact and the note in one form with one save button. They are two
+           tables and two writes, but the owner typed one screen, so they get one button. */
         <div class={cardClass}>
           <h2 class={`${sectionTitle} mb-4`}>{label('owner.contacts.addTitle')}</h2>
-          <ContactForm action="/dashboard/contacts/new" submitLabel={label('owner.contacts.addSubmit')} />
+          <form method="post" action="/dashboard/start" class="contact-form space-y-6">
+            <ContactFields />
+            <div class="border-t border-line pt-5">
+              <h3 class="text-sm font-semibold text-fg">{label('owner.notes.title')}</h3>
+              <label class="mt-3 block">
+                <span class="mb-1.5 flex items-baseline gap-2 text-sm font-medium text-fg">
+                  {label('owner.notes.label')}
+                  <span class="text-xs font-normal text-fg-muted">{label('owner.notes.optional')}</span>
+                </span>
+                <textarea
+                  id="notes"
+                  class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
+                  name="notes"
+                  rows="3"
+                  maxlength="2000"></textarea>
+              </label>
+              <p class="mt-1.5 text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
+            </div>
+            <div class="flex justify-end">
+              <Button type="submit"><Icon name="check" size={16} /> {label('owner.start.save')}</Button>
+            </div>
+          </form>
         </div>
       ) : (
         <details class="add-more overflow-hidden rounded-lg border border-line bg-surface">
@@ -263,28 +287,100 @@ const panelClass =
     }
   </section>
 
+  {
+    (contacts.length > 0 || notes) && (
   <section id="notes-section">
-    <div class={cardClass}>
-      <h2 class={`${sectionTitle} mb-4`}>{label('owner.notes.title')}</h2>
-      <form method="post" action="/dashboard/notes" class="space-y-3">
-        <div>
-          <label class="mb-1.5 block text-sm font-medium text-fg" for="notes">{label('owner.notes.label')}</label>
-          <textarea
-            id="notes"
-            class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
-            name="notes"
-            rows="4"
-            maxlength="2000">{notes}</textarea>
-          <p class="mt-1.5 text-xs leading-5 text-fg-muted">
-            {label('owner.notes.hint')}
-          </p>
-        </div>
-        <div class="flex justify-end">
-          <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
-        </div>
-      </form>
+    {/* `editable` is the scope the kebab's Edit looks in, exactly as a contact row is the
+        scope for its own: the form it opens lives inside this card. */}
+    <div class={`${cardClass} editable`}>
+      <div class="flex items-start justify-between gap-3">
+        <h2 class={sectionTitle}>{label('owner.notes.title')}</h2>
+        {
+          notes && (
+            /* Same shape as a contact row: the note is read here, and the kebab holds the two
+               things that change it. The form it reveals lives in the page, never in the panel. */
+            <details class="menu kebab relative">
+              <summary class={summaryIcon} aria-label={label('owner.notes.actions')}>
+                <Icon name="dots" size={18} />
+              </summary>
+              <div class={panelClass}>
+                <button
+                  class={`${menuItem} text-fg`}
+                  type="button"
+                  data-edit-trigger
+                  aria-label={label('owner.notes.edit')}
+                >
+                  <Icon name="edit" size={16} /> {label('owner.notes.edit')}
+                </button>
+                <form
+                  method="post"
+                  action="/dashboard/notes/delete"
+                  data-confirm={label('owner.notes.deleteConfirm')}
+                  data-confirm-title={label('owner.notes.deleteTitle')}
+                  data-confirm-ok={label('owner.notes.deleteOk')}
+                >
+                  <button class={`${menuItem} danger text-danger hover:bg-danger/10`} type="submit">
+                    <Icon name="trash" size={16} /> {label('owner.notes.delete')}
+                  </button>
+                </form>
+              </div>
+            </details>
+          )
+        }
+      </div>
+
+      {
+        notes ? (
+          <div>
+            <p class="notes mt-3 text-base leading-7 whitespace-pre-wrap text-fg">{notes}</p>
+            <details class="edit-form mt-4">
+              <summary class="sr-only">{label('owner.notes.edit')}</summary>
+              <form method="post" action="/dashboard/notes" class="space-y-3 border-t border-line pt-4">
+                <label class="block" for="notes">
+                  <span class="mb-1.5 block text-sm font-medium text-fg">{label('owner.notes.label')}</span>
+                  <textarea
+                    id="notes"
+                    class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
+                    name="notes"
+                    rows="3"
+                    maxlength="2000">{notes}</textarea>
+                </label>
+                <p class="text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
+                <div class="flex items-center justify-end gap-2">
+                  <a
+                    class="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
+                    href="/dashboard"
+                    data-cancel
+                  >
+                    {label('form.cancel')}
+                  </a>
+                  <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
+                </div>
+              </form>
+            </details>
+          </div>
+        ) : (
+          <form method="post" action="/dashboard/notes" class="mt-3 space-y-3">
+            <label class="block" for="notes">
+              <span class="mb-1.5 block text-sm font-medium text-fg">{label('owner.notes.label')}</span>
+              <textarea
+                id="notes"
+                class="w-full rounded-md border border-line-strong bg-surface p-3 text-sm leading-6 text-fg outline-none"
+                name="notes"
+                rows="3"
+                maxlength="2000"></textarea>
+            </label>
+            <p class="text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
+            <div class="flex justify-end">
+              <Button type="submit"><Icon name="check" size={16} /> {label('owner.notes.save')}</Button>
+            </div>
+          </form>
+        )
+      }
     </div>
   </section>
+    )
+  }
 
   </div>
 

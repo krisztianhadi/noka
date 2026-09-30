@@ -90,6 +90,15 @@ const en = {
   'owner.notes.hint':
     "Shown under the contacts on the card page. Where the medication is, who to call first. Do not enter anyone else's data.",
   'owner.notes.save': 'Save notes',
+  'owner.notes.optional': 'Optional',
+  'owner.notes.actions': 'Note actions',
+  'owner.notes.edit': 'Edit note',
+  'owner.notes.delete': 'Delete note',
+  'owner.notes.deleteConfirm': 'Delete the note? The card page will show no note.',
+  'owner.notes.deleteTitle': 'Delete the note',
+  'owner.notes.deleteOk': 'Delete',
+  'owner.notes.none': 'No note yet.',
+  'owner.start.save': 'Save',
 
   'owner.card.title': 'Your card',
   'owner.card.actions': 'Card actions',
@@ -195,6 +204,8 @@ const en = {
   'notice.contact-and-card-deleted':
     'Contact and card deleted. Add a contact and make a new card when you are ready.',
   'notice.notes-saved': 'Notes saved.',
+  'notice.started': 'Saved. Your card is ready to make.',
+  'notice.notes-deleted': 'Note deleted.',
   'notice.card-made': 'Card made. Print it, or copy the link and PIN.',
   'notice.card-renewed': 'New card. The previous one stopped working immediately.',
   'notice.card-deleted':

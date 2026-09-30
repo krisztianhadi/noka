@@ -31,14 +31,19 @@
   // 2. Edit opens the contact's own form, in the page — never inside a dropdown panel.
   for (const trigger of document.querySelectorAll<HTMLButtonElement>('[data-edit-trigger]')) {
     trigger.addEventListener('click', () => {
-      const form = trigger.closest('li')?.querySelector<HTMLDetailsElement>('details.edit-form');
+      // A contact row is an <li>; the note card is neither, so the scope is either.
+      const scope = trigger.closest('li, .editable');
+      const form = scope?.querySelector<HTMLDetailsElement>('details.edit-form');
       if (!form) return;
       // The trigger is a menu item now, so close the menu behind it: the form opens in the
       // page below the contact, and a panel floating over it would be in the way.
       trigger.closest('details')?.removeAttribute('open');
       form.open = true;
       form.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      form.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+      // Focus the first field of whatever form was revealed: a name, or the note itself.
+      form
+        .querySelector<HTMLInputElement | HTMLTextAreaElement>('input[name="name"], textarea')
+        ?.focus();
     });
   }
 
@@ -55,9 +60,13 @@
     });
   }
 
-  // 4. "Save notes" is meaningless until something changed.
+  // 4. "Save notes" is meaningless until something changed — but only in the notes-only form.
+  //    The first-run form also carries a note, and its button saves the contact too, so
+  //    disabling it there left a new owner unable to save anything at all.
   const notes = document.getElementById('notes') as HTMLTextAreaElement | null;
-  const saveNotes = notes?.closest('form')?.querySelector<HTMLButtonElement>('button[type="submit"]');
+  const saveNotes = notes
+    ?.closest('form[action="/dashboard/notes"]')
+    ?.querySelector<HTMLButtonElement>('button[type="submit"]');
   if (notes && saveNotes) {
     const initial = notes.value;
     const sync = () => {

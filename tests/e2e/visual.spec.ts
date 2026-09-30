@@ -46,7 +46,9 @@ test.describe('things axe cannot see', () => {
     const ratio = contrast(bg, surface);
     expect(ratio, `page ${bg} vs card ${surface}`).toBeGreaterThan(1.1);
 
-    // A quiet section is what carries the surface colour...
+    // A quiet section is what carries the surface colour. The notes card exists once there
+    // is a contact: on a first run the note is a field of the first-run form.
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     const notes = page.locator('#notes-section > div').first();
     expect(await notes.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(surface);
     expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe(bg);
@@ -88,7 +90,10 @@ test.describe('things axe cannot see', () => {
       await page.getByRole('button', { name: 'Create account' }).click();
       await page.waitForURL(/dashboard$/);
 
-      const form = page.locator('form[action="/dashboard/contacts/new"]');
+      // First run: the contact fields live in the first-run form, which posts to /dashboard/start.
+      const form = page
+        .locator('form[action="/dashboard/start"], form[action="/dashboard/contacts/new"]')
+        .last();
       const country = form.locator('select[name="country"]');
       const number = form.locator('input[name="phone"]');
       const [countryBox, numberBox] = await Promise.all([country.boundingBox(), number.boundingBox()]);

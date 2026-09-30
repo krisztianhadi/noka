@@ -64,7 +64,12 @@ export async function openAddForm(page: Page): Promise<void> {
 
 export async function addContact(page: Page, spec: ContactSpec): Promise<void> {
   await openAddForm(page);
-  const form = page.locator('form[action="/dashboard/contacts/new"]').last();
+  // The first contact is saved by the first-run form, which carries the note as well and has
+  // one button for both; every later contact uses the folded add form. Located by where the
+  // form posts to rather than by its button label, because those differ on purpose.
+  const form = page
+    .locator('form[action="/dashboard/start"], form[action="/dashboard/contacts/new"]')
+    .last();
   await form.locator('input[name="name"]').fill(spec.name);
   await form.locator('select[name="relation"]').selectOption(spec.relation ?? 'spouse');
   await form.locator('select[name="country"]').selectOption(spec.country ?? 'TH');
@@ -76,8 +81,8 @@ export async function addContact(page: Page, spec: ContactSpec): Promise<void> {
   for (const code of spec.spoken ?? []) {
     await form.locator(`input[name="spoken"][value="${code}"]`).check();
   }
-  await form.getByRole('button', { name: 'Add contact' }).click();
-  await expect(page).toHaveURL(/notice=contact-added$/);
+  await form.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/notice=(contact-added|started)$/);
 }
 
 /** The kebab beside a contact, or the one in the card section. */

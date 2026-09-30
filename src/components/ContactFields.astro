@@ -1,0 +1,204 @@
+---
+import { COUNTRIES, DEFAULT_COUNTRY, flagFor } from '@/lib/countries';
+import { t } from '@/i18n/catalogue';
+import type { ContactView } from '@/lib/contacts';
+import { RELATIONS } from '@/lib/relations';
+import { SPOKEN_LANGUAGES } from '@/lib/spoken-languages';
+import ChannelIcon from '@/components/ChannelIcon.astro';
+import Icon from '@/components/Icon.astro';
+import { SERVICE_CHANNELS } from '@/lib/channels';
+import { flagForLanguage } from '@/lib/flags';
+
+/**
+ * The contact fields, without a form element around them.
+ *
+ * Order and defaults are his: **call first** among the channels and on by default,
+ * the spoken languages visible rather than folded away, and the country a flag
+ * picker so the number ends up in E.164 without anyone knowing what E.164 means.
+ *
+ * The wrapper is separate because the first-run page puts these fields and the note in
+ * one form with one save button; every other surface uses ContactForm, which is this
+ * plus a form element and a submit row.
+ */
+interface Props {
+  contact?: ContactView | null;
+  defaultCountry?: string;
+}
+
+const { contact = null, defaultCountry = DEFAULT_COUNTRY } = Astro.props;
+
+// A new contact starts as a partner: it is the most common answer and the safest
+// assumption, and choosing costs one click either way.
+const DEFAULT_RELATION = 'partner';
+const selectedChannels = new Set(contact?.channels ?? ['call']);
+const textOnly = contact?.textOnly ?? false;
+const selectedSpoken = new Set(contact?.spokenLanguages ?? []);
+// The form reads the locale from the request like every other owner surface, so it can be
+// dropped into a page without a language prop drilled through it.
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+const relationLabel = (relation: string) => label(`relation.${relation}` as 'relation.spouse');
+const channelLabel = (channel: string) => label(`channel.${channel}` as 'channel.call');
+const spokenLabel = (code: string) => label(`spoken.${code}` as 'spoken.en');
+
+/**
+ * A stored number is split back into country + national part where the dial code
+ * matches the list, so editing never double-prefixes it. Grouping matches the input
+ * mask exactly, so an edit shows what typing produces.
+ */
+const stored = contact?.phoneE164 ?? '';
+const matched = COUNTRIES.filter((country) => stored.startsWith(`+${country.dial}`)).sort(
+  (a, b) => b.dial.length - a.dial.length,
+)[0];
+const country = matched?.code ?? defaultCountry;
+const national = (matched ? stored.slice(matched.dial.length + 1) : stored.replace(/^\+/, ''))
+  .replace(/(\d{3})(?=\d)/g, '$1 ')
+  .trim();
+const uid = contact?.id ?? 'new';
+
+const labelClass = 'mb-1.5 block text-sm font-medium text-fg';
+/**
+ * No width here on purpose: `w-full` in this string collided with the country
+ * select's own `w-[10rem]`, and the later definition won — the select grew to the
+ * full row and pushed the number input off screen. Width belongs to the use site.
+ */
+const fieldClass =
+  'h-10 rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none';
+// A native select draws its arrow wherever the platform likes, which is what looked
+// wrong beside the flag and the dial code. `appearance-none` plus our own chevron gives
+// every select the same geometry.
+const selectClass = `${fieldClass} appearance-none pr-9`;
+const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
+const chipClass = 'inline-flex cursor-pointer items-center gap-2 text-sm';
+---
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class={labelClass} for={`name-${uid}`}>{label('form.name')}</label>
+      <input
+        id={`name-${uid}`}
+        class={`${fieldClass} w-full`}
+        name="name"
+        type="text"
+        required
+        maxlength="80"
+        value={contact?.name ?? ''}
+      />
+    </div>
+    <div>
+      <label class={labelClass} for={`relation-${uid}`}>{label('form.relation')}</label>
+      <div class="relative">
+        <select id={`relation-${uid}`} class={`${selectClass} w-full`} name="relation" required>
+          {
+            RELATIONS.map((relation) => (
+              <option
+              value={relation}
+              selected={contact ? contact.relation === relation : relation === DEFAULT_RELATION}
+            >
+                {relationLabel(relation)}
+              </option>
+            ))
+          }
+        </select>
+        <Icon name="chevron" size={16} class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-fg-muted" />
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <label class={labelClass} for={`phone-${uid}`}>{label('form.phone')}</label>
+    {/* Stacked on a phone so the country name is not clipped and the number gets a
+        full-width field; side by side from `sm` up. */}
+    <div class="flex flex-col gap-2 sm:flex-row">
+      <div class="relative w-full sm:w-[10.5rem] sm:shrink-0">
+        <select
+          class={`${selectClass} w-full`}
+          name="country"
+          id={`country-${uid}`}
+          aria-label={label('form.countryCode')}
+        >
+          {
+            COUNTRIES.map((entry) => (
+              <option value={entry.code} selected={entry.code === country}>
+                {flagFor(entry.code)} +{entry.dial} {entry.name}
+              </option>
+            ))
+          }
+        </select>
+        <Icon name="chevron" size={16} class="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-fg-muted" />
+      </div>
+      <input
+        id={`phone-${uid}`}
+        class={`${fieldClass} w-full min-w-0 sm:flex-1`}
+        name="phone"
+        type="tel"
+        required
+        autocomplete="tel-national"
+        inputmode="tel"
+        data-phone
+        aria-label={label('form.phoneLocal')}
+        value={national}
+      />
+    </div>
+    <p class={hintClass}>{label('form.phoneHint')}</p>
+  </div>
+
+  <fieldset class="rounded-md border border-line p-3">
+    <legend class="px-1 text-sm font-medium">{label('form.services')}</legend>
+    <div class="flex flex-wrap gap-x-4 gap-y-2">
+      {
+        SERVICE_CHANNELS.map((channel) => (
+          <label class={chipClass}>
+            <input
+              class="size-4 accent-[var(--noka-accent)]"
+              type="checkbox"
+              name="channels"
+              value={channel}
+              checked={selectedChannels.has(channel)}
+            />
+            <ChannelIcon channel={channel} size={16} branded />
+            <span>{channelLabel(channel)}</span>
+          </label>
+        ))
+      }
+    </div>
+    <p class={hintClass}>
+      {label('form.servicesHint')}
+    </p>
+
+    <label class={`${chipClass} mt-3 border-t border-line pt-3`}>
+      <input
+        class="size-4 accent-[var(--noka-accent)]"
+        type="checkbox"
+        name="text_only"
+        value="yes"
+        checked={textOnly}
+      />
+      <span class="text-base leading-none" aria-hidden="true">🔇</span>
+      <span>
+        <span class="font-medium">{label('form.textOnly')}</span>
+        <span class="block text-xs text-fg-muted">{label('form.textOnlyHint')}</span>
+      </span>
+    </label>
+  </fieldset>
+
+  <fieldset class="rounded-md border border-line p-3">
+    <legend class="px-1 text-sm font-medium">{label('form.spokenLanguages')}</legend>
+    <div class="flex flex-wrap gap-x-4 gap-y-2">
+      {
+        SPOKEN_LANGUAGES.map((code) => (
+          <label class={chipClass}>
+            <input
+              class="size-4 accent-[var(--noka-accent)]"
+              type="checkbox"
+              name="spoken"
+              value={code}
+              checked={selectedSpoken.has(code)}
+            />
+            <span aria-hidden="true">{flagForLanguage(code)}</span>
+            <span>{spokenLabel(code)}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>

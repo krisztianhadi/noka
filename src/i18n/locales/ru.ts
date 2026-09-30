@@ -87,6 +87,15 @@ const ru: Record<MessageKey, string> = {
   'owner.notes.hint':
     'Показываются под контактами на странице карты. Где лежат лекарства, кому звонить первым. Не указывайте здесь чужие данные.',
   'owner.notes.save': 'Сохранить заметки',
+  'owner.notes.optional': 'Необязательно',
+  'owner.notes.actions': 'Действия с заметкой',
+  'owner.notes.edit': 'Изменить заметку',
+  'owner.notes.delete': 'Удалить заметку',
+  'owner.notes.deleteConfirm': 'Удалить заметку? На странице карточки заметка не появится.',
+  'owner.notes.deleteTitle': 'Удалить заметку',
+  'owner.notes.deleteOk': 'Удалить',
+  'owner.notes.none': 'Заметки пока нет.',
+  'owner.start.save': 'Сохранить',
 
   'owner.card.title': 'Ваша карта',
   'owner.card.actions': 'Действия с картой',
@@ -192,6 +201,8 @@ const ru: Record<MessageKey, string> = {
   'notice.contact-and-card-deleted':
     'Контакт и карта удалены. Добавьте контакт и сделайте новую карту, когда будете готовы.',
   'notice.notes-saved': 'Заметки сохранены.',
+  'notice.started': 'Сохранено. Карточку можно создавать.',
+  'notice.notes-deleted': 'Заметка удалена.',
   'notice.card-made': 'Карта сделана. Распечатайте её или скопируйте ссылку и PIN-код.',
   'notice.card-renewed': 'Новая карта готова. Предыдущая сразу перестала работать.',
   'notice.card-deleted':

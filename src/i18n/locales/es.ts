@@ -87,6 +87,15 @@ const es: Record<MessageKey, string> = {
   'owner.notes.hint':
     'Se muestran debajo de los contactos en la página de la tarjeta. Dónde está la medicación, a quién llamar primero. No incluyas datos de otras personas.',
   'owner.notes.save': 'Guardar notas',
+  'owner.notes.optional': 'Opcional',
+  'owner.notes.actions': 'Acciones de la nota',
+  'owner.notes.edit': 'Editar nota',
+  'owner.notes.delete': 'Eliminar nota',
+  'owner.notes.deleteConfirm': '¿Eliminar la nota? La página de la tarjeta no mostrará ninguna nota.',
+  'owner.notes.deleteTitle': 'Eliminar la nota',
+  'owner.notes.deleteOk': 'Eliminar',
+  'owner.notes.none': 'Todavía no hay nota.',
+  'owner.start.save': 'Guardar',
 
   'owner.card.title': 'Tu tarjeta',
   'owner.card.actions': 'Acciones de la tarjeta',
@@ -192,6 +201,8 @@ const es: Record<MessageKey, string> = {
   'notice.contact-and-card-deleted':
     'Contacto y tarjeta eliminados. Añade un contacto y crea una tarjeta nueva cuando estés listo.',
   'notice.notes-saved': 'Notas guardadas.',
+  'notice.started': 'Guardado. Ya puedes crear tu tarjeta.',
+  'notice.notes-deleted': 'Nota eliminada.',
   'notice.card-made': 'Tarjeta creada. Imprímela, o copia el enlace y el PIN.',
   'notice.card-renewed': 'Tarjeta nueva. La anterior dejó de funcionar de inmediato.',
   'notice.card-deleted':

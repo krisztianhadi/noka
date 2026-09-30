@@ -87,6 +87,15 @@ const zh: Record<MessageKey, string> = {
   'owner.notes.hint':
     '会显示在卡片页面联系人下方。例如药物存放位置、优先联系谁。请不要填写他人的信息。',
   'owner.notes.save': '保存备注',
+  'owner.notes.optional': '可选',
+  'owner.notes.actions': '备注操作',
+  'owner.notes.edit': '编辑备注',
+  'owner.notes.delete': '删除备注',
+  'owner.notes.deleteConfirm': '删除备注？卡片页面将不再显示备注。',
+  'owner.notes.deleteTitle': '删除备注',
+  'owner.notes.deleteOk': '删除',
+  'owner.notes.none': '还没有备注。',
+  'owner.start.save': '保存',
 
   'owner.card.title': '你的卡片',
   'owner.card.actions': '卡片操作',
@@ -192,6 +201,8 @@ const zh: Record<MessageKey, string> = {
   'notice.contact-and-card-deleted':
     '联系人和卡片均已删除。准备好后可以添加联系人并制作新卡片。',
   'notice.notes-saved': '备注已保存。',
+  'notice.started': '已保存，可以制作卡片了。',
+  'notice.notes-deleted': '备注已删除。',
   'notice.card-made': '卡片已制作。可以打印，或复制链接和 PIN 码。',
   'notice.card-renewed': '已生成新卡片。原卡片已立即失效。',
   'notice.card-deleted':

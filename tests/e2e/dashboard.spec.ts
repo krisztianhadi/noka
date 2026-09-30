@@ -21,10 +21,20 @@ test.describe('the dashboard', () => {
   test('reads contacts → notes → card, in that order', async ({ page }) => {
     await signUp(page);
 
-    // With no contacts the add form is open, so its heading is the first h2.
+    // First run: the contact form is open with the note inside it, so that one card is where
+    // both live — and the note heading sits inside it, a step down, because it is a field of
+    // the same form rather than a section of its own.
+    await expect(page.locator('section h1')).toHaveText(['Emergency contacts']);
+    await expect(page.locator('section h2')).toHaveText(['Add a contact', 'Your card']);
+    await expect(page.locator('form[action="/dashboard/start"] h3')).toHaveText([
+      'Notes for a responder',
+    ]);
+
+    // Once there is a contact, the three sections are the page, in his order.
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    // The contacts heading is the page's h1; the sections below it are these two.
     await expect(page.locator('section h1')).toHaveText(['Emergency contacts']);
     await expect(page.locator('section h2')).toHaveText([
-      'Add a contact',
       'Notes for a responder',
       'Your card',
     ]);
@@ -33,10 +43,10 @@ test.describe('the dashboard', () => {
   test('a new contact defaults to partner, and edit lives in the kebab', async ({ page }) => {
     await signUp(page);
 
-    // Partner is the most common answer, and it is what the picker shows first.
-    await expect(page.locator('form[action="/dashboard/contacts/new"] select[name="relation"]')).toHaveValue(
-      'partner',
-    );
+    // Partner is the most common answer, and it is what the picker shows first. On a first
+    // run that picker is in the first-run form, which posts to /dashboard/start.
+    const firstForm = page.locator('form[action="/dashboard/start"], form[action="/dashboard/contacts/new"]');
+    await expect(firstForm.locator('select[name="relation"]')).toHaveValue('partner');
 
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     const row = page.locator('.contacts > li').first();
@@ -57,8 +67,12 @@ test.describe('the dashboard', () => {
   test('opens the add form for the first contact and folds it away afterwards', async ({ page }) => {
     await signUp(page);
 
-    // First contact: the form is simply there.
-    await expect(page.locator('form[action="/dashboard/contacts/new"]')).toBeVisible();
+    // First contact: one form, open, with the note in it and one save button for both.
+    const first = page.locator('form[action="/dashboard/start"]');
+    await expect(first).toBeVisible();
+    await expect(first.locator('#notes')).toBeVisible();
+    await expect(first.locator('button[type="submit"]')).toHaveCount(1);
+    await expect(page.locator('#notes-section')).toHaveCount(0);
     await expect(page.locator('.add-more')).toHaveCount(0);
 
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
@@ -69,6 +83,11 @@ test.describe('the dashboard', () => {
     const open = await disclosure.evaluate((element) => (element as HTMLDetailsElement).open);
     expect(open).toBe(false);
     await expect(disclosure.locator('> summary')).toHaveText('Add another contact');
+
+    // With a contact saved, the note moves to its own card — rendered, with the note behind
+    // the kebab rather than sitting open in a second form.
+    await expect(page.locator('#notes-section')).toHaveCount(1);
+    await expect(page.locator('form[action="/dashboard/start"]')).toHaveCount(0);
   });
 
   test('adds a contact with a country code, channels and languages', async ({ page }) => {
@@ -104,13 +123,17 @@ test.describe('the dashboard', () => {
   test('takes a full international number as typed', async ({ page }) => {
     await signUp(page);
     await openAddForm(page);
-    const form = page.locator('form[action="/dashboard/contacts/new"]').last();
+    const form = page
+      .locator('form[action="/dashboard/start"], form[action="/dashboard/contacts/new"]')
+      .last();
     await form.locator('input[name="name"]').fill('Direct');
     await form.locator('select[name="country"]').selectOption('TH');
     await form.locator('input[name="phone"]').fill('+36 30 123 4567');
     // The input mask must not eat the plus that says "this is already international".
     await expect(form.locator('input[name="phone"]')).toHaveValue('+363 012 345 67');
-    await form.getByRole('button', { name: 'Add contact' }).click();
+    // By position, not by label: the first-run button saves the note as well, so its label
+    // is different from the one on the add form.
+    await form.locator('button[type="submit"]').click();
 
     await expect(page.locator('.contacts > li').first().locator('.phone')).toHaveText('+36 301 234 567');
   });
@@ -156,6 +179,7 @@ test.describe('the dashboard', () => {
 
   test('saves notes for a responder', async ({ page }) => {
     await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
     // Nothing to save until something changed.
     const save = page.locator('#notes-section button[type="submit"]');
@@ -166,7 +190,11 @@ test.describe('the dashboard', () => {
 
     await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
     await page.reload();
-    await expect(page.locator('#notes')).toHaveValue('Type 1 diabetic. Allergic to penicillin.');
+
+    // Saved: the note is rendered, not a filled-in form.
+    await expect(page.locator('#notes-section .notes')).toHaveText('Type 1 diabetic. Allergic to penicillin.');
+    // The edit form is behind the kebab and closed, so nothing is asking to be typed into.
+    await expect(page.locator('#notes-section #notes')).toBeHidden();
   });
 
   test('deleting the last contact deletes the card too, after saying so', async ({ page }) => {
