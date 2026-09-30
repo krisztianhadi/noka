@@ -28,115 +28,181 @@ const { lang, title } = Astro.props;
 </html>
 
 <style is:global>
+  /*
+   * The responder plane's type system.
+   *
+   * One scale, six sizes, and a rule for each: a stranger reads this page once, worried,
+   * on a phone, possibly in poor light. Before this there were eight sizes within three
+   * pixels of each other (15.2, 16, 16.8, 17, 18, 19, 24, 28), which is not a hierarchy —
+   * a one-pixel difference is invisible, so everything read as equally important, and the
+   * phone number — the one thing a visitor actually needs — was the smallest text in the
+   * contact block.
+   *
+   * Base 19px rather than 16: this is read at arm's length, in a hurry.
+   */
   :root {
     color-scheme: light;
+
+    /* Type scale, ratio ~1.2 on a 19px base. */
+    --t-xs: 0.875rem; /* 14px — metadata: spoken languages, language hint */
+    --t-sm: 1rem; /* 16px — relation, owner, alert, language buttons */
+    --t-md: 1.1875rem; /* 19px — body copy, notes, labels */
+    --t-lg: 1.375rem; /* 22px — section headings, the phone number */
+    --t-xl: 1.625rem; /* 26px — page heading */
+    --t-2xl: 2rem; /* 32px — contact name, the loudest thing here */
+    --t-pin: 2.125rem; /* 34px — the PIN input */
+
+    /* Line heights, by job. */
+    --lh-tight: 1.2; /* headings */
+    --lh-solid: 1.3; /* single-line emphasis (name, phone) */
+    --lh-body: 1.5; /* running text */
+
+    /* Spacing, 4px steps. */
+    --s1: 0.25rem;
+    --s2: 0.5rem;
+    --s3: 0.75rem;
+    --s4: 1rem;
+    --s5: 1.5rem;
+    --s6: 2rem;
+    --s7: 2.5rem;
+
+    --ink: #111;
+    --ink-soft: #333;
+    --ink-faint: #555;
+    --rule: #e5e5e5;
   }
   * {
     box-sizing: border-box;
   }
   body {
     margin: 0;
-    padding: 1.25rem 1.25rem 3rem;
-    font: 1.1875rem/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif;
-    color: #111;
+    padding: var(--s5) var(--s5) var(--s6);
+    font: var(--t-md) / var(--lh-body) system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: var(--ink);
     background: #fff;
+    /* Numbers that do not jump: the PIN, the phone number and any count. */
+    font-variant-numeric: tabular-nums;
   }
   main {
     max-width: 32rem;
     margin: 0 auto;
   }
+
+  h1,
+  h2 {
+    line-height: var(--lh-tight);
+    text-wrap: balance;
+  }
   h1 {
-    margin: 0 0 1.25rem;
-    font-size: 1.5rem;
-    line-height: 1.25;
+    margin: 0 0 var(--s1);
+    font-size: var(--t-xl);
   }
   p {
-    margin: 0.6rem 0;
+    margin: var(--s2) 0;
   }
   label {
     display: block;
-    margin: 1.5rem 0 0.4rem;
+    margin: var(--s5) 0 var(--s2);
+    font-size: var(--t-md);
     font-weight: 600;
   }
+
   input[type='text'],
   input[type='tel'],
   input[inputmode='numeric'] {
     width: 100%;
-    padding: 0.85rem 0.9rem;
+    padding: var(--s4) var(--s4);
     font: inherit;
-    font-size: 1.5rem;
-    letter-spacing: 0.2em;
+    font-size: var(--t-pin);
+    font-weight: 600;
+    /* The letter-spacing is added after the last digit too, which pushes centred text off
+       centre by half a space; the indent puts it back. */
+    letter-spacing: 0.18em;
+    text-indent: 0.18em;
     text-align: center;
-    border: 2px solid #111;
+    border: 2px solid var(--ink);
     border-radius: 6px;
   }
   button {
     display: block;
     width: 100%;
     min-height: 3.25rem;
-    margin-top: 1rem;
-    padding: 0.9rem 1rem;
+    margin-top: var(--s4);
+    padding: 0.9rem var(--s4);
     font: inherit;
     font-size: 1.125rem;
     font-weight: 700;
     color: #fff;
-    background: #111;
-    border: 2px solid #111;
+    background: var(--ink);
+    border: 2px solid var(--ink);
     border-radius: 6px;
     cursor: pointer;
   }
   .error {
-    margin-top: 1.25rem;
-    padding: 0.9rem 1rem;
+    margin-top: var(--s5);
+    padding: 0.9rem var(--s4);
     font-weight: 600;
     color: #7a0000;
     background: #fff;
     border: 2px solid #a00;
     border-radius: 6px;
   }
+
+  /* ── One contact ─────────────────────────────────────────────────────────── */
   .contact {
-    padding: 1.25rem 0;
-    border-bottom: 2px solid #e5e5e5;
+    padding: var(--s5) 0;
+    border-bottom: 2px solid var(--rule);
   }
+  /* Read in this order, at these sizes: who they are, how to reach them, then what to do. */
   .name {
-    font-size: 1.75rem;
+    font-size: var(--t-2xl);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: var(--lh-solid);
+    /* A two-word name across two lines reads better balanced than ragged. */
+    text-wrap: balance;
+    /* A long name must not push the number off the screen. */
+    overflow-wrap: anywhere;
   }
   .relation {
-    margin-top: 0.15rem;
-    font-size: 1.0625rem;
-    color: #333;
-  }
-  .owner {
-    margin-top: -0.75rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #333;
-  }
-  .notes-heading {
-    margin: 2rem 0 0.5rem;
-    font-size: 1.25rem;
+    margin-top: var(--s1);
+    font-size: var(--t-sm);
+    color: var(--ink-soft);
   }
   .phone {
-    margin-top: 0.35rem;
+    margin-top: var(--s3);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.05rem;
+    font-size: var(--t-lg);
+    line-height: var(--lh-solid);
+    /* Easy to read aloud and to copy: this is the point of the page. */
+    overflow-wrap: anywhere;
   }
   .phone a {
     color: inherit;
   }
+  .owner {
+    margin: 0;
+    font-size: var(--t-sm);
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .notes-heading {
+    margin: var(--s6) 0 var(--s2);
+    font-size: var(--t-lg);
+  }
   .speaks,
   .on-channels {
-    margin-top: 0.35rem;
-    font-size: 0.95rem;
-    color: #333;
+    margin-top: var(--s2);
+    font-size: var(--t-xs);
+    color: var(--ink-soft);
+    overflow-wrap: anywhere;
   }
+
+  /* ── Actions ─────────────────────────────────────────────────────────────── */
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 0.85rem;
+    gap: var(--s3);
+    margin-top: var(--s4);
   }
   .actions a {
     flex: 1 1 8rem;
@@ -144,14 +210,16 @@ const { lang, title } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: var(--s2);
+    padding: var(--s2) var(--s3);
     font-size: 1.125rem;
     font-weight: 700;
-    line-height: 1;
+    line-height: var(--lh-tight);
+    text-align: center;
     text-decoration: none;
-    color: #111;
+    color: var(--ink);
     background: #fff;
-    border: 2px solid #111;
+    border: 2px solid var(--ink);
     border-radius: 6px;
   }
   /* One colour for every mark: a stranger's page reads better in plain black on
@@ -164,27 +232,30 @@ const { lang, title } = Astro.props;
      every other channel is outlined beside it. */
   .actions a.call {
     color: #fff;
-    background: #111;
+    background: var(--ink);
   }
+
+  /* ── Notes, alerts, language ─────────────────────────────────────────────── */
   .notes {
-    margin-top: 2rem;
-    padding: 1rem;
+    margin-top: var(--s6);
+    padding: var(--s4);
     background: #f6f6f6;
     border: 2px solid #ddd;
     border-radius: 6px;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
   .alert {
     display: flex;
     align-items: flex-start;
-    gap: 0.55rem;
-    margin: 0.75rem 0 0;
-    padding: 0.7rem 0.8rem;
-    font-size: 1rem;
+    gap: var(--s2);
+    margin: var(--s3) 0 0;
+    padding: var(--s3) var(--s3);
+    font-size: var(--t-sm);
     font-weight: 600;
-    color: #111;
+    color: var(--ink);
     background: #fff8e1;
-    border: 2px solid #111;
+    border: 2px solid var(--ink);
     border-left-width: 6px;
     border-radius: 5px;
   }
@@ -193,16 +264,18 @@ const { lang, title } = Astro.props;
     margin-top: 0.15rem;
   }
   .langs {
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e5e5;
+    margin-top: var(--s7);
+    padding-top: var(--s4);
+    border-top: 1px solid var(--rule);
   }
   .langs > summary {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.7rem;
-    font-size: 0.95rem;
+    gap: var(--s2);
+    /* 44px tall: it is a control, and the previous 39px missed the touch minimum. */
+    min-height: 2.75rem;
+    padding: var(--s2) 0.7rem;
+    font-size: var(--t-sm);
     font-weight: 600;
     cursor: pointer;
     border: 1px solid #ccc;
@@ -213,12 +286,13 @@ const { lang, title } = Astro.props;
     display: none;
   }
   .langs > summary .hint {
+    font-size: var(--t-xs);
     font-weight: 400;
-    color: #555;
+    color: var(--ink-faint);
   }
   .langs[open] > summary {
-    margin-bottom: 0.6rem;
-    border-color: #111;
+    margin-bottom: var(--s3);
+    border-color: var(--ink);
   }
   .langs form {
     display: flex;
@@ -228,23 +302,23 @@ const { lang, title } = Astro.props;
   .langs button {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--s2);
     width: auto;
     min-height: 2.75rem;
     margin: 0;
-    padding: 0.5rem 0.9rem;
-    font-size: 1rem;
+    padding: var(--s2) 0.9rem;
+    font-size: var(--t-sm);
     font-weight: 600;
-    color: #111;
+    color: var(--ink);
     background: #fff;
     border-width: 2px;
   }
   .langs button[aria-current='true'] {
     color: #fff;
-    background: #111;
+    background: var(--ink);
   }
   .hide {
-    margin-top: 1rem;
+    margin-top: var(--s4);
     background: #fff;
     color: #7a0000;
     border-color: #a00;
