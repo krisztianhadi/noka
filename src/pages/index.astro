@@ -33,9 +33,9 @@ const eyebrow = 'font-mono text-[0.7rem] tracking-[0.18em] text-fg-muted upperca
 const h2 = 'mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl';
 
 const trust = [
-  'Encrypted before storage',
+  'Your details are encrypted',
   'No tracking on the card page',
-  'Languages, growing',
+  'Five languages, more to come',
   'MIT licensed',
 ];
 
@@ -43,42 +43,42 @@ const features = [
   {
     icon: 'phone' as const,
     title: 'Tap to call',
-    body: 'Whoever is helping you gets the people to call, with tap-to-call buttons on any smartphone with an internet connection.',
+    body: 'The page shows the contacts you chose, with buttons that dial them. It works on a smartphone with an internet connection.',
   },
   {
     icon: 'lock' as const,
-    title: 'Encrypted first',
+    title: 'Kept private',
     body: 'Contacts and notes are encrypted before they reach the database. The key is not stored there.',
   },
   {
     icon: 'globe' as const,
     title: 'More languages coming',
-    body: 'English, Spanish, French, Simplified Chinese and Russian today, and more on the way. You choose which ones your card carries; the web interface supports every language we add.',
+    body: 'Choose which languages appear on your card. English, Spanish, French, Simplified Chinese and Russian are available today, with more to come — and the whole interface is translated, so a new language appears everywhere at once.',
   },
   {
     icon: 'eye-off' as const,
-    title: 'Nothing watching',
-    body: 'The card page has no JavaScript, no analytics, no outside fonts or images. It does not log the view.',
+    title: 'No tracking on the card page',
+    body: 'The page that shows your contacts runs no JavaScript, loads nothing from anywhere else, and keeps no record that somebody looked.',
   },
   {
     icon: 'bars' as const,
-    title: 'Built for bad signal',
-    body: 'It needs a connection — that cannot be avoided — so it is plain server-rendered HTML, as small as a page can be made for the slowest, choppiest connection.',
+    title: 'Kept small for slow connections',
+    body: 'The page needs an internet connection. It is kept small and simple so it loads more easily on a slow one.',
   },
 ];
 
 const everyday = [
   {
     title: 'Lost wallet or bag',
-    body: 'Inside a phone case, behind a passport, in a wallet or a luggage tag. Whoever finds it can call a number you chose, instead of guessing who you are from a bank card.',
+    body: 'Keep it in a wallet, bag, phone case or passport holder. Whoever finds it can call a person you chose.',
   },
   {
-    title: 'A number that changed',
-    body: 'Edit a contact once. Every card already printed shows the new number, with no reprinting.',
+    title: 'When a contact changes their number',
+    body: 'Edit a contact once, and every card you have already printed shows the new number the next time it is opened.',
   },
   {
-    title: 'Someone else\'s eyes',
-    body: 'The card carries the note you wrote for that moment, and nothing else about you.',
+    title: 'A short note from you',
+    body: 'The page shows the short note and the contacts you chose to share — nothing more.',
   },
 ];
 
@@ -89,14 +89,14 @@ const notDoing = [
   },
   {
     title: 'Keeping a medical record',
-    body: 'There are no diagnoses, medication doses or allergies database. A note is a note.',
+    body: 'Noka is not a medical record. It has no fields for diagnoses, medication doses or allergies; it shows the short note you write.',
   },
   {
-    title: 'Hiding access from the holder',
-    body: 'The responder needs the card and the PIN. Anyone holding both can read the contacts. That is the design.',
+    title: 'Who can read the page',
+    body: 'Anyone with the card and its PIN can read the contacts and the note. That is what lets a stranger help without installing an app or making an account.',
   },
   {
-    title: 'Tracking the responder',
+    title: 'Tracking the person who opens it',
     body: 'No app to install, no account to create, and no tracking of whoever opens the page.',
   },
 ];
@@ -104,22 +104,22 @@ const notDoing = [
 const steps = [
   {
     title: 'Set it up',
-    body: 'Add your contacts and one short note. Choose the languages you want to offer.',
+    body: 'Add your contacts and one short note. Choose which languages are printed on the card.',
   },
   {
-    title: 'Carry the card',
-    body: 'Print the card yourself and keep it with you. It holds a QR code and a six-digit PIN.',
+    title: 'Print it yourself',
+    body: 'Print the card and keep it with you. It holds a QR code and a six-digit PIN.',
   },
   {
-    title: 'Let them call',
-    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note — on any smartphone with an internet connection.',
+    title: 'Someone scans it',
+    body: 'The person helping you scans the QR code, enters the PIN and sees your contacts and note. They tap a name to call. An internet connection is needed.',
   },
 ];
 
 const faq = [
   {
     q: 'Is this an emergency service?',
-    a: 'No. Call the local emergency number first. Noka may give a responder useful contacts and a note, but it does not replace emergency services.',
+    a: 'No. Call the local emergency number first. Noka can give whoever is helping you useful contacts and a note, but it does not replace emergency services.',
   },
   {
     q: 'What if someone steals the card?',
@@ -127,35 +127,35 @@ const faq = [
   },
   {
     q: 'Is this my medical record?',
-    a: 'No. There is no diagnoses, medication dosing or allergies database. You can leave a short note, and a note is all it is.',
+    a: 'No. Noka is not a medical record and has no fields for diagnoses, medication doses or allergies. It shows the short note you write.',
   },
   {
     q: 'Does the card work without a signal?',
-    a: 'No, and nothing can change that. It needs an internet connection. The page is plain server-rendered HTML with no JavaScript and no outside files, so it is as small and as fast as possible on a slow or choppy connection — but no connection means no page.',
+    a: 'It needs an internet connection. The page has no JavaScript and no outside files, which helps it load on a slow connection, but it cannot open without a connection.',
   },
   {
     q: 'Are you tracking the person who opens it?',
-    a: 'No. The card page has no JavaScript, analytics or page-view logging. Scan attempts store an HMAC of the network prefix, never a raw IP address, and are deleted after 30 days.',
+    a: 'The card page has no analytics and does not log who opened it. To slow down repeated guesses at the PIN, it stores a one-way fingerprint of part of the network address — never the address itself — and deletes that after 30 days.',
   },
   {
     q: 'Can I order a plastic or metal card?',
-    a: 'No, and nothing is planned. You print the card yourself — that is the design: nothing to order, nothing to ship, nothing to renew. A durable card is something that might be looked at much later; treat it as a possibility, not a roadmap.',
+    a: 'No. Noka does not print or send cards. You print the card yourself, so there is nothing to order, ship or renew.',
   },
   {
     q: 'Will I be charged later?',
-    a: 'Nobody can be charged today. There is no tier and no trial.',
+    a: 'Noka is free to use, and there are no paid tiers, trials or charges.',
   },
   {
     q: 'Which languages are supported?',
-    a: 'English, Spanish, French, Simplified Chinese and Russian today, and more are coming. You choose which languages your card carries, and those are the ones printed on it; the page also opens in whichever of them the reader\'s phone asks for. The web interface supports every language we add, so a new one appears everywhere at once.',
+    a: 'English, Spanish, French, Simplified Chinese and Russian are available now, with more to come. You choose which languages are printed on your card, and the page also opens in whichever of them the visitor\'s phone is set to.',
   },
   {
     q: 'What if I just lose my wallet?',
-    a: 'That is the everyday case, not the exception. Whoever finds it can reach the people you listed without your phone, your password or an app. Keep a card wherever you keep your things — inside a phone case, behind a passport, in a wallet, a bag, a luggage tag or a guitar case.',
+    a: 'The card is for that too. Whoever finds your wallet, bag, phone or keys can contact the people you listed, without your phone, your password or an app. Keep it wherever you keep your things.',
   },
   {
     q: 'My brother changed his number. Do I need a new card?',
-    a: 'No. Edit the contact and every card you have already printed shows the new number the next time it is opened. A new card is only needed if you want a new link or PIN — and that retires the old one immediately.',
+    a: 'No. Edit the contact and every card you have already printed shows the new number the next time it is opened.',
   },
 ];
 
@@ -175,7 +175,7 @@ const buttonGhostOnInk =
     <title>noka — a note in your wallet, made easier to find</title>
     <meta
       name="description"
-      content="A bank-card-sized card with a QR code and a six-digit PIN. It shows a responder who to call and the note you chose to leave."
+      content="A card the size of a bank card, with a QR code and a six-digit PIN. Whoever finds you or your belongings can see who to call, plus a short note from you."
     />
     <link rel="icon" href="data:," />
   </head>
@@ -232,11 +232,12 @@ const buttonGhostOnInk =
             <h1
               class="mt-5 text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl"
             >
-              A note in your wallet, made easier to find.
+              Help someone reach the people you trust.
             </h1>
             <p class="mt-6 max-w-xl text-base leading-7 text-ink-fg/75 sm:text-lg">
-              Noka generates a printable, bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
-              you, it shows them who to call and the note you chose to leave.
+              A card the size of a bank card, with a QR code and a six-digit PIN. Whoever finds you or your
+              belongings scans it, enters the PIN and sees who to call — plus a short note from you. You print
+              it yourself.
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-3">
               <a class={buttonOnInk} href="/signup">Create an account</a>
@@ -269,7 +270,7 @@ const buttonGhostOnInk =
                 Sample card
               </span>
               <span class="block">
-                You print it yourself: bank-card size, ready for any printer.
+                You print this yourself, on a standard printer, at bank-card size.
               </span>
             </figcaption>
           </figure>
@@ -281,13 +282,11 @@ const buttonGhostOnInk =
       <!-- What this is -->
       <section id="what" class="reveal py-16 sm:py-24">
         <p class={eyebrow}>What this is</p>
-        <h2 class={h2}>The useful part of a note, without the handwriting.</h2>
+        <h2 class={h2}>A simple way to share who to call.</h2>
         <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
-          Add the people to call. Add one short note. Choose which languages appear on the printed card —
-          five today, more as they are added. Noka puts that
-          information behind the code and PIN on your card — and the note stays exactly as you wrote it.
-          Editing a contact needs no new card: change a number once and every card you have already printed
-          shows it the next time somebody opens it.
+          Add the people to call, write one short note and choose which languages are printed on the card.
+          If a contact's number changes, update it here: cards you have already printed show the new number
+          the next time they are opened.
         </p>
 
         <div class="mt-10 grid gap-4 sm:grid-cols-2">
@@ -308,11 +307,11 @@ const buttonGhostOnInk =
       <!-- The everyday case: most cards never meet an emergency. -->
       <section class="reveal pb-16 sm:pb-24">
         <p class={eyebrow}>Where it helps</p>
-        <h2 class={h2}>Not only for the worst day.</h2>
+        <h2 class={h2}>Useful in everyday situations too.</h2>
         <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
-          Most cards never meet an accident. A wallet left on a bus, a bag that went to the wrong carousel,
-          a phone handed in at a hotel desk — the card gives whoever finds your things a way to reach
-          someone who knows you, without unlocking anything of yours.
+          It is not only for accidents. Leave a wallet on a bus, send a bag to the wrong carousel, hand in a
+          phone at a hotel desk — whoever finds your things can reach someone you trust, without unlocking
+          anything of yours.
         </p>
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
           {
@@ -324,15 +323,11 @@ const buttonGhostOnInk =
             ))
           }
         </div>
-        <p class="mt-6 text-sm leading-6 text-fg-muted">
-          Fits wherever a bank card fits — inside a phone case, behind a passport, in a wallet, a luggage tag
-          or a guitar case. Somewhere you would look before anyone else has to.
-        </p>
       </section>
 
       <!-- What we are not doing: the section that earns the rest of the page. -->
       <section id="limits" class="reveal rounded-3xl border border-line bg-surface p-6 sm:p-10">
-        <p class={eyebrow}>What we&rsquo;re not doing</p>
+        <p class={eyebrow}>What noka does not do</p>
         <h2 class={h2}>This is a small tool. Its limits are part of the design.</h2>
         <dl class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
           <div class="rounded-2xl bg-mark/15 p-5 sm:col-span-2 sm:flex sm:items-baseline sm:gap-6">
@@ -360,7 +355,7 @@ const buttonGhostOnInk =
       <!-- How it works -->
       <section id="how" class="reveal py-16 sm:py-24">
         <p class={eyebrow}>How it works</p>
-        <h2 class={h2}>A scan, a PIN, a useful page.</h2>
+        <h2 class={h2}>Three simple steps.</h2>
         <ol class="mt-10 grid gap-8 sm:grid-cols-3">
           {
             steps.map((step, index) => (
@@ -385,11 +380,25 @@ const buttonGhostOnInk =
             Privacy and ownership
           </p>
           <h2 class="mt-3 text-xl font-semibold tracking-tight text-balance sm:text-2xl">
-            Private by construction. Open by choice.
+            Your details are protected. The code is open to inspect.
           </h2>
           <p class="mt-4 text-sm leading-6 text-ink-fg/75">
-            Contacts and notes are sealed with <strong class="font-medium text-ink-fg">AES-256-GCM</strong>, the authenticated-encryption mode of the AES standard, before they reach the database — and the key is not stored there, so a database dump is not a contact list. Passwords and PINs are hashed with <strong class="font-medium text-ink-fg">Argon2id</strong> at the parameters OWASP recommends (19 MiB, two passes), the password-hashing function standardised in RFC 9106. The audit trail keeps an <strong class="font-medium text-ink-fg">HMAC-SHA-256</strong> of the network prefix, never a raw IP address, and deletes it after 30 days. The card page is served over HTTPS with HSTS and a content policy that allows no outside resource.
+            Contacts and notes are encrypted before they reach the database, and the key that unlocks them is
+            not kept there — so a copy of the database is not a copy of your contacts. The audit trail keeps
+            no raw IP address, and deletes what it does keep after 30 days.
           </p>
+          <details class="group mt-4">
+            <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 font-mono text-[0.7rem] tracking-wider text-ink-fg/70 uppercase marker:content-none hover:text-ink-fg">
+              Technical details
+              <span class="transition group-open:rotate-45"><Icon name="plus" size={12} /></span>
+            </summary>
+            <ul class="mt-3 space-y-1 font-mono text-[0.7rem] leading-5 text-ink-fg/70">
+              <li>AES-256-GCM encryption, with a versioned key that never leaves the application</li>
+              <li>Passwords and PINs hashed with Argon2id — 19 MiB, two passes — per RFC 9106</li>
+              <li>Network prefixes as HMAC-SHA-256, never a raw address; deleted after 30 days</li>
+              <li>Served over HTTPS with HSTS and a content policy that allows no outside resource</li>
+            </ul>
+          </details>
         </div>
         <div class="mt-6 sm:mt-0 sm:text-right">
           <a
@@ -410,7 +419,7 @@ const buttonGhostOnInk =
       <!-- Questions -->
       <section id="questions" class="reveal py-16 sm:py-24">
         <p class={eyebrow}>Questions, answered</p>
-        <h2 class={h2}>Asked the way people actually ask.</h2>
+        <h2 class={h2}>Common questions</h2>
         <div class="mt-8 grid gap-3 sm:grid-cols-2">
           {
             faq.map((item) => (
@@ -434,16 +443,16 @@ const buttonGhostOnInk =
           class="relative mx-auto max-w-2xl rotate-[-0.6deg] rounded-3xl bg-mark p-8 text-center text-mark-fg shadow-float sm:p-12"
         >
           <h2 class="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-            Set up the note. The card will follow.
+            Create your card and print it yourself.
           </h2>
           <p class="mx-auto mt-4 max-w-md text-sm leading-6 text-mark-fg/80">
-            Add your contacts, write the note, print the card. Bank-card size, ready for any printer.
+            Add your contacts, write a short note, then print the bank-card-sized card on your own printer.
           </p>
           <div class="mt-7">
             <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
           </div>
           <p class="mt-4 font-mono text-[0.65rem] tracking-wider text-mark-fg/70 uppercase">
-            No tier · No trial · Nothing to charge
+            Free to use · No paid tiers · No trial
           </p>
         </div>
       </section>

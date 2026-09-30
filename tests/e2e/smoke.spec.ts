@@ -22,7 +22,7 @@ test.describe('landing', () => {
     // The wordmark is a link home, inlined so it can follow the theme; the h1 is the
     // page's message, which is what a heading is for.
     await expect(page.getByRole('link', { name: 'noka' })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('made easier to find');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('people you trust');
     expect(external).toEqual([]);
   });
 
