@@ -2,6 +2,7 @@
 import Footer from '@/components/Footer.astro';
 import Icon from '@/components/Icon.astro';
 import { LANGUAGE_INFO } from '@/i18n/languages';
+import { brandIcon } from '@/lib/brand-icons';
 import '@/styles/app.css';
 // Inlined, not an `<img>`: the wordmark is drawn with `currentColor`, and as an external
 // image that resolves to the SVG's own default (black) — invisible on a dark page.
@@ -34,7 +35,7 @@ const h2 = 'mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl'
 const trust = [
   'Encrypted before storage',
   'No tracking on the card page',
-  'Five languages',
+  'Languages, growing',
   'MIT licensed',
 ];
 
@@ -51,8 +52,8 @@ const features = [
   },
   {
     icon: 'globe' as const,
-    title: 'Five languages',
-    body: 'English, Spanish, French, Simplified Chinese and Russian — you choose which appear.',
+    title: 'More languages coming',
+    body: 'English, Spanish, French, Simplified Chinese and Russian today, and more on the way. You choose which ones your card carries; the web interface supports every language we add.',
   },
   {
     icon: 'eye-off' as const,
@@ -143,6 +144,10 @@ const faq = [
   {
     q: 'Will I be charged later?',
     a: 'Nobody can be charged today. There is no tier and no trial.',
+  },
+  {
+    q: 'Which languages are supported?',
+    a: 'English, Spanish, French, Simplified Chinese and Russian today, and more are coming. You choose which languages your card carries, and those are the ones printed on it; the page also opens in whichever of them the reader\'s phone asks for. The web interface supports every language we add, so a new one appears everywhere at once.',
   },
   {
     q: 'What if I just lose my wallet?',
@@ -278,7 +283,8 @@ const buttonGhostOnInk =
         <p class={eyebrow}>What this is</p>
         <h2 class={h2}>The useful part of a note, without the handwriting.</h2>
         <p class="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
-          Add the people to call. Add one short note. Choose which of five languages appear. Noka puts that
+          Add the people to call. Add one short note. Choose which languages appear on the printed card —
+          five today, more as they are added. Noka puts that
           information behind the code and PIN on your card — and the note stays exactly as you wrote it.
           Editing a contact needs no new card: change a number once and every card you have already printed
           shows it the next time somebody opens it.
@@ -382,9 +388,7 @@ const buttonGhostOnInk =
             Private by construction. Open by choice.
           </h2>
           <p class="mt-4 text-sm leading-6 text-ink-fg/75">
-            Contacts and notes are encrypted before they reach the database, and the key is not stored
-            there. Scan attempts keep an HMAC of the network prefix, never a raw IP address, and are
-            deleted after 30 days.
+            Contacts and notes are sealed with <strong class="font-medium text-ink-fg">AES-256-GCM</strong>, the authenticated-encryption mode of the AES standard, before they reach the database — and the key is not stored there, so a database dump is not a contact list. Passwords and PINs are hashed with <strong class="font-medium text-ink-fg">Argon2id</strong> at the parameters OWASP recommends (19 MiB, two passes), the password-hashing function standardised in RFC 9106. The audit trail keeps an <strong class="font-medium text-ink-fg">HMAC-SHA-256</strong> of the network prefix, never a raw IP address, and deletes it after 30 days. The card page is served over HTTPS with HSTS and a content policy that allows no outside resource.
           </p>
         </div>
         <div class="mt-6 sm:mt-0 sm:text-right">
@@ -392,7 +396,10 @@ const buttonGhostOnInk =
             class="inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-sm no-underline text-ink-fg transition hover:border-white/60 hover:bg-white/10"
             href="https://github.com/krisztianhadi/noka"
           >
-            <Icon name="link" size={14} /> Read the code on GitHub
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false" class="shrink-0">
+              <path d={brandIcon('github')?.path} fill="currentColor" />
+            </svg>
+            Read the code on GitHub
           </a>
           <p class="mt-2 font-mono text-[0.65rem] tracking-wider text-ink-fg/50 uppercase">
             MIT licensed · developed in the open
