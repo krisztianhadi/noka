@@ -10,5 +10,11 @@
     "total": 27.24,
     "currency": "USD",
     "note": "footer, self-service data, full i18n"
+  },
+  {
+    "at": 1790786624806,
+    "total": 23.28,
+    "currency": "USD",
+    "note": "day two: landing, dashboard and card design passes, PDF generator"
   }
 ]

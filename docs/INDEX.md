@@ -24,6 +24,8 @@ limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
 | [blog/2026-09-29-the-post-it-in-my-wallet.md](blog/2026-09-29-the-post-it-in-my-wallet.md) | Product-story post draft (unpublished). |
 | [blog/2026-09-29-four-cents-for-a-card.md](blog/2026-09-29-four-cents-for-a-card.md) | Cost-story post draft (unpublished). |
+| [blog/2026-09-29-building-noka-in-a-day.md](blog/2026-09-29-building-noka-in-a-day.md) | Day one: the three verification failures (unpublished). |
+| [blog/2026-09-30-five-millimetres.md](blog/2026-09-30-five-millimetres.md) | Day two: design passes, a measured contradiction, and a limit that let you past it (unpublished). |
 | [../README.md](../README.md) | Under 200 lines: what it is, quick start, scripts. |
 | [ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md) | Historical: the spec as first pasted on 2026-09-29. Superseded by PLAN.md, kept for provenance. |
 

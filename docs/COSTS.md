@@ -26,7 +26,7 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Route | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 01:42Z (c9b83d6c) | 2026-09-29 15:20+07 | deepseek-flash | 1179 | 3,275,549 | 438,217,472 | 957,155 | $1.2588 | $1.7509 | $3.0097 |
+| 2026-09-29 08:20Z → 16:43Z (c9b83d6c) | 2026-09-29 15:20+07 | deepseek-flash | 1925 | 5,183,787 | 744,915,712 | 1,339,605 | $2.1820 | $2.7251 | $4.9071 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | deepseek-flash | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | deepseek-flash | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | deepseek-flash | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
@@ -55,11 +55,16 @@ the figures below are read rather than remembered:
 | 2026-09-29 15:35Z → 15:36Z (d13d4683) | 2026-09-29 22:35+07 | gpt-5.6-sol | 17 | 51 | 1,113,058 | 4,527 | — | — | not priced (≈$0.0061 on DeepSeek) |
 | 2026-09-29 15:35Z → 15:37Z (399d8d63) | 2026-09-29 22:35+07 | claude-sonnet-5 | 19 | 38 | 1,736,513 | 9,977 | — | — | not priced (≈$0.0112 on DeepSeek) |
 | 2026-09-30 01:41Z → 01:41Z (1a53b19f) | 2026-09-30 08:41+07 | deepseek-flash | 6 | 7,610 | 134,144 | 8,935 | $0.0138 | $0.0000 | $0.0138 |
-| **Total (DeepSeek only)** | | | **1,245** | **3,834,814** | **438,993,664** | **1,033,401** | **$1.3041** | **$1.8602** | **$3.1643** |
+| 2026-09-30 01:48Z → 01:48Z (388fd40d) | 2026-09-30 08:48+07 | deepseek-flash | 1 | 5,895 | 128 | 1,955 | $0.0041 | $0.0000 | $0.0041 |
+| 2026-09-30 02:56Z → 02:57Z (287fb3ea) | 2026-09-30 09:56+07 | gpt-5.6-sol | 3 | 9 | 27,018 | 4,127 | — | — | not priced (≈$0.0051 on DeepSeek) |
+| 2026-09-30 05:07Z → 05:08Z (101492d2) | 2026-09-30 12:07+07 | gpt-5.6-sol | 4 | 12 | 40,797 | 3,452 | — | — | not priced (≈$0.0022 on DeepSeek) |
+| 2026-09-30 05:07Z → 05:10Z (7bd0dfd4) | 2026-09-30 12:07+07 | claude-sonnet-5 | 9 | 18 | 257,297 | 16,213 | — | — | not priced (≈$0.0105 on DeepSeek) |
+| 2026-09-30 12:46Z → 12:47Z (0295e2c2) | 2026-09-30 19:46+07 | gpt-5.6-sol | 5 | 15 | 103,714 | 2,210 | — | — | not priced (≈$0.0016 on DeepSeek) |
+| **Total (DeepSeek only)** | | | **1,992** | **5,748,947** | **745,692,032** | **1,417,806** | **$2.2314** | **$2.8344** | **$5.0658** |
 
 _Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-30 by `node scripts/usage-report.mjs --write`._
 
-_6 session(s) ran on another provider (they show `other` in the Route column). Their token counts are real and included; **their USD is not priced here**, because this table's rates belong to DeepSeek. On DeepSeek rates those runs would have been ≈$0.0337 — which is not what they cost. Price them from the other provider's own dashboard or its `/credits` endpoint._
+_10 session(s) ran on another provider (they show `other` in the Route column). Their token counts are real and included; **their USD is not priced here**, because this table's rates belong to DeepSeek. On DeepSeek rates those runs would have been ≈$0.0531 — which is not what they cost. Price them from the other provider's own dashboard or its `/credits` endpoint._
 <!-- usage:end -->
 
 **How the estimate is built.** Rates are `deepseek-flash` per 1M tokens, from
@@ -77,16 +82,16 @@ rates. The error is on the safe side.
 <!-- blocks:start -->
 | Block | What it built | Turns | Tokens | Est. USD | Share |
 |---|---|---:|---:|---:|---:|
-| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 7% |
-| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 6% |
-| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 3% |
-| 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 2% |
-| 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 3% |
-| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 7% |
-| 09:08–01:42Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 914 | 378,593,225 | $2.1873 | 73% |
-| **Total** | | **1,179** | **442,450,176** | **$3.0097** | |
+| 08:20–08:41Z (15:20+07) | Contract, docs and the first push (pre-goal) | 65 | 5,572,918 | $0.1987 | 4% |
+| 08:41–08:48Z (15:41+07) | Phase 0 spikes (partial) + Phase 1 scaffold | 59 | 11,444,916 | $0.1656 | 3% |
+| 08:48–08:52Z (15:48+07) | Phase 2 — owner plane: better-auth, argon2id, dashboard | 36 | 9,522,992 | $0.0983 | 2% |
+| 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 1% |
+| 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 2% |
+| 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 4% |
+| 09:08–16:43Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 1660 | 687,582,153 | $4.0847 | 83% |
+| **Total** | | **1,925** | **751,439,104** | **$4.9071** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1546 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1587 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
@@ -208,8 +213,9 @@ file, the same script and the same rules, with its own ledger.
 |---|---:|---:|---|
 | 2026-09-29 10:15Z | $28.97 | — | ledger opened — work up to here is estimated, not measured |
 | 2026-09-29 15:35Z | $27.24 | −$1.7300 | footer, self-service data, full i18n |
+| 2026-09-30 16:43Z | $23.28 | −$3.9600 | day two: landing, dashboard and card design passes, PDF generator |
 
-**Actually spent across 2026-09-29 10:15Z → 2026-09-29 15:35Z: $1.73** — this is the provider's own arithmetic.
+**Actually spent across 2026-09-29 10:15Z → 2026-09-30 16:43Z: $5.69** — this is the provider's own arithmetic.
 <!-- ledger:end -->
 
 The ledger is sampled before and after a block of work —

@@ -657,3 +657,63 @@ that changes the plan is worth more than a review that changes the diff at midni
 failures, what the model was good at (the unglamorous middle) and bad at (noticing it had broken
 something), and the habit that came out of it — look at the page, and where a property is
 measurable, measure it in the suite.
+
+## 2026-09-30 (day three) — A design pass from a model that cannot see, and a limit that was not one
+
+**The ask, in one line.** Make the landing nice, then do the same for the dashboard and the card —
+and eventually: "make the PDF generator working."
+
+**Handing an image to a model with no eyes.** Sol cannot see a screenshot, so the brief was the
+measurement: every visible element on both surfaces with its computed font size, weight, colour,
+box, margin, padding, radius, border and shadow, plus the token set, in files it could read. It
+answered with an ordered list per surface, and the first item was a bug of mine that no eyeball
+review had caught: the card page declares the phone number at 2.5rem and computes **30.42px** on a
+390px phone, because I had clamped it to fit a monospace face. The contact's *name* was 40px. The
+stranger's most useful datum was outranked by the least. Fixing it meant measuring both faces: mono
+needs 360px at 40px for a full international number and a 390px phone has 318. The sans face fits at
+40px in one line, so the number leads at 40, the name drops to 32, and tabular figures keep the
+digits aligned. A design review paid for itself by finding an arithmetic contradiction.
+
+**axe as a design reviewer.** Making the dashboard's card plate ink — the one dark surface on the
+owner plane, which is also what stopped it reading as one more settings card — failed the
+accessibility test within seconds: `#5b6270` on `#14161a`, 2.95:1. The plate's own text needed
+ink-plane colours. A palette decision and a contrast failure are the same event one step apart.
+
+**The layout change that broke a form, caught by a test that measures edges.** Contacts and the card
+became two columns. The dashboard's shell was `max-w-3xl` — 720px — so the left column was 344px and
+the phone field inside it was **126px wide**. The visual test that compares the country select to the
+number input failed for the right reason. The shell is `max-w-5xl` on the dashboard now (a new
+`wider` prop, deliberately not available to form pages), the split waits for `xl`, and the number
+field is 382px. When the test's own assumption was the thing that had broken — it compared the select
+to a *fraction* of an ancestor whose width follows the page grid — I re-pointed the assertion at the
+two controls instead of at the grid, and said so in the comment.
+
+**"That number is too long" — then why let me type it?** He is right, and it was two bugs: the mask
+allowed 15 national digits regardless of the country code, so `+66` plus 15 digits is 17 in a format
+that allows 15; and the static `maxlength="18"` counted spaces and the plus, silently truncating a
+pasted international number at **13 digits**. The cap is now `15 − dial length` per country,
+re-applied when the country changes, and the true maximum is 20 characters. The hint stopped being
+jargon ("a leading zero is dropped for you") and now says what to do and why there is a limit.
+
+**Ten cards on A4, because of a division.** Portrait, 54mm divides into 210mm three times: nine
+cards. Rotated, 85.6mm divides twice and 54mm divides five times: **ten**. Margin 8mm, gap 2mm — at
+4mm the fifth row falls off the page. The PDF embeds one 600dpi image and draws it ten times, so the
+sheet is 1.06MB, the same as the single card. The old `spike-pdf.mjs` was written for a
+deterministic-bytes question that the actual print flow never asks; the JPEG preview is
+deterministic, and the PDFs carry a creation date on purpose.
+
+**The same trap as yesterday, twice.** I rebuilt `dist/` while the server was running and handed him
+a URL that served the old build; then I did it again an hour later and debugged a form that "did not
+exist" for ten minutes. The saved rule says restart what you kill. It should say: after every build,
+restart, then `curl` loopback **and** LAN before saying a word about the URL. Twice is a pattern, not
+an accident.
+
+**Cost, measured.** Day two's balance delta: **$3.96**. Project total, measured: **$5.69**. The
+estimate for the same work is higher because it prices every token at list; the balance is what was
+actually deducted. The design and review runs (Sol, Claude) happen on the OpenRouter account, which
+serves other work too, so they stay *unpriced* here rather than priced with someone else's rate table
+— that mistake is already in this file once, at a factor of twenty.
+
+**Where it stands.** 161 unit and integration tests, 50 browser tests, green. The print masters
+exist; the phase-7 leftovers are the no-PIN card variant and the physical print/scan test, which
+needs hands and a printer rather than more code.
