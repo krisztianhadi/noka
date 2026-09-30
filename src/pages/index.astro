@@ -169,6 +169,10 @@ const buttonPrimary =
 // Same call to action, same colour, whether it sits on the ink hero or the light page.
 const buttonOnInk =
   'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-mark bg-mark px-5 text-sm font-semibold text-mark-fg no-underline transition hover:-translate-y-px hover:brightness-[1.03]';
+// On the mustard panel the mustard button would vanish into its own background, so the call to
+// action there is ink on post-it.
+const buttonOnMark =
+  'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-ink bg-ink px-5 text-sm font-semibold text-ink-fg no-underline shadow-card transition hover:-translate-y-px hover:opacity-90';
 const buttonGhostOnInk =
   'inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-medium text-ink-fg no-underline transition hover:border-white/60 hover:bg-white/10';
 ---
@@ -483,7 +487,7 @@ const buttonGhostOnInk =
             Add your contacts, write a short note, then print the bank-card-sized card on your own printer.
           </p>
           <div class="mt-7">
-            <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
+            <a class={`${buttonOnMark} w-full sm:w-auto`} href="/signup">Create an account</a>
           </div>
           <p class="mt-4 font-mono text-[0.65rem] tracking-wider text-mark-fg/70 uppercase">
             Free to use · No paid tiers · No trial
