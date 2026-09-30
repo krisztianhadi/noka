@@ -45,6 +45,18 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # A committed absolute path from someone's laptop (a pnpm store-dir, an editor config)
+      # makes every later step fail in a way that looks nothing like the cause. Fail loudly
+      # and early instead: it cost five red runs to find a one-line `.npmrc`.
+      - name: No machine-specific absolute paths in tracked files
+        run: |
+          # Prose may name a sandbox path; configuration may not.
+          if git grep -n -I -E '/home/[a-z0-9_-]+/|/Users/[a-z0-9_-]+/' -- . ':!docs' ':!*.md' > /tmp/abs-paths.txt; then
+            echo "Tracked files contain absolute paths from a local machine:"
+            cat /tmp/abs-paths.txt
+            exit 1
+          fi
+          echo "clean"
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:migrate
       - run: pnpm typecheck
@@ -80,6 +92,17 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      # A committed absolute path from someone's laptop (a pnpm store-dir, an editor config)
+      # makes every later step fail in a way that looks nothing like the cause. Fail loudly
+      # and early instead: it cost five red runs to find a one-line `.npmrc`.
+      - name: No machine-specific absolute paths in tracked files
+        run: |
+          if git grep -n -I -E '/home/[a-z0-9_-]+/|/Users/[a-z0-9_-]+/' -- . > /tmp/abs-paths.txt; then
+            echo "Tracked files contain absolute paths from a local machine:"
+            cat /tmp/abs-paths.txt
+            exit 1
+          fi
+          echo "clean"
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm db:migrate

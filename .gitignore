@@ -27,3 +27,5 @@ node_modules/
 /playwright-report/
 /coverage/
 dist-e2e/
+# Local pnpm store override: absolute paths from one machine break CI at setup.
+.npmrc
