@@ -48,22 +48,22 @@ const features = [
   {
     icon: 'lock' as const,
     title: 'Kept private',
-    body: 'Contacts and notes are encrypted before they reach the database. The key is not stored there.',
+    body: 'Your contacts and note are heavily encrypted to protect them — before they are ever stored.',
   },
   {
     icon: 'globe' as const,
     title: 'More languages coming',
-    body: 'Choose which languages appear on your card. English, Spanish, French, Simplified Chinese and Russian are available today, with more to come — and the whole interface is translated, so a new language appears everywhere at once.',
+    body: 'English, Spanish, French, Simplified Chinese and Russian today, with more to come. You choose which languages are printed on your card.',
   },
   {
     icon: 'eye-off' as const,
     title: 'No tracking on the card page',
-    body: 'The page that shows your contacts runs no JavaScript, loads nothing from anywhere else, and keeps no record that somebody looked.',
+    body: 'Nothing is loaded from anywhere else, and no record is kept that somebody looked.',
   },
   {
     icon: 'bars' as const,
     title: 'Kept small for slow connections',
-    body: 'The page needs an internet connection. It is kept small and simple so it loads more easily on a slow one.',
+    body: 'The card page is stripped back to the minimum that is technically possible, so it should work on the slowest mobile internet. It does need a connection.',
   },
 ];
 
@@ -84,19 +84,19 @@ const everyday = [
 
 const notDoing = [
   {
-    title: 'Replacing emergency services',
-    body: 'Noka is not an emergency service or a substitute for one. Call the local emergency number first.',
+    title: 'Noka is not an emergency service',
+    body: 'Call the local emergency number first. The card is for reaching the people you would want told afterwards.',
   },
   {
-    title: 'Keeping a medical record',
-    body: 'Noka is not a medical record. It has no fields for diagnoses, medication doses or allergies; it shows the short note you write.',
+    title: 'Noka is not a medical record',
+    body: 'It has no fields for diagnoses, medication doses or allergies. It shows the short note you write.',
   },
   {
-    title: 'Who can read the page',
+    title: 'Noka does not hide the card from whoever holds it',
     body: 'Anyone with the card and its PIN can read the contacts and the note. That is what lets a stranger help without installing an app or making an account.',
   },
   {
-    title: 'Tracking the person who opens it',
+    title: 'Noka does not track the person who opens it',
     body: 'No app to install, no account to create, and no tracking of whoever opens the page.',
   },
 ];
@@ -131,11 +131,11 @@ const faq = [
   },
   {
     q: 'Does the card work without a signal?',
-    a: 'It needs an internet connection. The page has no JavaScript and no outside files, which helps it load on a slow connection, but it cannot open without a connection.',
+    a: 'It needs an internet connection. The card page is stripped back to the minimum that is technically possible, so it should still open on the slowest mobile internet — but with no connection at all, there is no page.',
   },
   {
     q: 'Are you tracking the person who opens it?',
-    a: 'The card page has no analytics and does not log who opened it. To slow down repeated guesses at the PIN, it stores a one-way fingerprint of part of the network address — never the address itself — and deletes that after 30 days.',
+    a: "The card page keeps no record that somebody looked, and there is no analytics. To slow down repeated guesses at the PIN, it keeps a scrambled, one-way version of the visitor's rough network location — never their actual address — and deletes that after 30 days.",
   },
   {
     q: 'Can I order a plastic or metal card?',
@@ -331,20 +331,13 @@ const buttonGhostOnInk =
         <h2 class={h2}>This is a small tool. Its limits are part of the design.</h2>
         <dl class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2">
           <div class="rounded-2xl bg-mark/15 p-5 sm:col-span-2 sm:flex sm:items-baseline sm:gap-6">
-            <dt class="flex items-center gap-2 text-base font-semibold text-fg">
-              <Icon name="x" size={16} /> {notDoing[0].title}
-            </dt>
+            <dt class="text-base font-semibold text-fg">{notDoing[0].title}</dt>
             <dd class="mt-2 text-sm leading-6 text-fg-muted sm:mt-0">{notDoing[0].body}</dd>
           </div>
           {
             notDoing.slice(1).map((limit) => (
               <div class="border-t border-line pt-5">
-                <dt class="flex items-center gap-2 text-sm font-semibold text-fg">
-                  <span class="text-fg-muted">
-                    <Icon name="x" size={14} />
-                  </span>
-                  {limit.title}
-                </dt>
+                <dt class="text-sm font-semibold text-fg">{limit.title}</dt>
                 <dd class="mt-2 text-sm leading-6 text-fg-muted">{limit.body}</dd>
               </div>
             ))
@@ -383,9 +376,8 @@ const buttonGhostOnInk =
             Your details are protected. The code is open to inspect.
           </h2>
           <p class="mt-4 text-sm leading-6 text-ink-fg/75">
-            Contacts and notes are encrypted before they reach the database, and the key that unlocks them is
-            not kept there — so a copy of the database is not a copy of your contacts. The audit trail keeps
-            no raw IP address, and deletes what it does keep after 30 days.
+            Your contacts and note are heavily encrypted to protect your data. Anything that is kept about
+            who opened a card holds no real IP address, and is deleted after 30 days.
           </p>
           <details class="group mt-4">
             <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 font-mono text-[0.7rem] tracking-wider text-ink-fg/70 uppercase marker:content-none hover:text-ink-fg">
