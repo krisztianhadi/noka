@@ -94,9 +94,11 @@ const zh: Record<MessageKey, string> = {
   'owner.notes.deleteTitle': '删除备注',
   'owner.notes.deleteOk': '删除',
   'owner.notes.none': '还没有备注。',
-  'owner.start.save': '保存',
+  'owner.start.save': '保存并制作卡片',
 
     'owner.card.ready': '准备就绪。卡片会生成一个链接和一个 6 位 PIN 码，制作后立即生效。',
+  'owner.card.needsContact': '卡片至少需要一位联系人，请在上方添加。',
+  'owner.card.placeholder': '你的卡片将显示在这里',
 'owner.card.title': '你的卡片',
   'owner.card.actions': '卡片操作',
   'owner.card.new': '新建卡片',

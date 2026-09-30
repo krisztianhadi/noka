@@ -239,6 +239,35 @@ test.describe('the dashboard', () => {
     await expect(page.locator('form[action="/dashboard/start"]')).toBeVisible();
   });
 
+  test('a note survives the last contact, and the card says what it is waiting for', async ({
+    page,
+  }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    await saveNotes(page, 'Type 1 diabetic. Allergic to penicillin.');
+
+    await kebab(page, '.contacts > li').click();
+    await page.getByRole('button', { name: 'Delete contact' }).click();
+    await confirmModal(page);
+    await expect(page).toHaveURL(/notice=contact-and-card-deleted$/);
+
+    // The note is the owner's, not the contact's: it stays, with its own card and kebab.
+    await expect(page.locator('#notes-section .notes')).toHaveText(
+      'Type 1 diabetic. Allergic to penicillin.',
+    );
+
+    // The card keeps its place on the page, empty, saying what it needs — the note below still
+    // goes to the card page, so losing the whole block would lose the context with it.
+    await expect(page.locator('#card')).toContainText('Your card appears here');
+    await expect(page.locator('#card')).toContainText('needs at least one contact');
+    await expect(page.locator('#card .pin')).toHaveCount(0);
+
+    // And the contact form no longer asks for a note it already has.
+    const form = page.locator('form[action="/dashboard/start"]');
+    await expect(form).toBeVisible();
+    await expect(form.locator('#notes')).toHaveCount(0);
+  });
+
   test('cancelling the confirmation keeps contact and card', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });

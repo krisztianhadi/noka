@@ -97,9 +97,11 @@ const en = {
   'owner.notes.deleteTitle': 'Delete the note',
   'owner.notes.deleteOk': 'Delete',
   'owner.notes.none': 'No note yet.',
-  'owner.start.save': 'Save',
+  'owner.start.save': 'Save and create card',
 
     'owner.card.ready': 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.',
+  'owner.card.needsContact': 'A card needs at least one contact. Add someone above.',
+  'owner.card.placeholder': 'Your card appears here',
 'owner.card.title': 'Your card',
   'owner.card.actions': 'Card actions',
   'owner.card.new': 'New card',

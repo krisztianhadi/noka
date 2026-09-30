@@ -94,9 +94,11 @@ const es: Record<MessageKey, string> = {
   'owner.notes.deleteTitle': 'Eliminar la nota',
   'owner.notes.deleteOk': 'Eliminar',
   'owner.notes.none': 'Todavía no hay nota.',
-  'owner.start.save': 'Guardar',
+  'owner.start.save': 'Guardar y crear la tarjeta',
 
     'owner.card.ready': 'Todo listo. La tarjeta tendrá un enlace y un PIN de seis dígitos, y quedará activa de inmediato.',
+  'owner.card.needsContact': 'Una tarjeta necesita al menos un contacto. Añade a alguien arriba.',
+  'owner.card.placeholder': 'Tu tarjeta aparecerá aquí',
 'owner.card.title': 'Tu tarjeta',
   'owner.card.actions': 'Acciones de la tarjeta',
   'owner.card.new': 'Nueva tarjeta',

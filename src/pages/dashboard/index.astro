@@ -8,7 +8,7 @@ import Icon from '@/components/Icon.astro';
 import DashboardBehavior from '@/components/DashboardBehavior.astro';
 import Plain from '@/layouts/Plain.astro';
 import { t } from '@/i18n/catalogue';
-import { cardUrl, countContacts, getCardForOwner, revealPin } from '@/lib/cards';
+import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
 import { channelHref, type Channel } from '@/lib/channels';
 import { getNotes, listContacts } from '@/lib/contacts';
 import { errorKey, noticeKey } from '@/lib/dashboard';
@@ -249,6 +249,10 @@ const panelClass =
           <h2 class={`${sectionTitle} mb-4`}>{label('owner.contacts.addTitle')}</h2>
           <form method="post" action="/dashboard/start" class="contact-form space-y-6">
             <ContactFields />
+            {
+              /* A note that survived a deleted contact is still the owner's note: it keeps its
+                 own card below, and asking for it again here would be the same note twice. */
+              !notes && (
             <div class="border-t border-line pt-5">
               <h3 class="text-sm font-semibold text-fg">{label('owner.notes.title')}</h3>
               <label class="mt-3 block">
@@ -265,6 +269,8 @@ const panelClass =
               </label>
               <p class="mt-1.5 text-xs leading-5 text-fg-muted">{label('owner.notes.hint')}</p>
             </div>
+              )
+            }
             <div class="flex justify-end">
               <Button type="submit"><Icon name="check" size={16} /> {label('owner.start.save')}</Button>
             </div>
@@ -390,9 +396,11 @@ const panelClass =
   <!-- The card is the output of the workflow beside it, so on a wide screen it parks: the
        contacts an owner is editing are what they are looking at, and the card follows. -->
   {
-    /* No contact yet: the first-run form's save makes the card, so this block has nothing to
-       say and is not on the page. A card without contacts is not a state the product has. */
-    (card || contacts.length > 0) && (
+    /* Three states. A real card. A note that outlived its contacts: the card keeps its place on
+       the page as a placeholder, saying what it is waiting for, because the note beside it is
+       still going to the card page. And nothing at all: on a first run the form's own save makes
+       the card, so a block explaining that had nothing to say. */
+    (card || notes) && (
   <section id="card" class="xl:sticky xl:top-6">
     <div class="rounded-lg border border-ink bg-ink p-5 text-ink-fg">
       <div class="section-head mb-4 flex items-center justify-between gap-3">
@@ -432,13 +440,24 @@ const panelClass =
 
       {
         !card && (
-          <div class="space-y-4">
-            <p class="text-sm text-ink-fg/70">{label('owner.card.ready')}</p>
-            <form method="post" action="/dashboard/card/create">
-              <Button type="submit">
-                <Icon name="card" size={16} /> {label('owner.card.make')}
-              </Button>
-            </form>
+          <div class="space-y-5">
+            {/* The same footprint as the real card, empty: the note below still goes to the card
+                page, so the card keeps its place and says what it is waiting for. */}
+            <div class="mx-auto flex aspect-[638/1011] w-full max-w-[9rem] items-center justify-center rounded-md border border-dashed border-ink-fg/30 bg-white/5 p-3">
+              <p class="text-center text-xs leading-5 text-ink-fg/50">{label('owner.card.placeholder')}</p>
+            </div>
+            {contacts.length > 0 ? (
+              <div class="space-y-4">
+                <p class="text-sm text-ink-fg/70">{label('owner.card.ready')}</p>
+                <form method="post" action="/dashboard/card/create">
+                  <Button type="submit">
+                    <Icon name="card" size={16} /> {label('owner.card.make')}
+                  </Button>
+                </form>
+              </div>
+            ) : (
+              <p class="text-sm text-ink-fg/70">{label('owner.card.needsContact')}</p>
+            )}
           </div>
         )
       }
