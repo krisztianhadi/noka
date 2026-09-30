@@ -68,6 +68,7 @@ const zh: Record<MessageKey, string> = {
   'owner.contacts.spoken': '会说的语言',
   'owner.contacts.textOnly': '仅限短信',
   'owner.contacts.edit': '编辑 {name}',
+  'owner.contacts.editMenu': '编辑联系人',
   'owner.contacts.actions': '{name} 的操作',
   'owner.contacts.delete': '删除联系人',
   'owner.contacts.deleteTitle': '删除此联系人？',

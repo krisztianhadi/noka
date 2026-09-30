@@ -146,7 +146,11 @@ test.describe('things axe cannot see', () => {
     });
     // One height per shape across the whole page.
     expect(heights.button ?? [], 'labelled button heights').toHaveLength(1);
-    expect(heights['icon-button'] ?? [], 'icon button heights').toHaveLength(1);
+    // At most one height per shape: a page may have no icon-only control at all, but two
+    // different sizes of one is the drift this catches.
+    expect(heights['icon-button'] ?? [], 'icon button heights').toHaveLength(
+      (heights['icon-button'] ?? []).length > 0 ? 1 : 0,
+    );
     expect(heights.field ?? [], 'field heights').toHaveLength(1);
 
     // Anything that floats wears the one shadow token, and nothing floats at rest.

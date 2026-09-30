@@ -30,7 +30,7 @@ test.describe('the dashboard', () => {
     ]);
   });
 
-  test('a new contact defaults to partner, and one row has one edit control', async ({ page }) => {
+  test('a new contact defaults to partner, and edit lives in the kebab', async ({ page }) => {
     await signUp(page);
 
     // Partner is the most common answer, and it is what the picker shows first.
@@ -41,17 +41,11 @@ test.describe('the dashboard', () => {
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
     const row = page.locator('.contacts > li').first();
 
-    // One visible way into the edit form: the row's pencil. A second visible summary
-    // (there was one) is a duplicate affordance, not a feature.
-    const visibleControls = await row.evaluate((element) =>
-      Array.from(element.querySelectorAll('[data-edit-trigger], details.edit-form > summary')).filter(
-        (candidate) => {
-          const box = candidate.getBoundingClientRect();
-          return box.width > 4 && box.height > 4;
-        },
-      ).length,
-    );
-    expect(visibleControls, 'edit affordances in the row').toBe(1);
+    // No loose edit control in the row: the kebab holds the row's actions, delete included.
+    await expect(row.locator('button[data-edit-trigger]:visible')).toHaveCount(0);
+    await row.locator('.kebab > summary').click();
+    await expect(row.locator('button[data-edit-trigger]')).toHaveText('Edit contact');
+    await expect(row.locator('.panel .danger')).toContainText('Delete contact');
   });
 
   test('cannot make a card before there is a contact', async ({ page }) => {
@@ -121,28 +115,32 @@ test.describe('the dashboard', () => {
     await expect(page.locator('.contacts > li').first().locator('.phone')).toHaveText('+36 301 234 567');
   });
 
-  test('edits a contact from the row, never from inside the menu', async ({ page }) => {
+  test('edits from the kebab, with the form opening in the page', async ({ page }) => {
     await signUp(page);
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
 
-    await page.locator('[data-edit-trigger]').first().click();
-    const form = page.locator('details.edit-form form[action$="/edit"]');
+    const row = page.locator('.contacts > li').first();
+    await row.locator('.kebab > summary').click();
+    await row.locator('button[data-edit-trigger]').click();
+
+    const form = row.locator('details.edit-form form[action$="/edit"]');
     await expect(form).toBeVisible();
-    // The form must not be inside a dropdown panel: that was the bug.
+    // The form is in the page, not inside the panel that launched it — and the panel is shut.
     expect(await form.evaluate((element) => Boolean(element.closest('.panel, .kebab')))).toBe(false);
+    await expect(row.locator('.panel')).toBeHidden();
 
     await form.locator('input[name="name"]').fill('Joao Silva');
     await form.locator('input[name="phone"]').fill('912345678');
     await form.getByRole('button', { name: 'Save changes' }).click();
 
     await expect(page).toHaveURL(/notice=contact-updated$/);
-    const contact = page.locator('.contacts > li').first();
-    await expect(contact.locator('.name')).toHaveText('Joao Silva');
-    await expect(contact.locator('.phone')).toHaveText('+66 912 345 678');
+    await expect(row.locator('.name')).toHaveText('Joao Silva');
+    await expect(row.locator('.phone')).toHaveText('+66 912 345 678');
 
     // Editing prefills the picker from the stored number instead of doubling it.
-    await page.locator('[data-edit-trigger]').first().click();
-    const reopened = page.locator('details.edit-form form[action$="/edit"]');
+    await row.locator('.kebab > summary').click();
+    await row.locator('button[data-edit-trigger]').click();
+    const reopened = row.locator('details.edit-form form[action$="/edit"]');
     await expect(reopened.locator('select[name="country"]')).toHaveValue('TH');
     await expect(reopened.locator('input[name="phone"]')).toHaveValue('912 345 678');
   });

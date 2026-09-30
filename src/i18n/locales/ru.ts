@@ -68,6 +68,7 @@ const ru: Record<MessageKey, string> = {
   'owner.contacts.spoken': 'Говорит на',
   'owner.contacts.textOnly': 'Только СМС',
   'owner.contacts.edit': 'Изменить контакт {name}',
+  'owner.contacts.editMenu': 'Изменить контакт',
   'owner.contacts.actions': 'Действия для {name}',
   'owner.contacts.delete': 'Удалить контакт',
   'owner.contacts.deleteTitle': 'Удалить контакт?',

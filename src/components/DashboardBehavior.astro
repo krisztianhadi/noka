@@ -33,6 +33,9 @@
     trigger.addEventListener('click', () => {
       const form = trigger.closest('li')?.querySelector<HTMLDetailsElement>('details.edit-form');
       if (!form) return;
+      // The trigger is a menu item now, so close the menu behind it: the form opens in the
+      // page below the contact, and a panel floating over it would be in the way.
+      trigger.closest('details')?.removeAttribute('open');
       form.open = true;
       form.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       form.querySelector<HTMLInputElement>('input[name="name"]')?.focus();

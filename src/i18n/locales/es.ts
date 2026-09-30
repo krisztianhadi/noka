@@ -68,6 +68,7 @@ const es: Record<MessageKey, string> = {
   'owner.contacts.spoken': 'Habla',
   'owner.contacts.textOnly': 'Solo mensajes de texto',
   'owner.contacts.edit': 'Editar a {name}',
+  'owner.contacts.editMenu': 'Editar contacto',
   'owner.contacts.actions': 'Acciones para {name}',
   'owner.contacts.delete': 'Eliminar contacto',
   'owner.contacts.deleteTitle': '¿Eliminar contacto?',

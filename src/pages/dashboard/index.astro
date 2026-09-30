@@ -150,20 +150,21 @@ const panelClass =
                 </div>
 
                 <div class="flex shrink-0 items-center gap-1">
-                  <button
-                    class="edit-trigger flex size-8 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-fg-muted hover:bg-muted hover:text-fg"
-                    type="button"
-                    aria-label={label('owner.contacts.edit', { name: contact.name })}
-                    data-edit-trigger
-                  >
-                    <Icon name="edit" size={16} />
-                  </button>
-
                   <details class="menu kebab relative">
                     <summary class={summaryIcon} aria-label={label('owner.contacts.actions', { name: contact.name })}>
                       <Icon name="dots" size={18} />
                     </summary>
                     <div class={panelClass}>
+                      <!-- Edit lives in the menu like every other row action. The form it
+                           opens is in the page below the contact, never inside this panel. -->
+                      <button
+                        class={`${menuItem} text-fg`}
+                        type="button"
+                        data-edit-trigger
+                        aria-label={label('owner.contacts.edit', { name: contact.name })}
+                      >
+                        <Icon name="edit" size={16} /> {label('owner.contacts.editMenu')}
+                      </button>
                       <form
                         method="post"
                         action={`/dashboard/contacts/${contact.id}/delete`}

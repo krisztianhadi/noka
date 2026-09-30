@@ -71,6 +71,7 @@ const en = {
   'owner.contacts.spoken': 'Spoken',
   'owner.contacts.textOnly': 'Text only',
   'owner.contacts.edit': 'Edit {name}',
+  'owner.contacts.editMenu': 'Edit contact',
   'owner.contacts.actions': 'Actions for {name}',
   'owner.contacts.delete': 'Delete contact',
   'owner.contacts.deleteTitle': 'Delete contact?',
