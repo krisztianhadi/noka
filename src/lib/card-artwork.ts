@@ -69,7 +69,11 @@ function wordmarkSvg(x: number, y: number, height: number): string {
   try {
     const source = readFileSync(join(process.cwd(), WORDMARK), 'utf8');
     const viewBox = source.match(/viewBox="([^"]+)"/)?.[1];
-    const inner = source.match(/<g[\s\S]*<\/g>/)?.[0];
+    // Comments are stripped first: an SVG that mentions a tag inside a comment used to make
+    // this match start at the comment and produce an unbalanced fragment, which sharp then
+    // rejected as corrupt XML.
+    const markup = source.replace(/<!--[\s\S]*?-->/g, '');
+    const inner = markup.match(/<g[\s\S]*?<\/g>/)?.[0];
     if (!viewBox || !inner) return '';
     const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
     const width = ((vw ?? 1) / (vh ?? 1)) * height;

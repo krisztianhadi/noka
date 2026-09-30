@@ -165,7 +165,7 @@ ten Chinese characters the card prints — 6 KB instead of 15 MB. These live in
 `assets/fonts/`, and the first render writes a fontconfig file pointing **only** at that
 directory (`src/lib/fonts.ts`), so a render is identical here and in the Alpine container,
 which has no fonts of its own. The wordmark is generated as outlines by
-`scripts/make-wordmark.py` and inlined into the card SVG, so the logo needs no font at all.
+`assets/brand/noka-wordmark.svg` and inlined into the card SVG, so the logo needs no font at all. (The font-generated placeholder and its `scripts/make-wordmark.py` generator were retired when the real logotype arrived; the file is now the artwork itself.)
 
 **Why.** A card is printed once and kept for years; it cannot depend on whatever fonts a host
 happens to have. Subsetting keeps the repository honest (1.6 MB, not 16) and the license is

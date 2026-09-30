@@ -13,6 +13,8 @@ import { getNotes, listContacts } from '@/lib/contacts';
 import { errorKey, noticeKey } from '@/lib/dashboard';
 import { toggleTarget, type Theme } from '@/lib/theme';
 import { flagForLanguage } from '@/lib/flags';
+// Inlined so the mark follows the theme: as an <img> its own default colour shows through.
+import wordmark from '../../../assets/brand/noka-wordmark.svg?raw';
 
 /**
  * The whole owner plane on one page, in his order: contacts, then notes, then the
@@ -68,7 +70,12 @@ const panelClass =
   <header
     class="mb-6 flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3"
   >
-    <a class="text-lg font-bold tracking-tight text-fg no-underline" href="/dashboard">noka</a>
+    <a
+      class="w-16 text-fg no-underline [&_svg]:h-auto [&_svg]:w-full"
+      href="/dashboard"
+      aria-label="noka"
+      set:html={wordmark}
+    />
     <details class="menu relative">
       <summary
         class="flex size-9 cursor-pointer list-none items-center justify-center rounded-md border border-line bg-surface text-fg marker:content-none hover:bg-muted"
