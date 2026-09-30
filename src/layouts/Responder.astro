@@ -18,6 +18,8 @@ const { lang, title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="robots" content="noindex, nofollow, noarchive" />
+    {/* Deliberately not the real favicon: a stranger's page makes exactly one request, and a
+        favicon would be a second one. */}
     <link rel="icon" href="data:," />
   </head>
   <body>
