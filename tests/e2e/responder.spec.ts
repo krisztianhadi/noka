@@ -100,7 +100,7 @@ test.describe('the responder page', () => {
     await guest.close();
   });
 
-  test('a stranger needs the PIN, then reads the contacts and can hide them', async ({ browser, page }) => {
+  test('a stranger needs the PIN, then reads the contacts', async ({ browser, page }) => {
     const { slug, pin } = await owner(page);
 
     // A separate context: no owner session, no cookies — a stranger's phone.
@@ -160,11 +160,10 @@ test.describe('the responder page', () => {
     await expect(guest.locator('a.call')).toContainText('Позвонить');
     await expect(guest.locator('body')).toContainText('Говорит на');
 
-    // 5. "Hide now" clears both cookies and the view is unreachable again.
-    await guest.getByRole('button', { name: 'Скрыть сейчас' }).click();
-    await expect(guest).toHaveURL(new RegExp(`/c/${slug}$`));
+    // 5. The view cookie is the only thing keeping this open; the suite covers its expiry
+    //    in the unit tests, and the page no longer offers a button for it.
     await guest.goto(`/c/${slug}/view`);
-    await expect(guest).toHaveURL(new RegExp(`/c/${slug}$`));
+    await expect(guest).toHaveURL(new RegExp(`/c/${slug}/view$`));
 
     await stranger.close();
   });

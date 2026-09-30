@@ -49,14 +49,18 @@ const language = resolveLanguage(
   Astro.cookies.get(LANG_COOKIE)?.value,
   Astro.request.headers.get('accept-language'),
 );
-const label = (key: MessageKey) => t(language, key);
+const label = (key: MessageKey, values?: Record<string, string | number>) =>
+  t(language, key, values);
 const { ownerName, contacts, notes } = await loadResponderView(card);
 const offered = cardLanguages(card);
 ---
 
+<!-- The tab title stays generic on purpose: a phone left on a table should not announce
+     whose contact card is open. The page itself names the owner, in one line, at heading size. -->
 <Responder lang={LANGUAGE_INFO[language].htmlLang} title={label('view.heading')}>
-  <h1>{label('view.heading')}</h1>
-  {ownerName && <p class="owner">{ownerName}</p>}
+  <h1>
+    {ownerName ? label('view.headingFor', { name: ownerName }) : label('view.heading')}
+  </h1>
 
   {
     contacts.map((contact) => (
@@ -115,11 +119,6 @@ const offered = cardLanguages(card);
     )
   }
 
-  <form method="post" action={`/c/${card.slug}/hide`}>
-    <button type="submit" class="hide">
-      {label('view.hide')}
-    </button>
-  </form>
 
   {
     offered.length > 1 && (

@@ -14,11 +14,11 @@ const en = {
   'pin.language': 'Language',
 
   'view.heading': 'Emergency contacts',
+  'view.headingFor': "Emergency contact for {name}",
   'view.call': 'Call',
   'view.whatsapp': 'WhatsApp',
   'view.speaks': 'Speaks',
   'view.notes': 'Notes',
-  'view.hide': 'Hide now',
   'view.on': 'Available on',
   'view.text_only': 'Text message only — cannot speak or hear',
   'lang.change': 'change',

@@ -47,7 +47,8 @@ const { lang, title } = Astro.props;
     --t-xs: 0.875rem; /* 14px — metadata: spoken languages, language hint */
     --t-sm: 1rem; /* 16px — relation, owner, alert, language buttons */
     --t-md: 1.1875rem; /* 19px — body copy, notes, labels */
-    --t-lg: 1.375rem; /* 22px — section headings, the phone number */
+    --t-lg: 1.375rem; /* 22px — section headings */
+    --t-phone: 1.625rem; /* 26px — the phone number, the loudest datum in a contact */
     --t-xl: 1.625rem; /* 26px — page heading */
     --t-2xl: 2rem; /* 32px — contact name, the loudest thing here */
     --t-pin: 2.125rem; /* 34px — the PIN input */
@@ -55,7 +56,7 @@ const { lang, title } = Astro.props;
     /* Line heights, by job. */
     --lh-tight: 1.2; /* headings */
     --lh-solid: 1.3; /* single-line emphasis (name, phone) */
-    --lh-body: 1.5; /* running text */
+    --lh-body: 1.55; /* running text */
 
     /* Spacing, 4px steps. */
     --s1: 0.25rem;
@@ -65,6 +66,7 @@ const { lang, title } = Astro.props;
     --s5: 1.5rem;
     --s6: 2rem;
     --s7: 2.5rem;
+    --s8: 3rem;
 
     --ink: #111;
     --ink-soft: #333;
@@ -76,7 +78,7 @@ const { lang, title } = Astro.props;
   }
   body {
     margin: 0;
-    padding: var(--s5) var(--s5) var(--s6);
+    padding: var(--s5) var(--s5) var(--s7);
     font: var(--t-md) / var(--lh-body) system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: var(--ink);
     background: #fff;
@@ -94,7 +96,8 @@ const { lang, title } = Astro.props;
     text-wrap: balance;
   }
   h1 {
-    margin: 0 0 var(--s1);
+    /* One line, heading size, whether or not the owner's name is in it. */
+    margin: 0 0 var(--s6);
     font-size: var(--t-xl);
   }
   p {
@@ -150,7 +153,7 @@ const { lang, title } = Astro.props;
 
   /* ── One contact ─────────────────────────────────────────────────────────── */
   .contact {
-    padding: var(--s5) 0;
+    padding: var(--s6) 0;
     border-bottom: 2px solid var(--rule);
   }
   /* Read in this order, at these sizes: who they are, how to reach them, then what to do. */
@@ -164,14 +167,15 @@ const { lang, title } = Astro.props;
     overflow-wrap: anywhere;
   }
   .relation {
-    margin-top: var(--s1);
+    margin-top: var(--s2);
     font-size: var(--t-sm);
     color: var(--ink-soft);
   }
   .phone {
-    margin-top: var(--s3);
+    margin-top: var(--s4);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: var(--t-lg);
+    font-size: var(--t-phone);
+    font-weight: 600;
     line-height: var(--lh-solid);
     /* Easy to read aloud and to copy: this is the point of the page. */
     overflow-wrap: anywhere;
@@ -179,19 +183,13 @@ const { lang, title } = Astro.props;
   .phone a {
     color: inherit;
   }
-  .owner {
-    margin: 0;
-    font-size: var(--t-sm);
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
   .notes-heading {
-    margin: var(--s6) 0 var(--s2);
+    margin: var(--s7) 0 var(--s3);
     font-size: var(--t-lg);
   }
   .speaks,
   .on-channels {
-    margin-top: var(--s2);
+    margin-top: var(--s3);
     font-size: var(--t-xs);
     color: var(--ink-soft);
     overflow-wrap: anywhere;
@@ -202,7 +200,7 @@ const { lang, title } = Astro.props;
     display: flex;
     flex-wrap: wrap;
     gap: var(--s3);
-    margin-top: var(--s4);
+    margin-top: var(--s5);
   }
   .actions a {
     flex: 1 1 8rem;
@@ -237,8 +235,8 @@ const { lang, title } = Astro.props;
 
   /* ── Notes, alerts, language ─────────────────────────────────────────────── */
   .notes {
-    margin-top: var(--s6);
-    padding: var(--s4);
+    margin-top: var(--s7);
+    padding: var(--s5);
     background: #f6f6f6;
     border: 2px solid #ddd;
     border-radius: 6px;
@@ -249,8 +247,8 @@ const { lang, title } = Astro.props;
     display: flex;
     align-items: flex-start;
     gap: var(--s2);
-    margin: var(--s3) 0 0;
-    padding: var(--s3) var(--s3);
+    margin: var(--s4) 0 0;
+    padding: var(--s4);
     font-size: var(--t-sm);
     font-weight: 600;
     color: var(--ink);
@@ -264,8 +262,8 @@ const { lang, title } = Astro.props;
     margin-top: 0.15rem;
   }
   .langs {
-    margin-top: var(--s7);
-    padding-top: var(--s4);
+    margin-top: var(--s8);
+    padding-top: var(--s5);
     border-top: 1px solid var(--rule);
   }
   .langs > summary {
@@ -316,11 +314,5 @@ const { lang, title } = Astro.props;
   .langs button[aria-current='true'] {
     color: #fff;
     background: var(--ink);
-  }
-  .hide {
-    margin-top: var(--s4);
-    background: #fff;
-    color: #7a0000;
-    border-color: #a00;
   }
 </style>

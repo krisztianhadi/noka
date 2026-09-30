@@ -26,7 +26,6 @@ No account, no JavaScript, no third-party request. Every response carries the
 | GET | `/c/{slug}` | 200 localised PIN form, no contact data in the HTML. Unknown, revoked and deactivated slugs return a byte-identical page (language switcher included). | ✅ |
 | POST | `/c/{slug}` | body `pin`. 303 → `/view` on success; 200 form + generic error on failure; the response takes at least 350 ms either way. Rate limiting (429 + `Retry-After`) lands in Phase 6. | ✅ flow, ⏳ (6) limiter |
 | GET | `/c/{slug}/view` | 200 responder view with a valid cookie; otherwise 303 → `/c/{slug}`, never an error page. Also redirects when the card was deactivated or its PIN rotated after the cookie was issued. | ✅ |
-| POST | `/c/{slug}/hide` | Clears the view **and** language cookies, 303 → `/c/{slug}`. | ✅ |
 | POST | `/c/{slug}/lang` | body `lang`, one of `cards.languages` (the default set for an unknown card). Sets the language cookie, 303 back to the current step. No existence oracle, no query string. | ✅ |
 
 ## Owner plane — `/dashboard`, English only

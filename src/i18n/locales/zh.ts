@@ -10,11 +10,11 @@ const zh: Record<MessageKey, string> = {
   'pin.language': '语言',
 
   'view.heading': '紧急联系人',
+  'view.headingFor': "{name} 的紧急联系人",
   'view.call': '拨打电话',
   'view.whatsapp': 'WhatsApp',
   'view.speaks': '会说的语言',
   'view.notes': '备注',
-  'view.hide': '立即隐藏',
   'view.on': '可通过',
   'view.text_only': '仅限短信 — 无法说话或听见',
   'lang.change': '更改',

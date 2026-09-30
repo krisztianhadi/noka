@@ -10,11 +10,11 @@ const es: Record<MessageKey, string> = {
   'pin.language': 'Idioma',
 
   'view.heading': 'Contactos de emergencia',
+  'view.headingFor': "Contacto de emergencia de {name}",
   'view.call': 'Llamar',
   'view.whatsapp': 'WhatsApp',
   'view.speaks': 'Habla',
   'view.notes': 'Notas',
-  'view.hide': 'Ocultar ahora',
   'view.on': 'Disponible en',
   'view.text_only': 'Solo mensajes de texto — no puede hablar ni oír',
   'lang.change': 'cambiar',
