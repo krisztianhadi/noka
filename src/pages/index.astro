@@ -1,76 +1,282 @@
 ---
 import Footer from '@/components/Footer.astro';
 import Icon from '@/components/Icon.astro';
-import { t } from '@/i18n/catalogue';
 import { LANGUAGE_INFO } from '@/i18n/languages';
 import '@/styles/app.css';
-// Inlined, not an <img>: the wordmark is drawn with `currentColor`, and as an
-// external image that resolves to the SVG's own default (black) — invisible on a
-// dark page. Inline, it follows the theme like any other text.
+// Inlined, not an `<img>`: the wordmark is drawn with `currentColor`, and as an external
+// image that resolves to the SVG's own default (black) — invisible on a dark page.
 import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
+import cardShot from '../../assets/brand/noka-card-sample.jpg';
 
-// Landing page. Same token scale as the owner plane (ADR-028); no tracking, and no
-// sponsor content until there is a sponsor (PLAN §18).
+/**
+ * The landing page: the owner plane's front door.
+ *
+ * Structure follows the sibling project's rhythm — hero, what it is, an explicit "what we
+ * are not doing", how it works, questions, one closing action — because that page does the
+ * hard part well: it states the limits as plainly as the features.
+ *
+ * Copy is English-only for now, deliberately inline rather than in the catalogue: the wording
+ * is waiting on his read, and translating a draft into four more languages is work that gets
+ * thrown away if a headline changes. It moves into `src/i18n/locales/` and is translated in
+ * the same pass that approves it (ADR-032).
+ *
+ * No tracking, no sponsor content until there is a sponsor (§18), and no claim about speed or
+ * uptime that has not been measured — "built to load in under a second", not "loads in".
+ */
 const locale = Astro.locals.locale;
-const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+
+const isWhat = [
+  'Tap-to-call contacts, on any phone with a network connection.',
+  'English, Spanish, French, Simplified Chinese and Russian.',
+  'No app or account for the person opening the card.',
+  'No JavaScript, analytics, outside fonts or outside images on the card page.',
+];
+
+const notDoing = [
+  {
+    title: 'Replacing emergency services.',
+    body: 'Noka is not an emergency service or a substitute for one. Call the local emergency number first.',
+  },
+  {
+    title: 'Keeping a medical record.',
+    body: 'There are no diagnoses, medication doses or allergies database. A note is a note.',
+  },
+  {
+    title: 'Hiding access from the holder.',
+    body: 'The responder needs the physical card and PIN. Anyone with both can read the contacts. That is the design.',
+  },
+  {
+    title: 'Tracking the responder.',
+    body: 'There is no app to install, no account to create and no tracking of whoever opened the page.',
+  },
+  {
+    title: 'Emailing password resets.',
+    body: 'Self-service password reset email is not available yet. Do not rely on an account you cannot access.',
+  },
+];
+
+const steps = [
+  {
+    title: 'Set it up',
+    body: 'Add your contacts and a short note. Choose the languages you want to offer.',
+  },
+  {
+    title: 'Carry the card',
+    body: 'The card holds a QR code and a six-digit PIN. The physical card is still being built.',
+  },
+  {
+    title: 'Let them call',
+    body: 'A responder scans, enters the PIN and sees tap-to-call contacts and your note. Their phone needs a network connection.',
+  },
+];
+
+const faq = [
+  {
+    q: 'Is this an emergency service?',
+    a: 'No. Call the local emergency number first. Noka may give a responder useful contacts and a note, but it does not replace emergency services.',
+  },
+  {
+    q: 'What if someone steals the card?',
+    a: 'Anyone with the physical card and its PIN can read the contacts and note. That is the trade-off that lets a stranger help without an app or account.',
+  },
+  {
+    q: 'Is this my medical record?',
+    a: 'No. There is no diagnoses, medication dosing or allergies database. You can leave a short note, and a note is all it is.',
+  },
+  {
+    q: 'Does the card work without a signal?',
+    a: 'No. The responder page needs a network connection.',
+  },
+  {
+    q: 'Are you tracking the person who opens it?',
+    a: 'No. The card page has no JavaScript, analytics or page-view logging. Scan attempts store an HMAC of the network prefix, never a raw IP address, and are deleted after 30 days.',
+  },
+  {
+    q: 'Can I order a card now?',
+    a: 'No. The physical card and PDF printing pipeline are still being built. You can create an account and set up your information today.',
+  },
+  {
+    q: 'Will I be charged later?',
+    a: 'Nobody can be charged today. There is no tier and no trial.',
+  },
+  {
+    q: 'What if I forget my password?',
+    a: 'There is no self-service password reset email yet. Do not rely on an account you cannot access.',
+  },
+];
+
+const h2 = 'text-xl font-semibold tracking-tight text-fg sm:text-2xl';
+const buttonPrimary =
+  'inline-flex h-10 items-center justify-center gap-2 rounded-md border border-accent bg-accent px-4 text-sm font-medium text-accent-fg no-underline hover:opacity-90';
+const buttonQuiet =
+  'inline-flex h-10 items-center justify-center gap-2 rounded-md border border-line-strong bg-surface px-4 text-sm font-medium text-fg no-underline hover:bg-muted';
 ---
 
 <!doctype html>
-<html lang={LANGUAGE_INFO[locale].htmlLang}>
+<html lang={LANGUAGE_INFO[locale].htmlLang} data-theme={Astro.locals.theme ?? undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{label('head.landing')}</title>
-    <meta name="description" content={label('landing.metaDescription')} />
+    <title>noka — a note in your wallet, made easier to find</title>
+    <meta
+      name="description"
+      content="A bank-card-sized card with a QR code and a six-digit PIN. It shows a responder who to call and the note you chose to leave."
+    />
     <link rel="icon" href="data:," />
   </head>
   <body class="min-h-dvh">
-    <main class="mx-auto flex w-full max-w-xl flex-col gap-10 px-4 py-12 sm:px-6 sm:py-16">
-      <div class="space-y-3">
-        <h1 class="w-52 text-fg [&_svg]:h-auto [&_svg]:w-full" set:html={wordmark} />
-        <p class="text-sm tracking-wide text-fg-muted">{label('landing.tagline')}</p>
+    <header class="border-b border-line">
+      <div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <a class="w-20 text-fg [&_svg]:h-auto [&_svg]:w-full" href="/" aria-label="noka" set:html={wordmark} />
+        <nav class="hidden items-center gap-5 text-sm sm:flex" aria-label="Sections">
+          <a class="text-fg-muted no-underline hover:text-fg" href="#how">How it works</a>
+          <a class="text-fg-muted no-underline hover:text-fg" href="#limits">Limits</a>
+          <a class="text-fg-muted no-underline hover:text-fg" href="#questions">Questions</a>
+        </nav>
+        <a class="text-sm font-medium text-fg" href="/signup">Create an account</a>
       </div>
+    </header>
 
-      <p class="text-base leading-7 text-fg">{label('landing.intro')}</p>
-
-      <ul class="space-y-3 text-sm leading-6">
-        <li class="flex gap-3">
-          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="lock" size={18} /></span>
-          <span>{label('landing.point.encrypted')}</span>
-        </li>
-        <li class="flex gap-3">
-          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="bars" size={18} /></span>
-          <span>{label('landing.point.offline')}</span>
-        </li>
-        <li class="flex gap-3">
-          <span class="mt-0.5 shrink-0 text-fg-muted"><Icon name="eye-off" size={18} /></span>
-          <span>{label('landing.point.noTracking')}</span>
-        </li>
-      </ul>
-
-      {
-        Astro.url.searchParams.get('deleted') === '1' && (
-          <p class="rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success" role="status">
-            {label('landing.deleted')}
+    <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+      <!-- Hero. The card comes next on mobile, before any further prose: the product is a thing. -->
+      <section class="sm:flex sm:items-start sm:gap-10">
+        <div class="sm:flex-1">
+          <h1 class="text-3xl leading-tight font-bold tracking-tight text-fg sm:text-4xl">
+            A note in your wallet, made easier to find.
+          </h1>
+          <p class="mt-4 text-base leading-7 text-fg-muted">
+            Noka is a bank-card-sized card with a QR code and a six-digit PIN. If someone needs to help
+            you, it shows them who to call and the note you chose to leave.
           </p>
-        )
-      }
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <a class={buttonPrimary} href="/signup"><Icon name="plus" size={16} /> Create an account</a>
+            <a class={buttonQuiet} href="#how">See how it works</a>
+          </div>
+        </div>
 
-      <div class="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-4">
-        <a
-          class="inline-flex h-9 items-center rounded-md border border-accent bg-accent px-3.5 text-sm font-medium text-accent-fg no-underline hover:opacity-90"
-          href="/signup"
-          ><span class="inline-flex items-center gap-2"><Icon name="plus" size={16} /> {label('landing.create')}</span></a
-        >
-        <a
-          class="inline-flex h-9 items-center rounded-md border border-line-strong bg-surface px-3.5 text-sm font-medium text-fg no-underline hover:bg-muted"
-          href="/login"
-          ><span class="inline-flex items-center gap-2"><Icon name="logout" size={16} /> {label('landing.signIn')}</span></a
-        >
-        <p class="w-full text-xs text-fg-muted sm:w-auto sm:pl-2">
-          {label('landing.wip')}
+        <figure class="mx-auto mt-10 w-[72%] shrink-0 sm:mt-0 sm:w-56">
+          <img
+            class="w-full rounded-lg border border-line shadow-float"
+            src={cardShot.src}
+            width="638"
+            height="1011"
+            alt="The noka card: a five-language heading, a QR code and a six-digit PIN"
+          />
+          <figcaption class="mt-3 text-xs leading-5 text-fg-muted">
+            The physical card and PDF printing pipeline are still being built. Accounts work today.
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- What this is -->
+      <section class="mt-16 border-t border-line pt-10">
+        <h2 class={h2}>The useful part of a note, without the handwriting.</h2>
+        <p class="mt-4 max-w-prose text-sm leading-6 text-fg-muted">
+          Add the people to call. Add one short note. Choose which of five languages appear. Noka puts
+          that information behind the code and PIN on your card.
         </p>
-      </div>
+        <div class="mt-6 sm:flex sm:gap-10">
+          <p class="text-sm leading-6 text-fg-muted sm:w-1/3">
+            Contacts and notes are encrypted before they reach the database. The key is not stored there.
+          </p>
+          <div class="mt-4 sm:mt-0 sm:w-2/3">
+            <ul class="space-y-2">
+              {isWhat.map((item) => <li class="border-b border-line pb-2 text-sm leading-6 text-fg">{item}</li>)}
+            </ul>
+            <p class="mt-3 text-xs text-fg-muted">It does not even log the page view.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- What we are not doing -->
+      <section
+        id="limits"
+        class="mt-16 rounded-lg border border-line border-t-4 border-t-accent bg-surface p-5 sm:p-7"
+      >
+        <h2 class={h2}>What we&rsquo;re not doing</h2>
+        <p class="mt-3 text-sm leading-6 text-fg-muted">This is a small tool. Its limits are part of the design.</p>
+        <dl class="mt-6 divide-y divide-line">
+          {
+            notDoing.map((limit) => (
+              <div class="py-4 sm:flex sm:gap-6">
+                <dt class="text-sm font-medium text-fg sm:w-1/3">{limit.title}</dt>
+                <dd class="mt-1 text-sm leading-6 text-fg-muted sm:mt-0 sm:w-2/3">{limit.body}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <!-- How it works -->
+      <section id="how" class="mt-16 border-t border-line pt-10">
+        <h2 class={h2}>A scan, a PIN, a useful page.</h2>
+        <ol class="mt-6 space-y-6 sm:flex sm:gap-6 sm:space-y-0">
+          {
+            steps.map((step, index) => (
+              <li class="sm:flex-1">
+                <span class="block text-3xl font-semibold text-fg-muted" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <h3 class="mt-2 text-sm font-semibold text-fg">{step.title}</h3>
+                <p class="mt-1 text-sm leading-6 text-fg-muted">{step.body}</p>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="mt-6 border-t border-line pt-4 text-xs leading-5 text-fg-muted">
+          The responder page carries no JavaScript and no outside fonts or images, and is built to load in
+          under a second on a normal connection.
+        </p>
+      </section>
+
+      <!-- Privacy and ownership -->
+      <section class="mt-16 rounded-lg border border-line bg-muted p-5 sm:flex sm:items-center sm:gap-6 sm:p-6">
+        <div class="sm:flex-1">
+          <h2 class="text-base font-semibold text-fg">Private by construction. Open by choice.</h2>
+          <p class="mt-2 text-sm leading-6 text-fg-muted">
+            Contacts and notes are encrypted before they reach the database. The key is not stored there.
+            Scan attempts keep an HMAC of the network prefix, never a raw IP address, and are deleted after
+            30 days.
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0 sm:text-right">
+          <a
+            class="inline-flex items-center gap-1.5 text-sm text-fg no-underline hover:underline"
+            href="https://github.com/krisztianhadi/noka"
+          >
+            <Icon name="link" size={14} /> Read the code on GitHub
+          </a>
+          <p class="mt-1 text-xs text-fg-muted">MIT licensed and developed in the open.</p>
+        </div>
+      </section>
+
+      <!-- Questions -->
+      <section id="questions" class="mt-16 border-t border-line pt-10">
+        <h2 class={h2}>Questions, answered</h2>
+        <dl class="mt-6 sm:columns-2 sm:gap-10">
+          {
+            faq.map((item) => (
+              <div class="mb-5 break-inside-avoid border-b border-line pb-4">
+                <dt class="text-sm font-medium text-fg">{item.q}</dt>
+                <dd class="mt-1.5 text-sm leading-6 text-fg-muted">{item.a}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </section>
+
+      <!-- Closing action -->
+      <section class="mt-16 border-t border-line pt-10 text-center">
+        <h2 class={h2}>Set up the note. The card will follow.</h2>
+        <p class="mx-auto mt-3 max-w-prose text-sm leading-6 text-fg-muted">
+          Accounts work today. Add your contacts and note now; the physical card and PDF printing pipeline
+          are still being built.
+        </p>
+        <div class="mt-5">
+          <a class={`${buttonPrimary} w-full sm:w-auto`} href="/signup">Create an account</a>
+        </div>
+        <p class="mt-3 text-xs text-fg-muted">No tier. No trial. Nothing to charge.</p>
+      </section>
 
       <Footer />
     </main>
