@@ -11,10 +11,23 @@ import { getConfig } from '@/config';
  * second lock on the same door.
  */
 export function isSameOrigin(request: Request): boolean {
+  const url = new URL(request.url);
+  const allowed = new Set([getConfig().PUBLIC_CARD_ORIGIN, getConfig().BETTER_AUTH_URL, url.origin]);
+
   const origin = request.headers.get('origin');
-  if (!origin) return false;
-  const allowed = new Set([getConfig().PUBLIC_CARD_ORIGIN, getConfig().BETTER_AUTH_URL, new URL(request.url).origin]);
-  return [...allowed].some((value) => value !== undefined && value === origin);
+  if (origin) return [...allowed].some((value) => value !== undefined && value === origin);
+
+  // No Origin header: some clients (a plain form post from a proxy, an older browser, a fetch
+  // with `referrerPolicy: no-referrer` on the request but not the document) omit it, and every
+  // dashboard POST then failed with a 403 through no fault of theirs. Referer says the same
+  // thing; when both are missing the request is refused, which is the whole point of the check.
+  const referer = request.headers.get('referer');
+  if (!referer) return false;
+  try {
+    return [...allowed].some((value) => value !== undefined && new URL(referer).origin === value);
+  } catch {
+    return false;
+  }
 }
 
 export function forbidden(): Response {

@@ -554,14 +554,23 @@ test.describe('the account menu', () => {
   });
 
   test('changes the email and the password from settings', async ({ page }) => {
-    await signUp(page);
+    const email = await signUp(page);
     const newEmail = `changed-${Date.now()}@noka.test`;
 
     await page.locator('header .menu > summary').click();
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(page).toHaveURL(/\/dashboard\/settings$/);
 
+    // The email is the account's only recovery channel, so it needs the current password. A
+    // stolen session that cannot produce it changes nothing.
     await page.fill('#email', newEmail);
+    await page.fill('#email-password', 'not-the-password');
+    await page.getByRole('button', { name: 'Update email' }).click();
+    await expect(page).toHaveURL(/error=password-wrong$/);
+    await expect(page.locator('#email')).toHaveValue(email);
+
+    await page.fill('#email', newEmail);
+    await page.fill('#email-password', 'correct-horse-battery');
     await page.getByRole('button', { name: 'Update email' }).click();
     // A settings result keeps you on settings, with the form still in front of you.
     await expect(page).toHaveURL(/\/dashboard\/settings\?notice=email-changed$/);

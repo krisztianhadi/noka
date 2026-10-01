@@ -79,3 +79,24 @@ export async function changeOwnerEmail(userId: string, newEmail: string): Promis
     return 'taken';
   }
 }
+
+/**
+ * Is this the owner's current password?
+ *
+ * Used before changing the email, which is the account's only recovery channel (ADR-023). The
+ * hash is the same Argon2id as everywhere else, so this is one comparison and no session work.
+ */
+export async function verifyOwnerPassword(userId: string, password: string): Promise<boolean> {
+  if (password.length === 0) return false;
+  const [account] = await getDb()
+    .select({ hash: accounts.password })
+    .from(accounts)
+    .where(eq(accounts.userId, userId))
+    .limit(1);
+  if (!account?.hash) return false;
+  try {
+    return await argon2Verify(account.hash, password);
+  } catch {
+    return false;
+  }
+}

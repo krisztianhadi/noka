@@ -58,6 +58,16 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
         <div>
           <label class={labelClass} for="email">{label('settings.email.label')}</label>
           <input id="email" class={fieldClass} name="email" type="email" required autocomplete="email" value={owner.email} />
+          {/* The email is the account's only recovery channel, so this is behind the password. */}
+          <label class={labelClass} for="email-password">{label('settings.email.password')}</label>
+          <input
+            id="email-password"
+            class={fieldClass}
+            name="current_password"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
           <p class={hintClass}>{label('settings.email.hint')}</p>
         </div>
         <div class="flex justify-end">

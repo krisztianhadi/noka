@@ -144,6 +144,7 @@ const fr: Record<MessageKey, string> = {
   'settings.email.title': 'E-mail',
   'settings.email.label': 'E-mail',
   'settings.email.hint': 'Utilisé pour se connecter, et le seul champ stocké en texte clair (ADR-004).',
+  'settings.email.password': 'Votre mot de passe actuel',
   'settings.email.submit': "Mettre à jour l'e-mail",
   'settings.password.title': 'Mot de passe',
   'settings.password.current': 'Mot de passe actuel',

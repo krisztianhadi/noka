@@ -147,6 +147,7 @@ const en = {
   'settings.email.title': 'Email',
   'settings.email.label': 'Email',
   'settings.email.hint': 'Used to sign in, and the one field stored in plain text (ADR-004).',
+  'settings.email.password': 'Your current password',
   'settings.email.submit': 'Update email',
   'settings.password.title': 'Password',
   'settings.password.current': 'Current password',

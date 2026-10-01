@@ -144,6 +144,7 @@ const ru: Record<MessageKey, string> = {
   'settings.email.title': 'Электронная почта',
   'settings.email.label': 'Электронная почта',
   'settings.email.hint': 'Используется для входа и хранится единственным незашифрованным полем (ADR-004).',
+  'settings.email.password': 'Ваш текущий пароль',
   'settings.email.submit': 'Обновить почту',
   'settings.password.title': 'Пароль',
   'settings.password.current': 'Текущий пароль',

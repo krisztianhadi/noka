@@ -144,6 +144,7 @@ const zh: Record<MessageKey, string> = {
   'settings.email.title': '电子邮箱',
   'settings.email.label': '电子邮箱',
   'settings.email.hint': '用于登录，是唯一以明文存储的字段（ADR-004）。',
+  'settings.email.password': '当前密码',
   'settings.email.submit': '更新电子邮箱',
   'settings.password.title': '密码',
   'settings.password.current': '当前密码',

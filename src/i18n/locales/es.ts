@@ -144,6 +144,7 @@ const es: Record<MessageKey, string> = {
   'settings.email.title': 'Correo electrónico',
   'settings.email.label': 'Correo electrónico',
   'settings.email.hint': 'Se usa para iniciar sesión, y es el único campo que se guarda sin cifrar (ADR-004).',
+  'settings.email.password': 'Tu contraseña actual',
   'settings.email.submit': 'Actualizar correo electrónico',
   'settings.password.title': 'Contraseña',
   'settings.password.current': 'Contraseña actual',
