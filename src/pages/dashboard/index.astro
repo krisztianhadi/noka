@@ -403,12 +403,10 @@ const panelClass =
 
   <!-- The card is the output of the workflow beside it, so on a wide screen it parks: the
        contacts an owner is editing are what they are looking at, and the card follows. -->
-  {
-    /* Three states. A real card. A note that outlived its contacts: the card keeps its place on
-       the page as a placeholder, saying what it is waiting for, because the note beside it is
-       still going to the card page. And nothing at all: on a first run the form's own save makes
-       the card, so a block explaining that had nothing to say. */
-    (card || notes) && (
+  <!-- The card keeps its place on every dashboard, including the first one. Empty, it is a dashed
+       outline saying what it is waiting for — a contact. On a first run that is the answer to "what
+       happens next", and after the last contact is deleted the note below still goes to the card
+       page, so hiding the block would hide the context with it. -->
   <section id="card" class="xl:sticky xl:top-6">
     <div class="rounded-lg border border-ink bg-ink p-5 text-ink-fg">
       <div class="section-head mb-4 flex items-center justify-between gap-3">
@@ -552,7 +550,5 @@ const panelClass =
       }
     </div>
   </section>
-    )
-  }
   </div>
 </Plain>

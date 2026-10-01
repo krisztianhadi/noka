@@ -25,7 +25,7 @@ test.describe('the dashboard', () => {
     // both live — and the note heading sits inside it, a step down, because it is a field of
     // the same form rather than a section of its own.
     await expect(page.locator('section h1')).toHaveText(['Emergency contacts']);
-    await expect(page.locator('section h2')).toHaveText(['Add a contact']);
+    await expect(page.locator('section h2')).toHaveText(['Add a contact', 'Your card']);
     await expect(page.locator('form[action="/dashboard/start"] h3')).toHaveText([
       'Notes for a responder',
     ]);
@@ -61,9 +61,11 @@ test.describe('the dashboard', () => {
   test('the first save makes the card, so there is no second step', async ({ page }) => {
     await signUp(page);
 
-    // Nothing to make yet, and nothing on the page asking to be made: a card with nobody
-    // behind it is not a state the product has.
-    await expect(page.locator('#card')).toHaveCount(0);
+    // Nothing to make yet, but the card keeps its place: an empty outline saying what it is
+    // waiting for, and no button, because the form above is the way to give it one.
+    await expect(page.locator('#card')).toContainText('Your card appears here');
+    await expect(page.locator('#card')).toContainText('needs at least one contact');
+    await expect(page.locator('#card .pin')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Make my card' })).toHaveCount(0);
 
     await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
@@ -261,7 +263,7 @@ test.describe('the dashboard', () => {
     expect(message).toContain('delete your card');
     await expect(page).toHaveURL(/notice=contact-and-card-deleted$/);
     await expect(page.locator('.contacts > li')).toHaveCount(0);
-    await expect(page.locator('#card')).toHaveCount(0);
+    await expect(page.locator('#card')).toContainText('Your card appears here');
     await expect(page.locator('form[action="/dashboard/start"]')).toBeVisible();
   });
 
