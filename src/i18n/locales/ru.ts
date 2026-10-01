@@ -100,7 +100,7 @@ const ru: Record<MessageKey, string> = {
   'owner.start.save': 'Сохранить и создать карточку',
 
     'owner.card.ready': 'Готово. Карта получит ссылку и шестизначный PIN-код и сразу станет действующей.',
-  'owner.card.needsContact': 'Карточке нужен хотя бы один контакт. Добавьте его выше.',
+  'owner.card.needsContact': 'Карточке нужен хотя бы один контакт. Добавьте контакт, чтобы её создать.',
   'owner.card.placeholder': 'Здесь появится ваша карточка',
 'owner.card.title': 'Ваша карта',
   'owner.card.actions': 'Действия с картой',

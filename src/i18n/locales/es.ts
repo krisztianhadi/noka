@@ -100,7 +100,7 @@ const es: Record<MessageKey, string> = {
   'owner.start.save': 'Guardar y crear la tarjeta',
 
     'owner.card.ready': 'Todo listo. La tarjeta tendrá un enlace y un PIN de seis dígitos, y quedará activa de inmediato.',
-  'owner.card.needsContact': 'Una tarjeta necesita al menos un contacto. Añade a alguien arriba.',
+  'owner.card.needsContact': 'Una tarjeta necesita al menos un contacto. Añade uno para crearla.',
   'owner.card.placeholder': 'Tu tarjeta aparecerá aquí',
 'owner.card.title': 'Tu tarjeta',
   'owner.card.actions': 'Acciones de la tarjeta',

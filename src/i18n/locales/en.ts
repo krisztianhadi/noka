@@ -103,7 +103,7 @@ const en = {
   'owner.start.save': 'Save and create card',
 
     'owner.card.ready': 'Ready. The card gets a link and a six-digit PIN, and it is live immediately.',
-  'owner.card.needsContact': 'A card needs at least one contact. Add someone above.',
+  'owner.card.needsContact': 'A card needs at least one contact. Add one to make it.',
   'owner.card.placeholder': 'Your card appears here',
 'owner.card.title': 'Your card',
   'owner.card.actions': 'Card actions',

@@ -100,7 +100,7 @@ const fr: Record<MessageKey, string> = {
   'owner.start.save': 'Enregistrer et créer la carte',
 
     'owner.card.ready': 'Prête. La carte reçoit un lien et un code PIN à six chiffres, et elle est active immédiatement.',
-  'owner.card.needsContact': 'Une carte a besoin d’au moins un contact. Ajoutez quelqu’un ci-dessus.',
+  'owner.card.needsContact': 'Une carte a besoin d’au moins un contact. Ajoutez-en un pour la créer.',
   'owner.card.placeholder': 'Votre carte apparaîtra ici',
 'owner.card.title': 'Votre carte',
   'owner.card.actions': 'Actions sur la carte',
