@@ -66,6 +66,23 @@ Four consequences, all handled by committed config:
 | `pnpm test` | Vitest; loads `.env`, integration tests need Postgres up |
 | `pnpm test:e2e` | Playwright against the **built** server (dev injects HMR scripts). It reuses a server already listening on :3200 — restart yours first, or the suite tests your old build. |
 
+## The local server does not survive a harness restart
+
+Whatever is listening on :3200 is a child of the agent harness, which runs it inside a sandbox
+started with `--die-with-parent` (and its own PID namespace). Restarting the harness therefore kills
+the server, and nothing started from inside that sandbox can outlive it — `nohup` and `setsid`
+included, because the sandbox itself goes away. This is expected, not a crash: after a harness
+restart, check :3200, and if it answers nothing, start it again:
+
+```sh
+XDG_DATA_HOME=.tmp/xdg-data XDG_CACHE_HOME=.tmp/xdg-cache XDG_STATE_HOME=.tmp/xdg-state \
+XDG_CONFIG_HOME=.tmp/xdg-config ASTRO_TELEMETRY_DISABLED=1 HOST=0.0.0.0 \
+node --env-file-if-exists=.env ./dist/server/entry.mjs
+```
+
+Then confirm both addresses before using it: `curl -o /dev/null -w '%{http_code}'` against
+`http://127.0.0.1:3200/` **and** `http://<lan-ip>:3200/`.
+
 ## Breach procedure (one paragraph, per §8)
 
 If a data exposure is suspected: rotate `CONTACT_ENCRYPTION_KEY` by adding a new
