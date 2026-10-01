@@ -895,8 +895,10 @@ tests rather than to a late-evening commit:
 
 ### 4. i18n follow-ups (found by review, all real)
 
-- **Pluralisation**: `src/pages/dashboard/index.astro:120` hand-picks one/many, which cannot express
-  Russian's three plural categories. Use `Intl.PluralRules` for the keys that take a count.
+- ~~**Pluralisation**~~ — **done 2026-10-01**: `src/lib/plural.ts` picks the form with
+  `Intl.PluralRules`, and the catalogue carries one/few/many/other for every locale
+  (`owner.contacts.count.*`). Russian gets all three (1 контакт, 3 контакта, 5 контактов),
+  Chinese gets one, and French counts zero as singular — which the hand-picked pair got wrong.
 - **RTL**: `dir` now exists in `LANGUAGE_INFO` and both layouts render it, but no layout has been
   looked at mirrored. Arabic is a metadata change plus a visual pass — the doc now says so.
 - **Card artwork vs longer translations** (`src/lib/card-artwork.ts:87-121`): fixed pixels, no

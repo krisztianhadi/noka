@@ -11,6 +11,7 @@ import { t } from '@/i18n/catalogue';
 import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
 import { channelHref, type Channel } from '@/lib/channels';
 import { MAX_CONTACTS, getNotes, listContacts } from '@/lib/contacts';
+import { plural } from '@/lib/plural';
 import { errorKey, noticeKey } from '@/lib/dashboard';
 import { toggleTarget, type Theme } from '@/lib/theme';
 import { flagForLanguage } from '@/lib/flags';
@@ -126,7 +127,7 @@ const panelClass =
       {
         contacts.length > 0 && (
           <span class="text-xs text-fg-muted">
-            {label(contacts.length === 1 ? 'owner.contacts.one' : 'owner.contacts.many', { count: contacts.length })}
+            {plural(locale, 'owner.contacts.count', contacts.length)}
           </span>
         )
       }
