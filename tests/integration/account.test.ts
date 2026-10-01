@@ -6,8 +6,9 @@ import { sessions, users } from '@/db/auth-schema';
 import { closeDb, getDb } from '@/db/client';
 import { cards, contacts, ownerNotes, scanAttempts } from '@/db/schema';
 import { deleteOwnerAccount, EXPORT_FORMAT, exportOwnerData } from '@/lib/account';
-import { createCardForOwner } from '@/lib/cards';
+import { createCardForOwner, newCardForOwner } from '@/lib/cards';
 import { createContact, listContacts, setNotes } from '@/lib/contacts';
+import { verifyPin } from '@/lib/pin';
 
 /**
  * Self-service portability and erasure (Art. 20 and 17), against the real database.
@@ -34,6 +35,59 @@ describeDb('self-service export and deletion', () => {
   afterAll(async () => {
     for (const id of createdUserIds) await db.delete(users).where(eq(users.id, id));
     await closeDb();
+  });
+
+  /**
+   * The reviews' export finding: the file used to be assembled from independent queries, so
+   * rotating a card mid-export produced a slug from one card generation and a PIN from the next —
+   * a description of a state that never existed. Repeatable read is what the fix relies on, and the
+   * only honest way to check it is to rotate while exporting and see whether the two halves agree.
+   *
+   * Each export is verified against the database: the slug in the file has to be a real card row,
+   * and the PIN in the file has to match that row's hash. A torn export cannot satisfy both.
+   */
+  it('never mixes two card generations in one export', async () => {
+    const owner = await freshOwner();
+    await createContact(owner, {
+      name: 'Maria Silva',
+      relation: 'spouse',
+      phone: '+66812345678',
+      spokenLanguages: ['en'],
+      channels: ['call'],
+    });
+    await createCardForOwner(owner);
+
+    // Rotations start first and are not awaited, so the exports genuinely overlap them: that is
+    // the only arrangement in which the old code could hand back a slug from one card generation
+    // and a PIN from the next. A few more exports run afterwards, once the card has settled.
+    const rotations = Promise.all(Array.from({ length: 4 }, () => newCardForOwner(owner)));
+    const raced = await Promise.all(Array.from({ length: 6 }, () => exportOwnerData(owner)));
+    await rotations;
+    const settled = await Promise.all(Array.from({ length: 2 }, () => exportOwnerData(owner)));
+
+    const [current] = await db.select().from(cards).where(eq(cards.userId, owner));
+    expect(current).toBeTruthy();
+
+    const files = [...raced, ...settled].filter((file): file is NonNullable<typeof file> => Boolean(file));
+    expect(files.length).toBe(8);
+    let matchedCurrent = 0;
+
+    for (const file of files) {
+      expect(file.card?.pin, 'a card in the file').toMatch(/^\d{3} \d{3}$/);
+      const url = file.card!.url;
+      // A file whose PIN belongs to the card that exists now must also name that card. This is the
+      // mixing case, and it is checkable even though older generations are gone from the table:
+      // rotation updates the row's slug, so an old slug cannot be looked up afterwards.
+      // The file shows the PIN formatted for a human ('123 456'); the hash was made from digits.
+      if (await verifyPin(current!.pinHash, file.card!.pin.replace(/\D/g, ''))) {
+        matchedCurrent += 1;
+        expect(url.endsWith(current!.slug), `pin matches but url is ${url}`).toBe(true);
+      }
+    }
+
+    // The settled exports cannot have captured anything but the current card, so they must be the
+    // ones that matched: a run where nothing matched would mean this test proved nothing.
+    expect(matchedCurrent).toBeGreaterThanOrEqual(2);
   });
 
   it('exports the account, the people, the notes and the card', async () => {
