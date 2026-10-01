@@ -118,7 +118,7 @@ const ru: Record<MessageKey, string> = {
   'owner.card.pin': 'PIN-код',
   'owner.card.link': 'Ссылка',
   'owner.card.printHint': 'Распечатайте изображение или скопируйте ссылку и PIN-код от руки. QR-код ведёт по этой ссылке.',
-  'owner.card.printTitle': 'Печать',
+  'owner.card.printTitle': 'Скачать и распечатать',
   'owner.card.printCard': 'Только размер карты',
   'owner.card.printA4': 'A4 — одна карточка',
   'owner.card.printSheet': 'A4 — 10 карточек',

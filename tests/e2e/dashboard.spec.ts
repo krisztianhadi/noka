@@ -460,6 +460,13 @@ test.describe('the card', () => {
     const links = page.locator('#card a[href^="/dashboard/card/pdf"]');
     await expect(links).toHaveCount(3);
     await expect(links).toHaveText([/one card/, /Card size only/, /10 cards/]);
+    // The section says what it does, and none of the three takes you off the dashboard: a PDF
+    // opened in this tab loses the PIN and the link the owner was looking at.
+    await expect(page.locator('#card')).toContainText('Download and print');
+    for (const link of await links.all()) {
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', /noopener/);
+    }
 
     // Each one answers with a PDF, not with an HTML page or an error.
     for (const href of await links.evaluateAll((all) =>

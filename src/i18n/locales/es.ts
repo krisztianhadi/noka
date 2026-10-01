@@ -118,7 +118,7 @@ const es: Record<MessageKey, string> = {
   'owner.card.pin': 'PIN',
   'owner.card.link': 'Enlace',
   'owner.card.printHint': 'Imprime la imagen, o copia el enlace y el PIN a mano. El código QR apunta al enlace.',
-  'owner.card.printTitle': 'Imprimir',
+  'owner.card.printTitle': 'Descargar e imprimir',
   'owner.card.printCard': 'Solo tamaño tarjeta',
   'owner.card.printA4': 'A4 — una tarjeta',
   'owner.card.printSheet': 'A4 — 10 tarjetas',

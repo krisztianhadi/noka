@@ -118,7 +118,7 @@ const fr: Record<MessageKey, string> = {
   'owner.card.pin': 'Code PIN',
   'owner.card.link': 'Lien',
   'owner.card.printHint': 'Imprimez l\'image, ou copiez le lien et le code PIN à la main. Le QR code renvoie vers le lien.',
-  'owner.card.printTitle': 'Imprimer',
+  'owner.card.printTitle': 'Télécharger et imprimer',
   'owner.card.printCard': 'Format carte uniquement',
   'owner.card.printA4': 'A4 — une carte',
   'owner.card.printSheet': 'A4 — 10 cartes',
