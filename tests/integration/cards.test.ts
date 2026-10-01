@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
 import { getConfig } from '@/config';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
+import { cards } from '@/db/schema';
 import {
   cardUrl,
   countContacts,
@@ -90,6 +91,31 @@ describeDb('card lifecycle', () => {
 
     expect(second.card.id).toBe(first.card.id);
     expect(second.card.slug).toBe(first.card.slug);
+  });
+
+  /**
+   * The reviews' second finding: two requests both passed the existence check, one then hit the
+   * unique index and returned a 500 after two Argon2 hashes. Racing for real — `Promise.all`, not
+   * two sequential calls — is what makes this test able to fail on the old code.
+   */
+  it('survives two creation requests arriving at once', async () => {
+    const owner = await insertOwner();
+    await addContact(owner);
+
+    const [first, second] = await Promise.all([
+      createCardForOwner(owner),
+      createCardForOwner(owner),
+    ]);
+
+    expect(first.ok && second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    // Both callers get a usable card, and it is the same card: one per owner, not one per click.
+    expect(second.card.id).toBe(first.card.id);
+    const [{ total }] = await getDb()
+      .select({ total: count() })
+      .from(cards)
+      .where(eq(cards.userId, owner));
+    expect(total).toBe(1);
   });
 
   it('stores the PIN hashed and encrypted, and shows it formatted', async () => {

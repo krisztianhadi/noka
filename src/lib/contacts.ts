@@ -1,5 +1,5 @@
-import { and, asc, eq } from 'drizzle-orm';
-import { getDb } from '@/db/client';
+import { and, asc, count, eq, sql } from 'drizzle-orm';
+import { getDb, type Executor } from '@/db/client';
 import { cards, contacts, ownerNotes } from '@/db/schema';
 import { sanitizeChannels, type Channel } from '@/lib/channels';
 import { CONTACT_PAYLOAD_SCHEMA, readContactPayload, type ContactPayload } from '@/lib/contact-payload';
@@ -8,6 +8,44 @@ import { contactKeyring } from '@/lib/keys';
 import { normalizePhone, type PhoneResult } from '@/lib/phone';
 import { isRelation, type Relation } from '@/lib/relations';
 import { sanitizeSpokenLanguages } from '@/lib/spoken-languages';
+
+/**
+ * The advisory lock namespace for one owner's contacts. Any two mutations of the same owner's
+ * contact list take this lock, so the list can be counted and changed without another request
+ * changing it in between. The second key is the owner's id hashed to an int4, which is what
+ * `pg_advisory_xact_lock` takes.
+ */
+const CONTACT_LOCK = 0x6e6f6b61;
+
+export async function deleteContact(userId: string, id: string): Promise<DeleteResult> {
+  return getDb().transaction(async (tx) => {
+    // Serialise against another deletion of the same owner's contacts. Without this, two tabs
+    // deleting the last two contacts each saw one left, both returned "not the last one", and the
+    // card survived pointing at nobody.
+    await tx.execute(sql`select pg_advisory_xact_lock(${CONTACT_LOCK}, hashtext(${userId}))`);
+
+    const deleted = await tx
+      .delete(contacts)
+      .where(and(eq(contacts.userId, userId), eq(contacts.id, id)))
+      .returning({ id: contacts.id });
+    if (deleted.length === 0) return { ok: false, error: 'not-found' };
+
+    const [remaining] = await tx
+      .select({ total: count() })
+      .from(contacts)
+      .where(eq(contacts.userId, userId));
+    if ((remaining?.total ?? 0) > 0) return { ok: true, cardDeleted: false };
+
+    const [card] = await tx
+      .select({ id: cards.id })
+      .from(cards)
+      .where(eq(cards.userId, userId))
+      .limit(1);
+    if (!card) return { ok: true, cardDeleted: false };
+    await tx.delete(cards).where(eq(cards.id, card.id));
+    return { ok: true, cardDeleted: true };
+  });
+}
 
 /**
  * Contacts and notes belong to the **owner**, not to a card (2026-09-29): he adds
@@ -96,16 +134,8 @@ function validate(
   return { ok: true, phone: { e164: phone.e164, display: phone.display } };
 }
 
-/** Local import-free delete: keeps the dependency between the two modules one-way. */
-async function deleteOwnerCard(userId: string): Promise<boolean> {
-  const [card] = await getDb().select().from(cards).where(eq(cards.userId, userId)).limit(1);
-  if (!card) return false;
-  await getDb().delete(cards).where(eq(cards.id, card.id));
-  return true;
-}
-
-export async function listContacts(userId: string): Promise<ContactView[]> {
-  const rows = await getDb()
+export async function listContacts(userId: string, handle: Executor = getDb()): Promise<ContactView[]> {
+  const rows = await handle
     .select()
     .from(contacts)
     .where(eq(contacts.userId, userId))
@@ -126,18 +156,29 @@ export async function createContact(userId: string, input: ContactInput): Promis
   const checked = validate(input);
   if (!checked.ok) return { ok: false, error: checked.error };
 
-  const existing = await listContacts(userId);
   const ring = contactKeyring();
+  const payload = encryptJson(encode(input, checked.phone), ring, activeKeyVersion(ring));
 
-  const [row] = await getDb()
-    .insert(contacts)
-    .values({
-      userId,
-      payloadEncrypted: encryptJson(encode(input, checked.phone), ring, activeKeyVersion(ring)),
-      keyVersion: activeKeyVersion(ring),
-      sortOrder: existing.length,
-    })
-    .returning();
+  const row = await getDb().transaction(async (tx) => {
+    // One lock per owner for everything that appends or removes a contact. Two adds racing would
+    // otherwise both read the same maximum and claim the same position; the lock is cheap and
+    // the alternative is an ordering that depends on who arrived first.
+    await tx.execute(sql`select pg_advisory_xact_lock(${CONTACT_LOCK}, hashtext(${userId}))`);
+
+    // The next position comes from the database in the same statement, so the insert no longer
+    // decrypts every existing contact to count them.
+    const [inserted] = await tx
+      .insert(contacts)
+      .values({
+        userId,
+        payloadEncrypted: payload,
+        keyVersion: activeKeyVersion(ring),
+        sortOrder: sql`coalesce((select max(${contacts.sortOrder}) from ${contacts} where ${contacts.userId} = ${userId}), -1) + 1`,
+      })
+      .returning();
+
+    return inserted;
+  });
 
   if (!row) throw new Error('Contact insert returned no row');
   return { ok: true, contact: decode(row) };
@@ -170,19 +211,8 @@ export async function updateContact(userId: string, id: string, input: ContactIn
  * The owner is never left in a half state: with no contacts there is no card, and
  * making one again needs a new contact first.
  */
-export async function deleteContact(userId: string, id: string): Promise<DeleteResult> {
-  const existing = await listContacts(userId);
-  if (!existing.some((contact) => contact.id === id)) return { ok: false, error: 'not-found' };
-
-  await getDb().delete(contacts).where(and(eq(contacts.userId, userId), eq(contacts.id, id)));
-
-  if (existing.length > 1) return { ok: true, cardDeleted: false };
-  return { ok: true, cardDeleted: await deleteOwnerCard(userId) };
-}
-
-
-export async function getNotes(userId: string): Promise<string> {
-  const [row] = await getDb().select().from(ownerNotes).where(eq(ownerNotes.userId, userId)).limit(1);
+export async function getNotes(userId: string, handle: Executor = getDb()): Promise<string> {
+  const [row] = await handle.select().from(ownerNotes).where(eq(ownerNotes.userId, userId)).limit(1);
   if (!row?.notesEncrypted) return '';
   return decryptJson<{ notes: string }>(row.notesEncrypted, contactKeyring()).value.notes;
 }

@@ -1,6 +1,6 @@
-import { count, eq } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import { getConfig } from '@/config';
-import { getDb } from '@/db/client';
+import { getDb, type Executor } from '@/db/client';
 import { cards, contacts } from '@/db/schema';
 import { activeKeyVersion, decryptJson, encryptJson } from '@/lib/crypto';
 import { contactKeyring } from '@/lib/keys';
@@ -26,8 +26,8 @@ export type Card = typeof cards.$inferSelect;
 
 export type CardResult = { ok: true; card: Card } | { ok: false; reason: 'no-card' | 'no-contacts' };
 
-export async function getCardForOwner(userId: string): Promise<Card | null> {
-  const [card] = await getDb().select().from(cards).where(eq(cards.userId, userId)).limit(1);
+export async function getCardForOwner(userId: string, handle: Executor = getDb()): Promise<Card | null> {
+  const [card] = await handle.select().from(cards).where(eq(cards.userId, userId)).limit(1);
   return card ?? null;
 }
 
@@ -58,9 +58,20 @@ export async function createCardForOwner(
       languages: sanitizeLanguageSet(languages),
       active: true,
     })
+    // Two clicks, two tabs, or a double-submitted form used to both pass the check above; one
+    // then hit the unique index and returned a 500 after two Argon2 hashes. Whoever wins the
+    // insert wins the card, and the loser reads it back rather than failing.
+    //
+    // The index is partial — one *active* card per owner — so the conflict target has to name the
+    // same predicate, or Postgres cannot match it to an index and the statement is a syntax error.
+    .onConflictDoNothing({ target: cards.userId, where: sql`${cards.active}` })
     .returning();
 
-  if (!card) throw new Error('Card insert returned no row');
+  if (!card) {
+    const winner = await getCardForOwner(userId);
+    if (!winner) throw new Error('Card insert lost the race and no card exists');
+    return { ok: true, card: winner };
+  }
   return { ok: true, card };
 }
 

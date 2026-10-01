@@ -58,6 +58,53 @@ describeDb('contacts and notes', () => {
     await closeDb();
   });
 
+  /**
+   * The reviews' first finding, as a test.
+   *
+   * Two deletions racing used to each see one contact left, both report "not the last one", and
+   * leave a live card pointing at nobody. The window is real but narrow, so this runs the race
+   * across a dozen owners at once: many transactions in flight is what makes the interleaving
+   * happen rather than being hoped for. Run against the code before the transaction, some owner
+   * is left with no contacts and a card.
+   */
+  it('deletes the card when deletions race for each owner\'s last contacts', async () => {
+    const owners = await Promise.all(
+      Array.from({ length: 12 }, async () => {
+        const owner = await freshOwner();
+        const first = await createContact(owner, input({ name: 'First' }));
+        const second = await createContact(owner, input({ name: 'Second' }));
+        if (!first.ok || !second.ok) throw new Error('expected two contacts');
+        await createCardForOwner(owner);
+        return { owner, ids: [first.contact.id, second.contact.id] as const };
+      }),
+    );
+
+    await Promise.all(owners.flatMap(({ owner, ids }) => ids.map((id) => deleteContact(owner, id))));
+
+    for (const { owner } of owners) {
+      expect(await listContacts(owner), 'contacts left').toHaveLength(0);
+      // The invariant: no contacts, no card. One of the two deletions has to have removed it.
+      expect(await getCardForOwner(owner), 'card left behind').toBeNull();
+    }
+  });
+
+  it('gives racing adds distinct positions', async () => {
+    const owner = await freshOwner();
+    await Promise.all([
+      createContact(owner, input({ name: 'One' })),
+      createContact(owner, input({ name: 'Two' })),
+      createContact(owner, input({ name: 'Three' })),
+    ]);
+
+    const rows = await db
+      .select({ sortOrder: contacts.sortOrder })
+      .from(contacts)
+      .where(eq(contacts.userId, owner));
+    const orders = rows.map((row) => row.sortOrder);
+    expect(new Set(orders).size).toBe(orders.length);
+    expect([...orders].sort((a, b) => a - b)).toEqual([0, 1, 2]);
+  });
+
   it('stores a contact encrypted and reads it back intact', async () => {
     const owner = await freshOwner();
     const created = await createContact(owner, input());

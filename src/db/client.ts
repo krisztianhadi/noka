@@ -15,6 +15,19 @@ const fullSchema = { ...schema, ...authSchema };
 let sql: ReturnType<typeof postgres> | undefined;
 let database: PostgresJsDatabase<typeof fullSchema> | undefined;
 
+/**
+ * Anything that can run a query: the pool, or a transaction on it.
+ *
+ * Services take one of these as their last parameter instead of calling `getDb()` themselves, so
+ * a caller that needs several reads to agree — the data export, the last-contact deletion — can
+ * pass its transaction in and get one consistent view. A service that ignores it still works;
+ * it just reads outside the caller's snapshot.
+ */
+export type Executor = Pick<
+  PostgresJsDatabase<typeof fullSchema>,
+  'select' | 'insert' | 'update' | 'delete' | 'execute'
+>;
+
 export function getDb(): PostgresJsDatabase<typeof fullSchema> {
   if (!database) {
     sql = postgres(getConfig().DATABASE_URL, { max: 5, prepare: false, idle_timeout: 20 });

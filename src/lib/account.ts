@@ -1,6 +1,6 @@
 import { and, count, eq, max } from 'drizzle-orm';
 import { users } from '@/db/auth-schema';
-import { getDb } from '@/db/client';
+import { getDb, type Executor } from '@/db/client';
 import { scanAttempts } from '@/db/schema';
 import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
 import { getNotes, listContacts } from '@/lib/contacts';
@@ -46,8 +46,8 @@ export interface OwnerExport {
 
 export const EXPORT_FORMAT = 1;
 
-async function scanSummary(cardId: string): Promise<ExportScanSummary> {
-  const db = getDb();
+async function scanSummary(cardId: string, handle: Executor = getDb()): Promise<ExportScanSummary> {
+  const db = handle;
   const [totals] = await db
     .select({ total: count(), lastAt: max(scanAttempts.createdAt) })
     .from(scanAttempts)
@@ -65,57 +65,55 @@ async function scanSummary(cardId: string): Promise<ExportScanSummary> {
 }
 
 export async function exportOwnerData(userId: string): Promise<OwnerExport | null> {
-  const [account] = await getDb()
-    .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
-    .from(users)
-    .where(eq(users.id, userId))
-    .limit(1);
-  if (!account) return null;
+  // One snapshot. The account, the card, the contacts, the note and the scan history used to be
+  // five independent reads, so rotating a card or editing a contact mid-export produced a file
+  // describing a state that never existed. Repeatable read makes every read in here see the same
+  // moment, and the handles below make the services use this transaction rather than the pool.
+  return getDb().transaction(
+    async (tx) => {
+      const [account] = await tx
+        .select({ id: users.id, name: users.name, email: users.email, createdAt: users.createdAt })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      if (!account) return null;
 
-  const [card, people, notes] = await Promise.all([
-    getCardForOwner(userId),
-    listContacts(userId),
-    getNotes(userId),
-  ]);
+      const card = await getCardForOwner(userId, tx);
+      const [people, notes] = await Promise.all([listContacts(userId, tx), getNotes(userId, tx)]);
 
-  return {
-    exportedAt: new Date().toISOString(),
-    format: EXPORT_FORMAT,
-    account: {
-      id: account.id,
-      name: account.name ?? '',
-      email: account.email,
-      createdAt: new Date(account.createdAt).toISOString(),
+      return {
+        exportedAt: new Date().toISOString(),
+        format: EXPORT_FORMAT,
+        account: {
+          id: account.id,
+          name: account.name ?? '',
+          email: account.email,
+          createdAt: new Date(account.createdAt).toISOString(),
+        },
+        card: card
+          ? {
+              url: cardUrl(card),
+              pin: revealPin(card),
+              languages: card.languages,
+              createdAt: new Date(card.createdAt).toISOString(),
+              scans: await scanSummary(card.id, tx),
+            }
+          : null,
+        contacts: people.map((contact) => ({
+          name: contact.name,
+          relation: contact.relation,
+          phone: contact.phoneE164,
+          services: contact.channels,
+          textOnly: contact.textOnly,
+          spokenLanguages: contact.spokenLanguages,
+        })),
+        notes: notes.length > 0 ? notes : null,
+      };
     },
-    card: card
-      ? {
-          url: cardUrl(card),
-          pin: revealPin(card),
-          languages: card.languages,
-          createdAt: new Date(card.createdAt).toISOString(),
-          scans: await scanSummary(card.id),
-        }
-      : null,
-    contacts: people.map((contact) => ({
-      name: contact.name,
-      relation: contact.relation,
-      phone: contact.phoneE164,
-      services: contact.channels,
-      textOnly: contact.textOnly,
-      spokenLanguages: contact.spokenLanguages,
-    })),
-    notes: notes.length > 0 ? notes : null,
-  };
+    { isolationLevel: 'repeatable read' },
+  );
 }
 
-/**
- * Erase the account and everything hanging off it (GDPR erasure, Art. 17).
- *
- * One delete: every table referencing `users` cascades — cards, contacts, notes, sessions,
- * and the audit rows that belong to a card. No soft-delete and no grace period, which is
- * the honest reading of "delete my account": a copy left in a backup is invisible to the
- * person who asked, and an account that still exists after being "deleted" is a lie.
- */
 export async function deleteOwnerAccount(userId: string): Promise<void> {
   await getDb().delete(users).where(eq(users.id, userId));
 }

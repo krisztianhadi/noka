@@ -1,5 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { getLogger } from '@/lib/logger';
 import { cards, scanAttempts } from '@/db/schema';
 import { users } from '@/db/auth-schema';
 import { negotiateLanguage } from '@/i18n/negotiate';
@@ -96,21 +97,32 @@ export async function recordPinAttempt(options: {
   ip: string | null;
 }): Promise<void> {
   const db = getDb();
-  await db.insert(scanAttempts).values({
-    cardId: options.cardId,
-    kind: options.success ? 'pin_success' : 'pin_fail',
-    success: options.success,
-    ipPrefixHash: hashIp(options.ip),
-  });
+  try {
+    await db.transaction(async (tx) => {
+      // The audit row and the counter move together or not at all: an interruption between them
+      // logged an unlock that the card's own count never saw, and the two are read side by side
+      // in the owner's export.
+      await tx.insert(scanAttempts).values({
+        cardId: options.cardId,
+        kind: options.success ? 'pin_success' : 'pin_fail',
+        success: options.success,
+        ipPrefixHash: hashIp(options.ip),
+      });
 
-  if (!options.cardId) return;
-  if (options.success) {
-    await db
-      .update(cards)
-      .set({ scanCount: sql`${cards.scanCount} + 1`, lastViewedAt: new Date() })
-      .where(eq(cards.id, options.cardId));
-  } else {
-    await db.update(cards).set({ lastFailedAt: new Date() }).where(eq(cards.id, options.cardId));
+      if (!options.cardId) return;
+      if (options.success) {
+        await tx
+          .update(cards)
+          .set({ scanCount: sql`${cards.scanCount} + 1`, lastViewedAt: new Date() })
+          .where(eq(cards.id, options.cardId));
+      } else {
+        await tx.update(cards).set({ lastFailedAt: new Date() }).where(eq(cards.id, options.cardId));
+      }
+    });
+  } catch (error) {
+    // The decision the reviews asked for, in code: the audit is never allowed to stand between a
+    // person in the street and the phone numbers. A failure here is logged and the page renders.
+    getLogger().error({ err: error, cardId: options.cardId }, 'pin attempt not recorded');
   }
 }
 

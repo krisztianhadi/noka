@@ -835,10 +835,15 @@ are not transactional**, and a few documents claim more than the code does. Ever
 checked against the code before it was written down; two of the findings were claims I had made
 myself earlier the same day.
 
-### 1. Concurrency and transactions (the real defect class)
+### 1. Concurrency and transactions (the real defect class) — **done 2026-10-01**
 
-Every one of these is a read-then-write with no transaction, and every one has a two-tab or
-double-click path to a bad state. This is tomorrow's first job, in this order.
+Every one of these was a read-then-write with no transaction, and every one had a two-tab or
+double-click path to a bad state. All five are fixed, each with a regression test that was run
+against the pre-fix code first: two of the four race tests **failed on the old code for the
+intended reason** (a card left behind; two adds claiming one position), and the audit test fails
+on the old code by rejecting instead of logging. The mechanism is a per-owner advisory lock taken
+by every contact mutation (`pg_advisory_xact_lock(CONTACT_LOCK, hashtext(user_id))`), one
+transaction for the audit and its counter, and `repeatable read` around the export.
 
 | # | File | Failure | Fix |
 |---|---|---|---|

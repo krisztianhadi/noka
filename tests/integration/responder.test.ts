@@ -63,6 +63,27 @@ describeDb('responder', () => {
     await closeDb();
   });
 
+  /**
+   * The decision the reviews asked for, in a test: the audit must never stand between a person in
+   * the street and the phone numbers. A card id that does not exist makes the audit insert violate
+   * its foreign key, which is a real failure of the real statement — no seam needed.
+   */
+  it('does not let a failed audit stop the page from rendering', async () => {
+    const card = await liveCard();
+    const before = await db.select().from(scanAttempts).where(eq(scanAttempts.cardId, card.id));
+
+    await expect(
+      recordPinAttempt({ cardId: randomUUID(), success: true, ip: '203.0.113.9' }),
+    ).resolves.toBeUndefined();
+
+    // Nothing half-written: the transaction rolled back, and a real attempt still records after it.
+    await recordPinAttempt({ cardId: card.id, success: true, ip: '203.0.113.9' });
+    const after = await db.select().from(scanAttempts).where(eq(scanAttempts.cardId, card.id));
+    expect(after.length).toBe(before.length + 1);
+    const [reloaded] = await getDb().select().from(cards).where(eq(cards.id, card.id));
+    expect(reloaded!.scanCount).toBe(card.scanCount + 1);
+  });
+
   it('finds a card by its normalised slug, and nothing else', async () => {
     const card = await liveCard();
     expect((await findCardBySlug(card.slug))?.id).toBe(card.id);
