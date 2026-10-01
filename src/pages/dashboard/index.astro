@@ -10,7 +10,7 @@ import Plain from '@/layouts/Plain.astro';
 import { t } from '@/i18n/catalogue';
 import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
 import { channelHref, type Channel } from '@/lib/channels';
-import { getNotes, listContacts } from '@/lib/contacts';
+import { MAX_CONTACTS, getNotes, listContacts } from '@/lib/contacts';
 import { errorKey, noticeKey } from '@/lib/dashboard';
 import { toggleTarget, type Theme } from '@/lib/theme';
 import { flagForLanguage } from '@/lib/flags';
@@ -277,6 +277,11 @@ const panelClass =
           </form>
         </div>
       ) : (
+        contacts.length >= MAX_CONTACTS ? (
+          <p class="rounded-lg border border-line bg-surface px-4 py-3 text-sm text-fg-muted">
+            {label('owner.contacts.limit')}
+          </p>
+        ) : (
         <details class="add-more overflow-hidden rounded-lg border border-line bg-surface">
           <summary class="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-3 text-sm font-medium marker:content-none hover:bg-muted">
             <Icon name="plus" size={16} /> {label('owner.contacts.addAnother')}
@@ -285,6 +290,7 @@ const panelClass =
             <ContactForm action="/dashboard/contacts/new" submitLabel={label('owner.contacts.addSubmit')} />
           </div>
         </details>
+        )
       )
     }
   </section>
@@ -334,7 +340,7 @@ const panelClass =
       {
         notes ? (
           <div>
-            <p class="notes mt-3 text-base leading-7 whitespace-pre-wrap text-fg">{notes}</p>
+            <p class="notes mt-3 text-base leading-7 break-words whitespace-pre-wrap text-fg">{notes}</p>
             <details class="edit-form mt-4">
               <summary class="sr-only">{label('owner.notes.edit')}</summary>
               <form method="post" action="/dashboard/notes" class="space-y-3 border-t border-line pt-4">

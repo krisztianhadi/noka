@@ -872,7 +872,7 @@ tests rather than to a late-evening commit:
 - **`isSameOrigin` returns 403 when `Origin` is absent** (`src/lib/http.ts:13-18`): every dashboard
   POST then fails for a client that omits it. Fall back to `Referer`, and test an Origin-less POST.
 
-### 2. Server-side limits and layout robustness
+### 2. Server-side limits and layout robustness — **done 2026-10-01**
 
 - **No service-layer length limits** (`src/lib/contacts.ts:91,190-207`): `maxlength` exists only in
   HTML, so a direct POST stores arbitrarily large encrypted values. Enforce in the service.

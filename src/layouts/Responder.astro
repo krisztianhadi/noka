@@ -299,6 +299,9 @@ const { lang, title } = Astro.props;
     /* The heading owns the gap above this panel; two 32px margins made an 80px hole. */
     margin-top: 0;
     padding: var(--s5);
+    /* A note with no spaces in it — a URL, a pasted reference number — must wrap rather than
+       widen the page. The name above already does this; the note did not. */
+    overflow-wrap: anywhere;
     background: #f6f6f6;
     border: 2px solid #ddd;
     border-radius: 6px;

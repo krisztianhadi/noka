@@ -8,6 +8,9 @@ import { createCardForOwner, getCardForOwner } from '@/lib/cards';
 import { users } from '@/db/auth-schema';
 import { contacts } from '@/db/schema';
 import {
+  MAX_CONTACTS,
+  MAX_NAME_LENGTH,
+  MAX_NOTES_LENGTH,
   createContact,
   deleteContact,
   getContact,
@@ -86,6 +89,41 @@ describeDb('contacts and notes', () => {
       // The invariant: no contacts, no card. One of the two deletions has to have removed it.
       expect(await getCardForOwner(owner), 'card left behind').toBeNull();
     }
+  });
+
+  /**
+   * The HTML `maxlength` is a convenience; a direct POST used to store an arbitrarily long name or
+   * note, encrypted, and the emergency page paid for it. These are the service's own limits.
+   */
+  it('refuses a name past the limit, whatever the form allowed', async () => {
+    const owner = await freshOwner();
+    const tooLong = await createContact(owner, input({ name: 'x'.repeat(MAX_NAME_LENGTH + 1) }));
+    expect(tooLong).toEqual({ ok: false, error: 'name-too-long' });
+    // And the boundary itself still saves: an off-by-one here would reject a legitimate name.
+    const atLimit = await createContact(owner, input({ name: 'x'.repeat(MAX_NAME_LENGTH) }));
+    expect(atLimit.ok).toBe(true);
+  });
+
+  it('stops at the contact cap instead of growing the emergency page forever', async () => {
+    const owner = await freshOwner();
+    for (let index = 0; index < MAX_CONTACTS; index++) {
+      const created = await createContact(owner, input({ name: `Contact ${index}` }));
+      expect(created.ok, `contact ${index}`).toBe(true);
+    }
+
+    const overflow = await createContact(owner, input({ name: 'One too many' }));
+    expect(overflow).toEqual({ ok: false, error: 'too-many-contacts' });
+    expect(await listContacts(owner)).toHaveLength(MAX_CONTACTS);
+  });
+
+  it('stores a note up to the limit and refuses one past it', async () => {
+    const owner = await freshOwner();
+    await setNotes(owner, 'x'.repeat(MAX_NOTES_LENGTH));
+    expect((await getNotes(owner)).length).toBe(MAX_NOTES_LENGTH);
+
+    await expect(setNotes(owner, 'x'.repeat(MAX_NOTES_LENGTH + 1))).rejects.toThrow();
+    // The stored note is untouched by the refused write.
+    expect((await getNotes(owner)).length).toBe(MAX_NOTES_LENGTH);
   });
 
   it('gives racing adds distinct positions', async () => {

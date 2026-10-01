@@ -77,6 +77,7 @@ const fr: Record<MessageKey, string> = {
   'owner.contacts.deleteOk': 'Supprimer',
   'owner.contacts.addTitle': 'Ajouter un contact',
   'owner.contacts.addAnother': 'Ajouter un autre contact',
+  'owner.contacts.limit': 'Jusqu’à 20 contacts.',
   'owner.contacts.addSubmit': 'Ajouter le contact',
   'owner.contacts.saveSubmit': 'Enregistrer les modifications',
 
@@ -223,6 +224,9 @@ const fr: Record<MessageKey, string> = {
   'error.too-long': 'Ce numéro est trop long.',
   'error.invalid-number': 'Ce numéro ne semble pas correct.',
   'error.contact-not-found': "Ce contact n'existe plus.",
+  'error.name-too-long': 'Ce nom est trop long. Restez sous 80 caractères.',
+  'error.too-many-contacts': 'C’est le maximum de contacts qu’une carte peut porter.',
+  'error.notes-too-long': 'Cette note est trop longue. Restez sous 2000 caractères.',
   'error.contact-generic': "Une erreur s'est produite avec ce contact.",
   'error.no-card': 'Il n\'y a pas de carte à supprimer.',
   'error.card-no-contacts': 'Ajoutez au moins un contact avant de créer une carte.',

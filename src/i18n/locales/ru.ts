@@ -77,6 +77,7 @@ const ru: Record<MessageKey, string> = {
   'owner.contacts.deleteOk': 'Удалить',
   'owner.contacts.addTitle': 'Добавить контакт',
   'owner.contacts.addAnother': 'Добавить ещё контакт',
+  'owner.contacts.limit': 'До 20 контактов.',
   'owner.contacts.addSubmit': 'Добавить контакт',
   'owner.contacts.saveSubmit': 'Сохранить изменения',
 
@@ -223,6 +224,9 @@ const ru: Record<MessageKey, string> = {
   'error.too-long': 'Этот номер слишком длинный.',
   'error.invalid-number': 'Этот номер выглядит неверным.',
   'error.contact-not-found': 'Этого контакта больше не существует.',
+  'error.name-too-long': 'Слишком длинное имя. Не больше 80 символов.',
+  'error.too-many-contacts': 'Это максимум контактов для одной карточки.',
+  'error.notes-too-long': 'Слишком длинная заметка. Не больше 2000 символов.',
   'error.contact-generic': 'Что-то пошло не так с этим контактом.',
   'error.no-card': 'Нет карты для удаления.',
   'error.card-no-contacts': 'Добавьте хотя бы один контакт, прежде чем делать карту.',

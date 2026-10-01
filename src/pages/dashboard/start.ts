@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createCardForOwner } from '@/lib/cards';
-import { createContact, setNotes } from '@/lib/contacts';
+import { MAX_NOTES_LENGTH, createContact, setNotes } from '@/lib/contacts';
 import { dashboardBack } from '@/lib/dashboard';
 import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
 import { composePhone } from '@/lib/phone';
@@ -36,6 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // The note is optional: an empty box is not an error, and it is not a note either.
   const notes = field(form, 'notes').trim();
+  if (notes.length > MAX_NOTES_LENGTH) return dashboardBack('error', 'notes-too-long');
   if (notes) await setNotes(locals.owner.id, notes);
 
   // Idempotent: it returns the existing card if there is one, so a retry cannot mint a second.

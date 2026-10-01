@@ -80,6 +80,7 @@ const en = {
   'owner.contacts.deleteOk': 'Delete',
   'owner.contacts.addTitle': 'Add a contact',
   'owner.contacts.addAnother': 'Add another contact',
+  'owner.contacts.limit': 'Up to 20 contacts.',
   'owner.contacts.addSubmit': 'Add contact',
   'owner.contacts.saveSubmit': 'Save changes',
 
@@ -226,6 +227,9 @@ const en = {
   'error.too-long': 'That number is too long.',
   'error.invalid-number': 'That number does not look right.',
   'error.contact-not-found': 'That contact no longer exists.',
+  'error.name-too-long': 'That name is too long. Keep it under 80 characters.',
+  'error.too-many-contacts': 'That is the most contacts a card can carry.',
+  'error.notes-too-long': 'That note is too long. Keep it under 2000 characters.',
   'error.contact-generic': 'Something went wrong with that contact.',
   'error.no-card': 'There is no card to delete.',
   'error.card-no-contacts': 'Add at least one contact before making a card.',

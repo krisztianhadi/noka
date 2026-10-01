@@ -10,6 +10,8 @@ import type { ContactError } from '@/lib/contacts';
  */
 const CONTACT_ERRORS: Record<ContactError, MessageKey> = {
   'name-required': 'error.name-required',
+  'name-too-long': 'error.name-too-long',
+  'too-many-contacts': 'error.too-many-contacts',
   'relation-invalid': 'error.relation-invalid',
   empty: 'error.phone-empty',
   'missing-country-code': 'error.missing-country-code',

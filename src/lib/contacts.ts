@@ -81,7 +81,13 @@ export interface ContactInput {
 
 export type PhoneError = Extract<PhoneResult, { ok: false }>['reason'];
 
-export type ContactError = 'name-required' | 'relation-invalid' | 'not-found' | PhoneError;
+export type ContactError =
+  | 'name-required'
+  | 'name-too-long'
+  | 'too-many-contacts'
+  | 'relation-invalid'
+  | 'not-found'
+  | PhoneError;
 
 export type ContactResult = { ok: true; contact: ContactView } | { ok: false; error: ContactError };
 export type DeleteResult =
@@ -123,10 +129,21 @@ function encode(input: ContactInput, phone: { e164: string; display: string }): 
   };
 }
 
+/** The caps the UI states. A `maxlength` is a convenience; these are the rule. */
+export const MAX_NAME_LENGTH = 80;
+export const MAX_NOTES_LENGTH = 2000;
+/**
+ * Enough for anyone's emergency contacts, and small enough that the responder page stays inside
+ * its 12 KB budget: twenty contacts of real-world size encrypt to well under half of it.
+ */
+export const MAX_CONTACTS = 20;
+
 function validate(
   input: ContactInput,
 ): { ok: false; error: ContactError } | { ok: true; phone: { e164: string; display: string } } {
-  if (input.name.trim().length === 0) return { ok: false, error: 'name-required' };
+  const name = input.name.trim();
+  if (name.length === 0) return { ok: false, error: 'name-required' };
+  if (name.length > MAX_NAME_LENGTH) return { ok: false, error: 'name-too-long' };
   if (!isRelation(input.relation)) return { ok: false, error: 'relation-invalid' };
 
   const phone = normalizePhone(input.phone);
@@ -165,6 +182,12 @@ export async function createContact(userId: string, input: ContactInput): Promis
     // the alternative is an ordering that depends on who arrived first.
     await tx.execute(sql`select pg_advisory_xact_lock(${CONTACT_LOCK}, hashtext(${userId}))`);
 
+    const [counted] = await tx
+      .select({ total: count() })
+      .from(contacts)
+      .where(eq(contacts.userId, userId));
+    if ((counted?.total ?? 0) >= MAX_CONTACTS) return null;
+
     // The next position comes from the database in the same statement, so the insert no longer
     // decrypts every existing contact to count them.
     const [inserted] = await tx
@@ -180,7 +203,8 @@ export async function createContact(userId: string, input: ContactInput): Promis
     return inserted;
   });
 
-  if (!row) throw new Error('Contact insert returned no row');
+  // Null means the cap was reached, which is not an error in the insert: it is a full card.
+  if (!row) return { ok: false, error: 'too-many-contacts' };
   return { ok: true, contact: decode(row) };
 }
 
@@ -219,6 +243,9 @@ export async function getNotes(userId: string, handle: Executor = getDb()): Prom
 
 export async function setNotes(userId: string, notes: string): Promise<void> {
   const trimmed = notes.trim();
+  if (trimmed.length > MAX_NOTES_LENGTH) {
+    throw new Error(`Note is longer than ${MAX_NOTES_LENGTH} characters`);
+  }
   const ring = contactKeyring();
   const db = getDb();
 

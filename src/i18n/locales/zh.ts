@@ -77,6 +77,7 @@ const zh: Record<MessageKey, string> = {
   'owner.contacts.deleteOk': '删除',
   'owner.contacts.addTitle': '添加联系人',
   'owner.contacts.addAnother': '添加另一位联系人',
+  'owner.contacts.limit': '最多 20 位联系人。',
   'owner.contacts.addSubmit': '添加联系人',
   'owner.contacts.saveSubmit': '保存更改',
 
@@ -223,6 +224,9 @@ const zh: Record<MessageKey, string> = {
   'error.too-long': '该号码太长。',
   'error.invalid-number': '该号码看起来不正确。',
   'error.contact-not-found': '该联系人已不存在。',
+  'error.name-too-long': '名字太长，请控制在 80 个字符以内。',
+  'error.too-many-contacts': '这已是卡片能承载的联系人上限。',
+  'error.notes-too-long': '备注太长，请控制在 2000 个字符以内。',
   'error.contact-generic': '处理该联系人时出错。',
   'error.no-card': '没有可删除的卡片。',
   'error.card-no-contacts': '请先添加至少一位联系人，然后再制作卡片。',
