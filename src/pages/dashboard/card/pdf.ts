@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { cardPdf, isLayout } from '@/lib/card-pdf';
 import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
+import { cardOrigin } from '@/lib/card-origin';
 
 /**
  * The card as a print master: the exact card, one on A4, or a sheet of ten (Phase 7).
@@ -8,7 +9,7 @@ import { cardUrl, getCardForOwner, revealPin } from '@/lib/cards';
  * Never cached, for the same reason the JPEG is not: it carries the current PIN, and a rotated
  * PIN must not survive in a browser cache.
  */
-export const GET: APIRoute = async ({ locals, url }) => {
+export const GET: APIRoute = async ({ locals, request, url }) => {
   const owner = locals.owner;
   if (!owner) return new Response('Not signed in', { status: 401 });
 
@@ -19,7 +20,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   const layout = isLayout(requested) ? requested : 'a4';
 
   const pdf = await cardPdf(
-    { pin: revealPin(card), url: cardUrl(card), languages: card.languages },
+    { pin: revealPin(card), url: cardUrl(card, cardOrigin(request)), languages: card.languages },
     layout,
   );
 
