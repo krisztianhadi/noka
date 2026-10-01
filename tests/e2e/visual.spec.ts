@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { addContact, kebab, makeCard, signUp } from './helpers';
+import { addContact, kebab, makeCard, saveNotes, signUp } from './helpers';
 
 /**
  * The checks my first pass was missing.
@@ -59,6 +59,33 @@ test.describe('things axe cannot see', () => {
     const ink = await resolved(page, '--noka-ink');
     const plate = page.locator('#card > div').first();
     expect(await plate.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(ink);
+  });
+
+  test('a name or note with no spaces in it does not widen the page', async ({ page }) => {
+    await signUp(page);
+    // The worst case a real person can produce: the longest name the form allows, with no space
+    // anywhere in it, and a note that is one unbroken token. Both used to push the responder page
+    // sideways, which on a phone means the phone numbers scroll off the screen.
+    const unbroken = 'W'.repeat(80);
+    await addContact(page, { name: unbroken, phone: '812 345 678' });
+    await saveNotes(page, `https://example.test/${'x'.repeat(400)}`);
+    await makeCard(page);
+
+    const slug = (await page.locator('.url a').textContent())!.trim().split('/').pop()!;
+    const pin = ((await page.locator('.pin').textContent()) ?? '').replace(/\D/g, '');
+    const guest = await page.context().newPage();
+    await guest.goto(`/c/${slug}`);
+    await guest.fill('#pin', pin);
+    await guest.getByRole('button').first().click();
+    await guest.waitForLoadState('networkidle');
+
+    const overflow = async (page_: typeof guest) =>
+      page_.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(await overflow(guest), 'responder page').toBeLessThanOrEqual(0);
+    // And the name is present, not silently clipped into a single character.
+    await expect(guest.locator('.name')).toHaveText(unbroken);
+    expect(await overflow(page), 'dashboard').toBeLessThanOrEqual(0);
+    await guest.close();
   });
 
   test('the wordmark is legible in both themes', async ({ page }) => {
