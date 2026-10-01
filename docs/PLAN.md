@@ -901,8 +901,11 @@ tests rather than to a late-evening commit:
   Chinese gets one, and French counts zero as singular — which the hand-picked pair got wrong.
 - **RTL**: `dir` now exists in `LANGUAGE_INFO` and both layouts render it, but no layout has been
   looked at mirrored. Arabic is a metadata change plus a visual pass — the doc now says so.
-- **Card artwork vs longer translations** (`src/lib/card-artwork.ts:87-121`): fixed pixels, no
-  measurement. A longer language overlaps its slot instead of failing. Measure and fail loudly.
+- ~~**Card artwork vs longer translations**~~ — **done 2026-10-01**: `tests/unit/card-artwork.test.ts`
+  renders the card once per language and measures where the ink actually lands, asserting clear
+  paper inside each edge. A clipped or overlapping line now fails in the suite instead of on
+  paper, and the test carries a control (an oversized phrase) so a measurement that always returned
+  the full canvas could not masquerade as a pass.
 
 ### 5. Tests to add with the fixes above
 
