@@ -820,7 +820,7 @@ post-it it replaces.
   (D18 already fixes this; §8 lists what a sponsor must not get.)
 - **Whitelabel** — a partner running an instance under their own brand, paying
   for the work rather than for permission. MIT already grants the permission, so
-  what is sold is hosting, customisation and support, not a licence.
+  what is sold is hosting, customisation and support, not a license.
 - **Nothing else.** No user data sold, shared or brokered, ever. No analytics on
   the responder page. No "anonymised insights" — that phrase is a data sale with
   a friendlier name.
@@ -836,7 +836,7 @@ post-it it replaces.
 
 **What that costs, stated plainly:** MIT means someone else may legally fork noka,
 close their fork and sell it. The commitment above binds the owner, not the
-licence. That is a known, accepted trade — the alternative was a licence that
+license. That is a known, accepted trade — the alternative was a license that
 would have made the code harder to reuse for the people this is for.
 
 **What is still undecided, and is fine to be:** whether sponsors ever actually

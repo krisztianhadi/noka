@@ -33,7 +33,7 @@ exit criteria per phase.
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [I18N.md](I18N.md) | Adding a language: the three-file recipe for a new locale, and the rules the build enforces. |
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
-| [DECISIONS.md](DECISIONS.md) | The ADRs: 32 numbered decisions, the one this project reversed, and the open ones. |
+| [DECISIONS.md](DECISIONS.md) | The ADRs: 33 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |
 | [COSTS.md](COSTS.md) | What the build costs: per-feature attribution, peak/off-peak timing, real USD ledger. |
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
@@ -42,6 +42,7 @@ exit criteria per phase.
 | [blog/2026-09-29-building-noka-in-a-day.md](blog/2026-09-29-building-noka-in-a-day.md) | Day one: the three verification failures (unpublished). |
 | [blog/2026-09-30-five-millimetres.md](blog/2026-09-30-five-millimetres.md) | Day two: design passes, a measured contradiction, and a limit that let you past it (unpublished). |
 | [../README.md](../README.md) | Under 200 lines: what it is, quick start, scripts. |
+| [../LICENSE](../LICENSE) | **MIT**, Copyright (c) 2026 Krisztian Hadi. The reasoning, including what MIT does not enforce, is ADR-018 and PLAN §18. |
 | [ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md) | Historical: the spec as first pasted on 2026-09-29. Superseded by PLAN.md, kept for provenance. |
 
 ## Where to look first

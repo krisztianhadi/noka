@@ -25,7 +25,7 @@ later reversed.
 | 015 | The responder plane is one request, one language, no oracle | locked |
 | 016 | The rate limiter's store, and what its counter counts | locked |
 | 017 | The printed card can be byte-deterministic | locked |
-| 018 | MIT — the licence, with the reasoning written down | locked |
+| 018 | MIT — the license, with the reasoning written down | locked |
 | 019 | Users are never charged; sponsors or whitelabel; never sold into closed source | locked |
 
 ADRs **020–033** are newer and sit below this table, above *Open decisions*; 001–019 follow it.
@@ -623,7 +623,7 @@ Phase 0 spike, run by `scripts/spike-pdf.mjs`, with the hermetic half kept as
 
 An emergency card that only works on my server is a worse product than one that
 can be run anywhere, and the whole idea is small enough that someone else hosting
-it costs me nothing. MIT is the licence that asks the least of the person who
+it costs me nothing. MIT is the license that asks the least of the person who
 wants to fork it, print their own cards and never talk to me: a friend with a
 printer, a clinic, a small NGO.
 
@@ -633,8 +633,8 @@ paper, network-effect protection is not worth the friction — and AGPL would ha
 made the code harder to reuse for exactly the people this is for.
 
 The alternatives were considered and rejected in one line each: **AGPL** for the
-same reason above; **no licence at all**, which is the worst option because it
-means nobody may legally use it; **a source-available licence**, which reads as a
+same reason above; **no license at all**, which is the worst option because it
+means nobody may legally use it; **a source-available license**, which reads as a
 trap to a reviewer and buys nothing here.
 
 Consistency mattered too: Ghosted, the sibling project, is MIT, so a reader
@@ -642,7 +642,7 @@ moving between the two repositories does not have to think about licensing.
 
 **On the spelling of the name in the copyright line:** it is the ASCII form,
 **Krisztian**, which is how he writes it everywhere it has to work — handles,
-registrations, licence files. The accented form, **Krisztián**, is the official
+registrations, license files. The accented form, **Krisztián**, is the official
 one. Not a typo, and not worth reopening: use the ASCII form in every repository
 so the two never drift.
 
@@ -673,11 +673,11 @@ card is infrastructure for whoever is holding it. Infrastructure that can be
 withdrawn does not deserve the trust people place in it by printing it.
 
 **The honest cost of that last promise:** MIT (ADR-018) lets anyone fork noka,
-close their fork and sell it. This ADR binds the owner, not the licence. Making
-it legally binding would mean a different licence and a contributor agreement —
+close their fork and sell it. This ADR binds the owner, not the license. Making
+it legally binding would mean a different license and a contributor agreement —
 more friction for exactly the people the project exists for. Accepted knowingly,
 and written here so nobody later discovers it as a loophole.
 
-**Why now and not later:** the licence (ADR-018) was the moment a reader could
+**Why now and not later:** the license (ADR-018) was the moment a reader could
 start asking what the business model is. "We will figure it out" is how projects
 end up with an analytics pixel on an emergency page.

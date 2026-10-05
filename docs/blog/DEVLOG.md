@@ -25,7 +25,7 @@ already settled.
 - Two bugs my own tests found that a demo would have shipped.
 - Making a PDF byte-identical is harder than it looks.
 - Designing for a stranger who is having the worst day of their week.
-- The licence decision nobody makes until a stranger asks to use the code.
+- The license decision nobody makes until a stranger asks to use the code.
 - Four cents for a card, fifty-four for a font: what the cost log says about
   where the money goes.
 - The cheapest mistake of the week: doing the work inside peak-pricing hours.

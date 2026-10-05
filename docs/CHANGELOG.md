@@ -4,6 +4,25 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-10-05
 
+### Docs — the license is MIT everywhere, and spelled the American way
+
+An audit for the license, since it is the one document a stranger reads before trusting a
+repository with their time.
+
+- **It was already MIT everywhere it was stated**, and nothing claimed otherwise: `LICENSE` at
+  the root (tracked, the canonical MIT text, `Copyright (c) 2026 Krisztian Hadi`),
+  `"license": "MIT"` in `package.json`, README §License, the imprint and terms pages, the
+  landing's "MIT licensed · developed in the open", and ADR-018/019 with the reasoning. No
+  per-file SPDX headers were added: MIT does not need them, and a header on sixty files is
+  churn rather than clarity.
+- **What was wrong was the spelling.** Eighteen occurrences of British "licence" — the README
+  heading, ADR-018 and ADR-019, two in PLAN §18, a heading and a sentence on the terms page,
+  the devlog — against this project's own US-spelling rule ("license", like "color" and
+  "center"). All eighteen are fixed.
+- README's license section now names the copyright holder and says the license covers the
+  whole repository, `docs/INDEX.md` lists `LICENSE` as a document of the project, and the
+  index's ADR count was corrected (32 → 33, the second time it had drifted).
+
 ### Feature — the sponsor strip, and the policy that keeps it off the emergency page
 
 A sponsor buys a mark on a page, not a row in a database and not a view of anyone's
@@ -576,7 +595,7 @@ it cannot read a screenshot.
   project-docs skill, which every future project loads when its README is written.
   Hand-written and AI-enhanced, the tooling named, and a pointer to the commits,
   ADRs and devlog as the evidence.
-- **The name in the copyright line is settled:** ASCII **Krisztian** in licence
+- **The name in the copyright line is settled:** ASCII **Krisztian** in license
   files (the official accented form is Krisztián), recorded in ADR-018 so it is
   not re-litigated per repository.
 
@@ -587,7 +606,7 @@ it cannot read a screenshot.
   project sponsors and whitelabel arrangements; user data is never sold, shared or
   brokered; and the product is never sold into closed source. The ADR states what
   MIT does and does not enforce, so the last promise is a commitment rather than a
-  licence term.
+  license term.
 - **The encryption change is now in the plan's own delta list** (item 13) rather
   than only inside D1 and ADR-003: the spec asked for `pgcrypto`, the project does
   AES-256-GCM in the application, and the README says why in one paragraph —
@@ -599,7 +618,7 @@ it cannot read a screenshot.
   billing page. First run: **369 turns, 107,148,435 total tokens** across six
   sessions, of which 106.3 M are cached prompt reads.
 
-### Feature — MIT licence, and the ADR that explains it
+### Feature — MIT license, and the ADR that explains it
 
 - `LICENSE` (MIT, Copyright (c) 2026 Krisztian Hadi) and `"license": "MIT"` in
   package.json, so GitHub detects it. README and DECISIONS.md updated; it is no

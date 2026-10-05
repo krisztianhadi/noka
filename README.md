@@ -186,11 +186,11 @@ Postgres, signup included — proof the Argon2id module works on musl.
 - [docs/ORIGINAL_BRIEF.md](docs/ORIGINAL_BRIEF.md) — the first spec, kept because the plan
   later disagreed with it.
 
-## Licence
+## License
 
-MIT — [LICENSE](LICENSE). The useful version of this idea is one other people can
-self-host, fork and print without asking: a card that only works on my server is a
-worse product than one that runs anywhere. Reasoning: ADR-018.
+MIT — [LICENSE](LICENSE), Copyright (c) 2026 Krisztian Hadi, covering the whole repository:
+anyone may self-host, fork and print it. The promise not to sell the project into closed
+source is a commitment, not a license term — ADR-018 and PLAN §18.
 
 ## Built with AI
 
