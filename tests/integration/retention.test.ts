@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { afterAll, describe, expect, it } from 'vitest';
 import { closeDb, getDb } from '@/db/client';
 import { users } from '@/db/auth-schema';
-import { cards, scanAttempts } from '@/db/schema';
+import { scanAttempts } from '@/db/schema';
 import { purgeExpiredAttempts, RETENTION_DAYS, retentionCutoff } from '@/lib/retention';
+import { insertOwnerWithCard } from './fixtures';
 
 /**
  * The retention promise (D24, §11): the scan audit trail goes after 30 days.
@@ -21,23 +21,9 @@ describeDb('retention purge', () => {
   const NOW = new Date('2026-09-29T12:00:00Z');
 
   async function insertCard(): Promise<string> {
-    const [user] = await db
-      .insert(users)
-      .values({ name: 'Owner', email: `purge-${randomUUID()}@noka.test` })
-      .returning();
-    createdUserIds.push(user!.id);
-    // Only an id is needed here: the rows under test hang off it by foreign key.
-    const [card] = await db
-      .insert(cards)
-      .values({
-        userId: user!.id,
-        slug: randomUUID().replace(/-/g, '').slice(0, 26).toUpperCase(),
-        pinHash: '$argon2id$v=19$m=19456,t=2,p=1$placeholder',
-        pinEncrypted: Buffer.from([1, 2, 3]),
-        active: true,
-      })
-      .returning();
-    return card!.id;
+    const { userId, cardId } = await insertOwnerWithCard(db);
+    createdUserIds.push(userId);
+    return cardId;
   }
 
   async function insertAttempt(cardId: string, daysAgo: number): Promise<number> {

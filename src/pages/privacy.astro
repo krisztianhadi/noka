@@ -81,7 +81,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
     <h2 class={heading}>5. Retention</h2>
     <p class="text-sm">
       Scan attempts are deleted 30 days after they are written. The sweep that does it exists and is
-      tested — <code class="font-mono text-xs">pnpm purge</code>, with a dry-run that says what it
+      tested — <code class="font-mono text-xs">pnpm db:purge</code>, with a dry-run that says what it
       would delete — but the schedule that calls it is on the launch checklist rather than running
       today, so read that sentence as the promise it is and not as a running job. Contacts, notes
       and the card stay for as long as your account exists, and are deleted with it.

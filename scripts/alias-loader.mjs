@@ -11,16 +11,23 @@
  * Only the alias, the extension and the directory index are resolved; everything else is
  * left to Node.
  */
-import { access } from 'node:fs/promises';
+import { stat } from 'node:fs/promises';
 
 const SOURCE_ROOT = new URL('../src/', import.meta.url).href;
 const EXTENSIONS = ['', '.ts', '/index.ts'];
 
+/**
+ * The bare candidate has to be a **file**. `access()` succeeds on a directory, so a module
+ * that shares its name with a directory — `src/config.ts` beside `src/config/`, which the
+ * sponsor configuration created — resolved to the directory and Node refused the import
+ * with `ERR_UNSUPPORTED_DIR_IMPORT`. The order stays "exact path first" so a real
+ * directory with an `index.ts` still wins for `@/some/dir`.
+ */
 async function firstExisting(candidates) {
   for (const candidate of candidates) {
     try {
-      await access(new URL(candidate));
-      return candidate;
+      const stats = await stat(new URL(candidate));
+      if (stats.isFile()) return candidate;
     } catch {
       // try the next one
     }

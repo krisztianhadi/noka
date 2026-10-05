@@ -133,6 +133,48 @@ not made.
   the only trace. The first operator who is not also the developer is the trigger to revisit
   it.
 
+### Fix — the cron script was broken twice over, and nobody would have noticed
+
+Found while building the restore drill, and worth the whole drill on its own: the retention
+sweep — the job that deletes hashed scan attempts after 30 days, the one promise the privacy
+page makes about data not being kept — could not run.
+
+- **`pnpm purge` was not a script.** pnpm intercepts `purge` as one of its own commands:
+  `pnpm purge --dry-run` printed `Unknown option: 'dry-run' … For help, run: pnpm help clean`
+  and never reached `scripts/purge.mjs`. The script is `pnpm db:purge` now, and the references
+  in [PLAN.md](PLAN.md) D24 and on the privacy page follow.
+- **The alias loader resolved a directory as a module.** `scripts/alias-loader.mjs` accepted
+  the first candidate that `access()` could reach, and `access()` succeeds on a directory — so
+  `@/config` resolved to `src/config/` (the sponsor configuration added in Phase 8) instead of
+  `src/config.ts`, and plain-node scripts died with `ERR_UNSUPPORTED_DIR_IMPORT`. It now
+  requires a file, and `tests/integration/cli.test.ts` runs the real entry point through pnpm
+  and asserts a dry run deletes nothing. Reverting the loader fix fails that test, which is how
+  it was checked.
+
+### Feature — a restore drill that proves the key still fits, and a smoke load test
+
+- **`pnpm drill:restore`** (`scripts/restore-drill.mjs`): fingerprints every contact in the
+  live database (decrypt, hash the content — no plaintext printed), `pg_dump`s it, restores
+  into a scratch database, fingerprints again and compares, then reads the restored rows with
+  a **wrong keyring** and asserts every one refuses. Measured on the development database:
+  3,943 contacts, a 2.9 MB dump, identical fingerprints `a62a18a0…` on both sides, and 3,943
+  refusals with a wrong key. It failed twice before it passed (a wrong column name, then the
+  loader bug above), which is the point: a drill that cannot fail proves nothing. What it does
+  not cover — same instance, no PITR, and the keyring is not in the dump — is in
+  [RUNBOOK.md](RUNBOOK.md) §5, because a backup without its key is ciphertext.
+- **`pnpm load:test`** (`scripts/load-test.mjs`): 10 s at 20 concurrent against the built
+  server, GET only so the PIN limiter is untouched. Responder page: 1,302 rps, p50 14 ms,
+  p95 27 ms, p99 32 ms, 5.7 kB per request, 13,024 requests with no failure. Landing: 1,159
+  rps but 74.8 kB per page — the heaviest surface, and the one to watch on a slow connection.
+  The numbers are localhost with a warm cache and no proxy; the shape is the finding, not the
+  peak.
+- **`docs/RUNBOOK.md`**: the surfaces and how each starts, the two local traps, migrations
+  (forward-only), the retention sweep and its missing schedule, backup and the drill, secret
+  rotation with the honest table (rotating `CONTACT_ENCRYPTION_KEY` today makes every contact
+  unreadable — there is no second key version and no re-encryption pass), the incident
+  procedure, and a launch checklist where every line is a decision, a command, or a promise on
+  a public page that has to stop being a promise.
+
 ### Change — the studio renamed: No More Names Studio
 
 `Lost Signals Studio` / `lostsignals.studio` became `No More Names Studio` /

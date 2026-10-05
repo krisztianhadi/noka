@@ -22,8 +22,10 @@
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate-on-start.mjs",
     "db:studio": "drizzle-kit studio",
     "migrate-on-start": "node scripts/migrate-on-start.mjs",
-    "purge": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/purge.mjs",
-    "i18n:report": "node scripts/i18n-report.mjs"
+    "i18n:report": "node scripts/i18n-report.mjs",
+    "drill:restore": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/restore-drill.mjs",
+    "db:purge": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/purge.mjs",
+    "load:test": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/load-test.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.6",

@@ -56,6 +56,9 @@ for everything else are in [The sandbox environment](#the-sandbox-environment) b
 | `pnpm build` && `pnpm start` | production build → `dist/server/entry.mjs` |
 | `pnpm db:generate` | writes a new SQL migration into `drizzle/` (commit it) |
 | `pnpm db:migrate` | applies migrations; same script the container runs |
+| `pnpm db:purge [--dry-run]` | the 30-day `scan_attempts` sweep. Named `db:purge` because pnpm intercepts `purge` as its own command — `pnpm purge --dry-run` printed `Unknown option` and never ran the script |
+| `pnpm drill:restore [--keep]` | backup restore drill: dump, restore into a scratch database, compare content fingerprints, prove a wrong keyring opens nothing. Needs Docker. See [RUNBOOK.md](RUNBOOK.md) §5 |
+| `pnpm load:test` | smoke load test against `:3200` (or `--origin`); GET only, writes nothing. See [RUNBOOK.md](RUNBOOK.md) §6 |
 | `pnpm typecheck` | `astro check`, tests included |
 | `pnpm test` | Vitest; loads `.env` itself, integration tests need Postgres up |
 | `pnpm test:e2e` | Playwright owns its server: it builds to `dist-e2e` and serves on **:3300**, never reusing one that is already running (ADR-029). Needs the browser path: `PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright pnpm test:e2e` |

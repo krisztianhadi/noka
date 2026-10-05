@@ -14,17 +14,20 @@ sponsor strip is wired on the landing and auth pages — empty until there is a
 sponsor to name, and structurally unable to reach `/c/*` or `/dashboard`.
 
 Phase 9 so far: [THREAT-MODEL.md](THREAT-MODEL.md), a CSP on the owner plane (it had
-none), `Permissions-Policy` everywhere, brand 404 and 500 pages, and a redaction test
-that reads the bytes pino writes. Still open: the error-tracking decision, the
-restore drill, the smoke load test, the runbook and staging. Left in Phase 7: the
-no-PIN variant and the physical print/scan test, which needs a printer. See
-[CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit criteria per
-phase.
+none), `Permissions-Policy` everywhere, brand 404 and 500 pages, a redaction test that
+reads the bytes pino writes, printed-card terms, the error-tracking decision (ADR-033,
+logs only), a **restore drill that restores real data and proves a wrong keyring opens
+nothing**, a smoke load test, and [RUNBOOK.md](RUNBOOK.md). Still open: the Railway
+cron that runs the retention sweep, staging, and the launch checklist in the runbook.
+Left in Phase 7: the no-PIN variant and the physical print/scan test, which needs a
+printer. See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit
+criteria per phase.
 
 | Document | What it is |
 |---|---|
 | [PLAN.md](PLAN.md) | The build contract — decisions D1–D32, threat model, schema, phases, endpoint contract, environment. **Start here.** |
 | [THREAT-MODEL.md](THREAT-MODEL.md) | What is worth protecting, who the adversary is, the control per plane, the accepted weaknesses, and how each claim is checked. |
+| [RUNBOOK.md](RUNBOOK.md) | Operations: deploy, restart, migrations, the retention sweep, backup and the restore drill, load test, secret rotation, incident, launch checklist. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [I18N.md](I18N.md) | Adding a language: the three-file recipe for a new locale, and the rules the build enforces. |

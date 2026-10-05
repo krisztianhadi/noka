@@ -74,7 +74,9 @@ the locale is cookie → `Accept-Language` → English.
 | Surface | Behaviour | Status |
 |---|---|---|
 | `scripts/migrate-on-start.mjs` | Advisory-locked Drizzle migration on container start. | ✅ |
-| `scripts/purge.mjs` | 30-day retention sweep for `scan_attempts`, with `--dry-run` (D24). The code exists and is tested; the Railway cron that should call it is not wired yet. | ✅ built, ⏳ not scheduled |
+| `scripts/purge.mjs` | 30-day retention sweep for `scan_attempts`, with `--dry-run` (D24). Run as `pnpm db:purge` — **not** `pnpm purge`, which pnpm intercepts as its own command. The code exists and is tested; the Railway cron that should call it is not wired yet. | ✅ built, ⏳ not scheduled |
+| `scripts/restore-drill.mjs` | `pnpm drill:restore` — dumps the database, restores it into a scratch database, compares content fingerprints, and asserts a wrong keyring decrypts nothing (Phase 9). Committed so the drill is repeatable: [RUNBOOK.md](RUNBOOK.md) §5 | ✅ |
+| `scripts/load-test.mjs` | `pnpm load:test` — smoke load test over `GET /c/{slug}`, `/healthz` and `/`, reporting rps and percentiles. Writes nothing; not a capacity plan ([RUNBOOK.md](RUNBOOK.md) §6) | ✅ |
 | `scripts/usage-report.mjs` | The cost instrument: tokens, peak/off-peak windows, estimated USD, and the provider balance ledger. | ✅ |
 | `scripts/i18n-report.mjs` | `pnpm i18n:report` — catalogue coverage per locale. | ✅ |
 
