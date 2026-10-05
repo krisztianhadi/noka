@@ -4,6 +4,24 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-10-05
 
+### Docs — the README says what state this is in, because the repository is public now
+
+The repository went public on 2026-10-05, which changes what the first screen has to do: a
+stranger now reads the README as a claim about a thing that exists.
+
+- **A work-in-progress notice at the top**, above the description: the journey works end to
+  end locally and the suite is green, but nothing is deployed, no card has been printed, and
+  the schema, the copy and the print files can still move.
+- **The status line under it was months out of date.** It said the PIN endpoint was not
+  rate-limited yet — Phase 6 landed on 2026-10-01 — and "What's next" still listed rate
+  limiting, print and the whole Phase 9 hardening pass as future work, all of which are
+  built. "What's next" now lists what is actually missing: deployment (origin, staging, the
+  retention cron, subprocessors), the no-PIN card variant as a decision rather than a queue
+  item, Google sign-in and reset (which need credentials only he can create), and the
+  physical print-and-scan test.
+- The README is back at exactly 200 lines, its cap: the notice and the corrected roadmap cost
+  five lines, so the stale status paragraph and the two lines of duplicated wording went.
+
 ### Docs — the license is MIT everywhere, and spelled the American way
 
 An audit for the license, since it is the one document a stranger reads before trusting a

@@ -1,14 +1,15 @@
 # noka
 
+> **Work in progress — pre-release.** The journey works end to end locally and the test
+> suite is green, but nothing is deployed, no card has been printed yet, and the schema,
+> the copy and the print files can still move before a first release.
+
 **next of kin access** — an emergency contact card. A printed ISO ID-1 card
 (bank-card size) carries a QR code and a six-digit PIN. Anyone who finds it
 scans, enters the PIN, and sees the people to call: name, relation, and the ways
 that number can be reached — *Call*, *WhatsApp*, *Text*, or a line saying the
 number is also on Signal, Telegram or Viber. All on a page that renders in one
 request, without JavaScript and without an app.
-
-Status: **pre-release.** The journey works locally; nothing is deployed, and the PIN
-endpoint is not rate-limited yet — see [What's next](#whats-next).
 
 ## Why this exists
 
@@ -109,16 +110,15 @@ The full policy, including what MIT enforces and what it does not, is PLAN §18 
 
 ## What's next
 
-1. **Rate limiting on the PIN endpoint (Phase 6).** The store is chosen and proven
-   under load (ADR-016), but nothing calls it from the responder flow yet. Until
-   this lands, a scripted attacker can walk six digits.
-2. **Print (Phase 7).** The dashboard shows a card-sized JPEG today; Phase 7 adds
-   the exact-size PDF, an A4 10-up sheet and deterministic reprints (ADR-017), then
-   a print-and-scan test with three phones.
-3. **Google sign-in and password reset** — both need credentials only the owner
-   can create: a Google Cloud OAuth client, a Resend sending domain.
-4. **Hardening and launch (Phase 9).** Threat-model review, restore drill, privacy
-   and ToS pages, export and delete.
+1. **Deployment.** No production origin, no staging environment, no scheduled job calling
+   the retention sweep, no subprocessors named: the launch checklist is [RUNBOOK §9](docs/RUNBOOK.md).
+2. **The no-PIN card variant** stays a decision rather than a queue item: a card anyone can
+   read without a PIN is a different risk, and the PIN is the product's whole security
+   argument (PLAN §7).
+3. **Google sign-in and password reset** — both need credentials only the owner can create:
+   a Google Cloud OAuth client, a Resend sending domain.
+4. **The physical print-and-scan test** with three phones at 10–30 cm, which needs a printer
+   and hands rather than more code.
 
 ## Quick start
 
