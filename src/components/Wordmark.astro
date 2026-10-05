@@ -1,0 +1,45 @@
+---
+import { siteIdentity } from '@/lib/site';
+// Inlined, not an <img>: the wordmark is drawn with `currentColor`, and as an external image it
+// resolves to the SVG's own default (black) — invisible on a dark page.
+import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
+
+/**
+ * The brand mark, in one place, because it now carries a second thing: the `DIY` superscript that
+ * tells a visitor they are looking at somebody's own copy rather than this one (2026-10-05).
+ *
+ * Text after an SVG wordmark, not inside it: the mark is a drawing, the tag is a word, and a word
+ * belongs in the document where a screen reader can say it. A real space separates them so the
+ * accessible name reads "noka DIY" rather than "nokaDIY" — and `BRAND_TAG=none` drops it.
+ */
+interface Props {
+  /** Where the mark leads. Pass `null` on a page that is already the destination. */
+  href?: string | null;
+  class?: string;
+}
+
+const { href = '/', class: className } = Astro.props;
+const { brandTag } = siteIdentity();
+---
+
+{
+  href ? (
+    <a
+      class:list={['inline-flex items-baseline gap-1.5 text-fg no-underline', className]}
+      href={href}
+      aria-label={brandTag ? `noka ${brandTag}` : 'noka'}
+    >
+      <span class="block w-20 [&_svg]:h-auto [&_svg]:w-full" set:html={wordmark} />
+      {brandTag && (
+        <sup class="font-mono text-[0.6rem] font-medium tracking-wide text-fg-muted">{brandTag}</sup>
+      )}
+    </a>
+  ) : (
+    <span class:list={['inline-flex items-baseline gap-1.5 text-fg', className]}>
+      <span class="block w-20 [&_svg]:h-auto [&_svg]:w-full" set:html={wordmark} />
+      {brandTag && (
+        <sup class="font-mono text-[0.6rem] font-medium tracking-wide text-fg-muted">{brandTag}</sup>
+      )}
+    </span>
+  )
+}

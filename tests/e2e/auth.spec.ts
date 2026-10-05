@@ -98,3 +98,43 @@ test.describe('owner plane', () => {
     }
   });
 });
+
+/**
+ * The reset flow's pages (2026-10-05), and the Google button that must not exist without a client.
+ *
+ * What the browser can prove here is the shape: the request page answers the same way for any
+ * address (no account oracle), the reset page refuses a link with no token instead of offering a
+ * form that cannot work, and no OAuth button appears on an instance with no Google credentials —
+ * which is every instance until someone sets them. The token round-trip itself is covered where it
+ * can be real: `tests/integration/password-reset.test.ts`.
+ */
+test.describe('password reset', () => {
+  test('asks for an address, answers the same either way, and refuses a dead link', async ({ page }) => {
+    await page.goto('/login');
+    await expect(page.getByRole('link', { name: 'Forgot your password?' })).toBeVisible();
+    // No Google client is configured in this environment, so no OAuth button may be offered.
+    await expect(page.getByRole('button', { name: 'Continue with Google' })).toHaveCount(0);
+
+    await page.getByRole('link', { name: 'Forgot your password?' }).click();
+    await expect(page).toHaveURL(/\/forgot$/);
+    await page.fill('#email', 'nobody-has-this-address@noka.test');
+    await page.getByRole('button', { name: 'Send the link' }).click();
+
+    // The same sentence an existing account would get: nothing here confirms an address.
+    await expect(page.locator('body')).toContainText('Check that inbox');
+    await expect(page.locator('body')).not.toContainText('no account');
+
+    // A reset link that arrives without a token is a dead end, and says so with a way out.
+    await page.goto('/reset');
+    await expect(page.locator('body')).toContainText('expired or was already used');
+    await expect(page.getByRole('link', { name: 'Send a new link' })).toBeVisible();
+    await expect(page.locator('#password')).toHaveCount(0);
+
+    // With a token the form appears, and the two passwords must match before anything is sent.
+    await page.goto('/reset?token=not-a-real-token');
+    await page.fill('#password', 'a-long-enough-password');
+    await page.fill('#password_confirm', 'a-different-password');
+    await page.getByRole('button', { name: 'Save and sign in' }).click();
+    await expect(page.locator('.error')).toContainText('do not match');
+  });
+});

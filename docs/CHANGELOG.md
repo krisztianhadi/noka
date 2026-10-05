@@ -4,6 +4,69 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-10-05
 
+### Feature — the missing auth screens, and the self-hosted shape
+
+Two things he asked for together: finish the login and registration features, and give noka the
+same self-hosting treatment the sibling project has.
+
+**The auth screens.**
+
+- **`/forgot` and `/reset` exist.** The request page answers identically whether or not an account
+  exists — same sentence, same state — because the alternative is an account-existence oracle on a
+  page anyone can reach, and a malformed address is treated as sent for the same reason. The reset
+  page takes the token from the query string, keeps it in the form body, and never builds a
+  redirect out of it: a link that survives in the address bar is one a browser history still has.
+  Spending it signs every other session out and returns to the sign-in page with that said out
+  loud.
+- **The link is ours, not the library's.** better-auth hands over `{ user, url, token }` where `url`
+  points at its own REST path (`/reset-password/<token>`) — a route this application does not have,
+  because better-auth is mounted under `/api/auth`. The mail now carries
+  `passwordResetUrl(token)` = `PUBLIC_CARD_ORIGIN/reset?token=…`, a function with its own test,
+  because a locked-out owner with a dead link is the worst failure this file can produce.
+- **Google sign-in is live when it can work.** `POST /auth/google` starts the flow as a plain form
+  POST — no client script on the auth pages — and the button appears on the sign-in and sign-up
+  pages only when both variables are set. Unset is every instance today, so no dead button ships,
+  and the e2e suite asserts its absence in this environment.
+- **Tested where it can be real:** `tests/integration/password-reset.test.ts` walks the whole flow
+  against the real library and database — request, take the token the mail would have carried,
+  spend it, sign in with the new password, watch the old one fail, and watch the same token be
+  refused a second time. The e2e suite covers the pages: the identical answer, the tokenless link
+  that says so and offers a new one, and the mismatch refusal.
+
+**The self-hosted shape**, mirroring ghosted rather than reinventing it:
+
+- **Three switches, all defaulting to hosted behaviour** (`src/config.ts`): `SELF_HOSTED`,
+  `SHOW_LANDING=false` (sends `/` to the login screen) and `ALLOW_REGISTRATION=false` (closes
+  sign-up — the page *and* the API, because hiding a form is a user-interface decision, not a
+  security one). Closing registration requires `NOKA_OWNER_EMAIL`: an instance with no account and
+  no way to make one is a locked door, and the boot refuses rather than the first visitor finding
+  out. The boolean reader is strict for the same reason — `ALLOW_REGISTRATION=flase` stops the
+  start instead of quietly meaning true.
+- **The email-less single-user instance.** `pnpm seed-owner` creates the account at container
+  start, with a generated password printed once (or `NOKA_OWNER_PASSWORD`). It imports **no
+  application source** on purpose: the runner image carries `dist/`, `drizzle/`, `scripts/` and
+  production dependencies but not `src/`, so a seeder that imported the app's TypeScript would work
+  locally and fail in the container. It writes the two rows better-auth expects, and the
+  integration test proves the result by signing in through better-auth — if the columns or the hash
+  drifted, that test fails instead of the operator's first login.
+- **The DIY upper index**, ghosted's treatment: one `Wordmark` component owns the brand mark, so
+  the landing and the dashboard cannot disagree, and a self-hosted copy renders `DIY` as a
+  superscript after it — a real space, so the accessible name reads "noka DIY". `BRAND_TAG`
+  overrides the word, `none` removes it.
+- **The instance stops impersonating the author.** `OPERATOR_*` names whoever runs the copy; left
+  empty, the footer and the imprint say "a self-hosted copy of noka" and the privacy page says the
+  operator of *this* copy is whoever set it up. The hosted instance is unchanged and its own
+  operator is now written down in one place (`src/lib/site.ts`) instead of in three pages.
+- **`docker-compose.yml` is the deployment**: noka plus Postgres, migrating and seeding on start,
+  with a healthcheck and a named volume, and `docs/SELF-HOST.md` explains the switches, what the
+  container does, and the one footgun — a backup without `CONTACT_ENCRYPTION_KEY` is ciphertext.
+
+Verified on a real second instance, not by reading the code: `SELF_HOSTED=true SHOW_LANDING=false
+ALLOW_REGISTRATION=false` on `:3201` answered `303 → /login` for both `/` and `/signup`, refused
+`POST /api/auth/sign-up/email` with 403, and rendered "self-hosted copy of noka" in the footer and
+the imprint; a self-hosted landing on `:3202` rendered the `DIY` superscript with the accessible
+name "noka DIY".
+
 ### Feature — the owner's own name is editable, and the mail and Google wiring is in place
 
 Three things he asked for on 2026-10-05, in the order he asked for them.

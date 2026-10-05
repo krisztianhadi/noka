@@ -1,0 +1,86 @@
+---
+import Button from '@/components/Button.astro';
+import Icon from '@/components/Icon.astro';
+import Plain from '@/layouts/Plain.astro';
+import SponsorStrip from '@/components/SponsorStrip.astro';
+import { t } from '@/i18n/catalogue';
+import { getAuth } from '@/lib/auth';
+import { field, forbidden, isSameOrigin, readForm } from '@/lib/http';
+
+/**
+ * "I forgot my password" (2026-10-05).
+ *
+ * The page answers the same way whether or not the address has an account — same wording, same
+ * state — because the alternative is an account-existence oracle on a page anyone can reach. The
+ * message is the only change: with no mail provider configured the link goes to the log, and the
+ * page says so rather than implying an email is on its way.
+ *
+ * The reset URL is built by better-auth from `redirectTo`, so the link in the message points at
+ * our own `/reset` page.
+ */
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+
+let sent = false;
+let email = '';
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
+  email = field(form, 'email').toLowerCase();
+
+  // A malformed address is treated as "sent" too: refusing it would tell a stranger which strings
+  // are addresses, and the person who typed it will find out soon enough by not receiving mail.
+  if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    // No response to inspect: better-auth deliberately does not say whether the account exists,
+    // and a thrown error here would be an oracle of a different shape.
+    await getAuth().api
+      .requestPasswordReset({ body: { email, redirectTo: '/reset' } })
+      .catch(() => undefined);
+  }
+  sent = true;
+}
+---
+
+<Plain title={label('head.forgot')} theme={Astro.locals.theme}>
+  <h1 class="text-xl font-semibold tracking-tight">{label('auth.forgot.title')}</h1>
+
+  {
+    sent ? (
+      <div class="mt-6 space-y-3 rounded-lg border border-line bg-surface p-4 sm:p-5">
+        <p class="text-sm font-medium text-fg">{label('auth.forgot.sent')}</p>
+        <p class="text-sm leading-6 text-fg-muted">{label('auth.forgot.sentHint')}</p>
+        <a class="text-sm text-fg underline underline-offset-2" href="/login">
+          {label('auth.forgot.back')}
+        </a>
+      </div>
+    ) : (
+      <form method="post" class="mt-6 space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5">
+        <p class="text-sm leading-6 text-fg-muted">{label('auth.forgot.intro')}</p>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-fg" for="email">
+            {label('auth.login.email')}
+          </label>
+          <input
+            id="email"
+            class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none"
+            name="email"
+            type="email"
+            required
+            autocomplete="email"
+            value={email}
+          />
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit"><Icon name="mail" size={16} /> {label('auth.forgot.submit')}</Button>
+        </div>
+        <p class="text-xs leading-5 text-fg-muted">
+          <a class="text-fg underline underline-offset-2" href="/login">{label('auth.forgot.back')}</a>
+        </p>
+      </form>
+    )
+  }
+
+  <SponsorStrip />
+</Plain>

@@ -106,19 +106,15 @@ lapses is worse than the post-it it replaces.
   and run it as proprietary software, the answer is no. Anyone may fork it
   (MIT); nobody may take this one away.
 
-The full policy, including what MIT enforces and what it does not, is PLAN §18 and ADR-019.
-
 ## What's next
 
-1. **Deployment.** No production origin, no staging environment, no scheduled job calling
-   the retention sweep, no subprocessors named: the launch checklist is [RUNBOOK §9](docs/RUNBOOK.md).
-2. **The no-PIN card variant** stays a decision rather than a queue item: a card anyone can
-   read without a PIN is a different risk, and the PIN is the product's whole security
-   argument (PLAN §7).
-3. **Google sign-in and password reset** — both need credentials only the owner can create:
-   a Google Cloud OAuth client, a Resend sending domain.
-4. **The physical print-and-scan test** with three phones at 10–30 cm, which needs a printer
-   and hands rather than more code.
+1. **Deployment.** No production origin, no staging, no retention cron, no subprocessors named:
+   the launch checklist is [RUNBOOK §9](docs/RUNBOOK.md).
+2. **Google sign-in and password reset** are built and waiting on credentials only the owner
+   can create: a Google Cloud OAuth client, a Resend sending domain. Without them the reset
+   link goes to the server log and the Google button does not appear.
+3. **The physical print-and-scan test** with three phones at 10–30 cm, which needs a printer
+   and hands rather than more code. Dropped rather than pending: the no-PIN card variant (ADR-034).
 
 ## Quick start
 
@@ -131,6 +127,10 @@ pnpm dev          # http://localhost:3200
 ```
 
 The dev server binds on all interfaces, so a phone on the same network can open a card URL.
+
+**Running your own copy?** `docker compose up -d` is the whole deployment — one container, one
+Postgres, no mail provider needed. [docs/SELF-HOST.md](docs/SELF-HOST.md) has the switches, the
+start-up steps and the one footgun: a backup without the encryption key is ciphertext.
 
 ## Scripts
 
@@ -179,7 +179,8 @@ Postgres, signup included — proof the Argon2id module works on musl.
   phases, endpoint contract, monetization policy, environment.
 - [docs/DECISIONS.md](docs/DECISIONS.md) — 22 ADRs, including the decisions this
   project reversed and the commitments it will not break.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [API.md](docs/API.md) ·
+- [docs/SELF-HOST.md](docs/SELF-HOST.md) — running your own copy. ·
+  [ARCHITECTURE.md](docs/ARCHITECTURE.md) · [API.md](docs/API.md) ·
   [SETUP.md](docs/SETUP.md) · [CHANGELOG.md](docs/CHANGELOG.md) · [COSTS.md](docs/COSTS.md)
   — the shape, the routes, the services, the history, the bill.
 - [docs/blog/](docs/blog/) — the development log, and the post drafts built on it.
@@ -189,12 +190,11 @@ Postgres, signup included — proof the Argon2id module works on musl.
 ## License
 
 MIT — [LICENSE](LICENSE), Copyright (c) 2026 Krisztian Hadi, covering the whole repository:
-anyone may self-host, fork and print it. The promise not to sell the project into closed
-source is a commitment, not a license term — ADR-018 and PLAN §18.
+anyone may self-host, fork and print it. The promise not to sell it into closed source is a
+commitment, not a license term — ADR-018 and PLAN §18.
 
 ## Built with AI
 
-Hand-written and AI-enhanced: the specification, the decisions and the review are
-mine; the implementation is written in pair with DeepSeek V4.1 Flash in DeepSeek
-Harness. The commit history, the ADRs and the devlog say which parts came from
-where.
+Hand-written and AI-enhanced: the specification, the decisions and the review are mine; the
+implementation is written in pair with DeepSeek V4.1 Flash in DeepSeek Harness. The commit
+history, the ADRs and the devlog say which parts came from where.

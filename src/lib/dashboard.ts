@@ -38,6 +38,7 @@ const SETTINGS_ERRORS: Record<string, MessageKey> = {
   'password-too-short': 'error.password-too-short',
   'password-mismatch': 'error.password-mismatch',
   'password-wrong': 'error.password-wrong',
+  'oauth-failed': 'error.oauth-failed',
 };
 
 const NOTICES: Record<string, MessageKey> = {

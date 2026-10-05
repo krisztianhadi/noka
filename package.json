@@ -25,7 +25,8 @@
     "i18n:report": "node scripts/i18n-report.mjs",
     "drill:restore": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/restore-drill.mjs",
     "db:purge": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/purge.mjs",
-    "load:test": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/load-test.mjs"
+    "load:test": "node --import ./scripts/register-alias.mjs --env-file-if-exists=.env scripts/load-test.mjs",
+    "seed-owner": "node --env-file-if-exists=.env scripts/seed-owner.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.6",

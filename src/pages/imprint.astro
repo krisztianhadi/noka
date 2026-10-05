@@ -1,10 +1,12 @@
 ---
 import Plain from '@/layouts/Plain.astro';
+import { siteIdentity } from '@/lib/site';
 
 /**
  * Imprint — the operator details, in the shape the German obligation expects, kept minimal
  * on purpose (the same approach as the sibling project).
  */
+const { selfHosted, operator } = siteIdentity();
 ---
 
 <Plain title="Imprint — noka" theme={Astro.locals.theme}>
@@ -13,16 +15,42 @@ import Plain from '@/layouts/Plain.astro';
   <section class="mt-6 space-y-2">
     <h2 class="text-base font-semibold">Operator</h2>
     <p class="text-sm">
-      <strong>No More Names Studio</strong><br />
-      (legal entity to be formalized — operator details are kept minimal to protect the operator's
-      privacy)
+      {
+        operator ? (
+          <>
+            <strong>{operator.name}</strong>
+            <br />
+            (legal entity to be formalized — operator details are kept minimal to protect the
+            operator's privacy)
+          </>
+        ) : (
+          <>
+            This is a <strong>self-hosted copy of noka</strong>. Whoever runs it has not filled in
+            their own operator details, so there is nobody named here to write to — the software is
+            MIT licensed and comes from
+            <a href="https://github.com/krisztianhadi/noka">github.com/krisztianhadi/noka</a>.
+          </>
+        )
+      }
     </p>
   </section>
 
   <section class="mt-6 space-y-2">
     <h2 class="text-base font-semibold">Contact</h2>
     <p class="text-sm">
-      Email: <a href="mailto:hey@lostsignals.studio">hey@lostsignals.studio</a>
+      {
+        operator?.email ? (
+          <>
+            Email: <a href={`mailto:${operator.email}`}>{operator.email}</a>
+          </>
+        ) : selfHosted ? (
+          <>No contact address is configured for this copy.</>
+        ) : (
+          <>
+            Email: <a href="mailto:hey@lostsignals.studio">hey@lostsignals.studio</a>
+          </>
+        )
+      }
     </p>
   </section>
 
@@ -30,7 +58,7 @@ import Plain from '@/layouts/Plain.astro';
     <h2 class="text-base font-semibold">Further information</h2>
     <p class="text-sm">
       VAT ID / USt-IdNr.: not yet applicable<br />
-      Responsible for content: No More Names Studio, contactable via the email above
+      Responsible for content: {operator ? operator.name : 'the person running this copy'}, contactable via the email above
     </p>
   </section>
 

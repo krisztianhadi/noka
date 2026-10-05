@@ -28,12 +28,13 @@ exit criteria per phase.
 |---|---|
 | [PLAN.md](PLAN.md) | The build contract — decisions D1–D32, threat model, schema, phases, endpoint contract, environment. **Start here.** |
 | [THREAT-MODEL.md](THREAT-MODEL.md) | What is worth protecting, who the adversary is, the control per plane, the accepted weaknesses, and how each claim is checked. |
+| [SELF-HOST.md](SELF-HOST.md) | Running your own copy: compose, the shape switches, the seeded owner, what the container does on start, and what you are then responsible for. |
 | [RUNBOOK.md](RUNBOOK.md) | Operations: deploy, restart, migrations, the retention sweep, backup and the restore drill, load test, secret rotation, incident, launch checklist. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [I18N.md](I18N.md) | Adding a language: the three-file recipe for a new locale, and the rules the build enforces. |
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
-| [DECISIONS.md](DECISIONS.md) | The ADRs: 33 numbered decisions, the one this project reversed, and the open ones. |
+| [DECISIONS.md](DECISIONS.md) | The ADRs: 34 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |
 | [COSTS.md](COSTS.md) | What the build costs: per-feature attribution, peak/off-peak timing, real USD ledger. |
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |

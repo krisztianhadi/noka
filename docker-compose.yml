@@ -1,0 +1,62 @@
+# noka, self-hosted — the whole thing in one file.
+#
+#     cp .env.example .env      # then fill in the four secrets it asks for
+#     docker compose up -d
+#
+# The app applies its own migrations and seeds the owner account on start, so the first
+# `docker compose logs -f noka` is where the generated password appears when registration is
+# closed. There is no mail provider and no external service: this file is the deployment.
+#
+# Anything you change here is yours to keep — `SELF_HOSTED=true` only changes what the instance
+# says about itself (a DIY mark next to the wordmark, and your own operator details in the
+# footer and the imprint).
+services:
+  noka:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3200:3200'
+    env_file:
+      - .env
+    environment:
+      # Inside the compose network the database is `db`, not localhost — this overrides whatever
+      # DATABASE_URL says in .env, so the same .env works for a local dev server too.
+      DATABASE_URL: postgres://noka:noka@db:5432/noka
+      HOST: 0.0.0.0
+      PORT: '3200'
+      # A copy that runs itself: no landing page in front of the login screen, no sign-up form,
+      # and the owner seeded on start from NOKA_OWNER_EMAIL. Set ALLOW_REGISTRATION=true if you
+      # would rather invite people to sign up.
+      SELF_HOSTED: 'true'
+      SHOW_LANDING: 'false'
+      ALLOW_REGISTRATION: 'false'
+    # The container migrates and seeds, then serves. `seed-owner` is a no-op when registration is
+    # open, so this line is right either way.
+    command: sh -c "node scripts/migrate-on-start.mjs && node scripts/seed-owner.mjs && node ./dist/server/entry.mjs"
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3200/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: noka
+      POSTGRES_PASSWORD: noka
+      POSTGRES_DB: noka
+    volumes:
+      - noka-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U noka -d noka']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  noka-db:

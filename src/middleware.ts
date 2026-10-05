@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getConfig } from '@/config';
 import { getAuth } from '@/lib/auth';
 import { resolveOwnerLocale, LOCALE_COOKIE } from '@/lib/locale';
 import { readTheme, THEME_COOKIE } from '@/lib/theme';
@@ -59,6 +60,21 @@ const OWNER_CSP = [
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const path = context.url.pathname;
+  const config = getConfig();
+
+  // The shape of a self-hosted instance (2026-10-05), decided before anything renders:
+  // a solo deployment does not want a marketing page in front of its login screen, and closing
+  // registration has to close the API too — hiding the form is a user-interface decision, not a
+  // security one.
+  if (!config.SHOW_LANDING && path === '/') {
+    return new Response(null, { status: 303, headers: { location: '/login', 'cache-control': 'no-store' } });
+  }
+  if (!config.ALLOW_REGISTRATION && path.startsWith('/api/auth/sign-up')) {
+    return new Response('Registration is closed on this instance.', { status: 403, headers: { 'cache-control': 'no-store' } });
+  }
+  if (!config.ALLOW_REGISTRATION && (path === '/signup' || path === '/signup/')) {
+    return new Response(null, { status: 303, headers: { location: '/login', 'cache-control': 'no-store' } });
+  }
 
   // Read before anything renders: the theme must be right in the first paint.
   context.locals.theme = readTheme(context.cookies.get(THEME_COOKIE)?.value);

@@ -1,5 +1,6 @@
 ---
 import Plain from '@/layouts/Plain.astro';
+import { siteIdentity } from '@/lib/site';
 
 /**
  * Privacy. Written against what the code actually does, clause by clause, because a
@@ -9,6 +10,7 @@ import Plain from '@/layouts/Plain.astro';
 const section = 'mt-6 space-y-2';
 const heading = 'text-base font-semibold';
 const list = 'list-disc space-y-1 pl-5 text-sm';
+const { selfHosted, operator } = siteIdentity();
 ---
 
 <Plain title="Privacy — noka" theme={Astro.locals.theme}>
@@ -21,9 +23,25 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   <section class={section}>
     <h2 class={heading}>1. Who is responsible</h2>
     <p class="text-sm">
-      noka is operated by <strong>No More Names Studio</strong> (legal entity to be formalized —
-      operator details are kept minimal to protect the operator's privacy). Privacy questions and
-      requests: <a href="mailto:hey@lostsignals.studio">hey@lostsignals.studio</a>.
+      {
+        operator ? (
+          <>
+            noka is operated by <strong>{operator.name}</strong> (legal entity to be formalized —
+            operator details are kept minimal to protect the operator's privacy). Privacy questions
+            and requests:{' '}
+            <a href={`mailto:${operator.email ?? 'hey@lostsignals.studio'}`}>
+              {operator.email ?? 'hey@lostsignals.studio'}
+            </a>
+            .
+          </>
+        ) : (
+          <>
+            This is a <strong>self-hosted copy of noka</strong>, run by whoever set it up — there is
+            no operator of this project behind it. That person is the one to ask about data on this
+            instance, and the checklist above (export, delete) works without asking anyone.
+          </>
+        )
+      }
     </p>
   </section>
 
@@ -114,8 +132,9 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   <section class={section}>
     <h2 class={heading}>7. Hosting</h2>
     <p class="text-sm">
-      The service is not deployed publicly yet. When it is, it runs on a single hosting provider
-      with a managed Postgres database in the same region, and this section will name them.
+      {selfHosted
+        ? 'This copy runs on infrastructure its operator chose, which is not named here: the software does not know where it is deployed. The person who runs it is the one to ask, and the imprint on this instance says what they filled in.'
+        : 'The service is not deployed publicly yet. When it is, it runs on a single hosting provider with a managed Postgres database in the same region, and this section will name them.'}
     </p>
   </section>
 

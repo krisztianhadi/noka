@@ -1,13 +1,11 @@
 ---
 import Footer from '@/components/Footer.astro';
+import Wordmark from '@/components/Wordmark.astro';
 import SponsorStrip from '@/components/SponsorStrip.astro';
 import Icon from '@/components/Icon.astro';
 import { LANGUAGE_INFO } from '@/i18n/languages';
 import { brandIcon } from '@/lib/brand-icons';
 import '@/styles/app.css';
-// Inlined, not an `<img>`: the wordmark is drawn with `currentColor`, and as an external
-// image that resolves to the SVG's own default (black) — invisible on a dark page.
-import wordmark from '../../assets/brand/noka-wordmark.svg?raw';
 import cardShot from '../../assets/brand/noka-card-sample.jpg';
 
 /**
@@ -194,7 +192,7 @@ const buttonGhostOnInk =
   <body class="min-h-dvh">
     <header class="sticky top-0 z-30 border-b border-line bg-surface">
       <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <a class="w-20 text-fg [&_svg]:h-auto [&_svg]:w-full" href="/" aria-label="noka" set:html={wordmark} />
+        <Wordmark href="/" />
         <nav class="hidden items-center gap-6 text-sm sm:flex" aria-label="Sections">
           <a class="text-fg-muted no-underline transition hover:text-fg" href="#what">What it is</a>
           <a class="text-fg-muted no-underline transition hover:text-fg" href="#limits">Limits</a>

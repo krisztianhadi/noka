@@ -3,6 +3,7 @@ import Icon from '@/components/Icon.astro';
 import { t } from '@/i18n/catalogue';
 import { brandIcon } from '@/lib/brand-icons';
 import { LANGUAGE_INFO, type CardLanguage } from '@/i18n/languages';
+import { operatorLine, siteIdentity } from '@/lib/site';
 
 /**
  * The owner-plane footer: who made this, the legal links, and the language choice.
@@ -24,14 +25,24 @@ const next = Astro.url.pathname + Astro.url.search;
 // One sentence with a placeholder, so a translator puts the studio wherever their
 // language wants it instead of inheriting English word order.
 const madeBy = label('footer.madeBy').split('{studio}');
+// On a self-hosted copy with no operator configured, the line says what it is instead of crediting
+// somebody who is not there (2026-10-05).
+const operator = operatorLine(siteIdentity());
 ---
 
 <footer class="mt-12 border-t border-line pt-5 pb-10">
   <div class="flex flex-col items-center gap-3 text-xs text-fg-muted sm:flex-row sm:justify-between">
     <p class="flex flex-wrap items-center justify-center gap-1.5">
-      {madeBy[0]}<a
-        class="whitespace-nowrap text-fg underline underline-offset-2"
-        href="https://nomorenames.studio">No More Names Studio</a>{madeBy[1]}
+      {madeBy[0]}{' '}
+      {
+        operator.url ? (
+          <a class="whitespace-nowrap text-fg underline underline-offset-2" href={operator.url}>
+            {operator.name}
+          </a>
+        ) : (
+          <span class="whitespace-nowrap text-fg-muted">{operator.name}</span>
+        )
+      }{madeBy[1]}
     </p>
     <nav
       aria-label={label('footer.legal')}

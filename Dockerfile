@@ -44,4 +44,6 @@ ENV HOST=0.0.0.0 PORT=3000
 EXPOSE 3000
 # Launched directly, not through pnpm: the runtime needs no package manager,
 # which removes the pnpm-version failure mode from the container.
-CMD ["sh", "-c", "node scripts/migrate-on-start.mjs && node ./dist/server/entry.mjs"]
+# `seed-owner` runs between the two: it is a no-op when registration is open, and it
+# creates the single account on an instance that has closed sign-ups.
+CMD ["sh", "-c", "node scripts/migrate-on-start.mjs && node scripts/seed-owner.mjs && node ./dist/server/entry.mjs"]

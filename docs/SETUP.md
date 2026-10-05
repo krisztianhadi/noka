@@ -38,6 +38,10 @@ with zod and the process refuses to serve without them. `.env` is gitignored —
 | `EMAIL_TRANSPORT` | `log` (default) or `resend`. With no key set, mail goes to the log — the reset link is in the terminal, one click away. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | Required only when `EMAIL_TRANSPORT=resend`; the app refuses to boot without both, rather than failing when a stranger clicks "forgot password". `EMAIL_FROM` must be on a domain Resend has verified. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Both or neither: set, the Google button appears on the auth pages; unset, nothing changes. Half a client refuses to boot. |
+| `SELF_HOSTED`, `SHOW_LANDING`, `ALLOW_REGISTRATION` | The shape of a self-hosted instance: the DIY mark and your own operator details, `/` redirecting to the login screen, and sign-up closed (page and API). All default to the hosted behaviour. See [SELF-HOST.md](SELF-HOST.md). |
+| `NOKA_OWNER_EMAIL` / `_NAME` / `_PASSWORD` | The account `pnpm seed-owner` creates when registration is closed — run at container start, a no-op when registration is open, and it never touches an existing password. |
+| `OPERATOR_NAME` / `OPERATOR_EMAIL` / `OPERATOR_URL` | Who runs this copy. Empty on a self-hosted instance: the footer and the imprint say "a self-hosted copy of noka" instead of naming an operator. |
+| `BRAND_TAG` | The word after the wordmark: `DIY` on a self-hosted copy, nothing here, `none` to remove it. |
 | `ASTRO_TELEMETRY_DISABLED` | Set to 1. Astro's telemetry writes to `~/.config/astro`. |
 
 Generate a secret with `openssl rand -base64 32`.
@@ -59,6 +63,7 @@ for everything else are in [The sandbox environment](#the-sandbox-environment) b
 | `pnpm build` && `pnpm start` | production build → `dist/server/entry.mjs` |
 | `pnpm db:generate` | writes a new SQL migration into `drizzle/` (commit it) |
 | `pnpm db:migrate` | applies migrations; same script the container runs |
+| `pnpm seed-owner` | Creates the single owner account when registration is closed (`NOKA_OWNER_EMAIL`). Idempotent, and safe to run by hand. |
 | `pnpm db:purge [--dry-run]` | the 30-day `scan_attempts` sweep. Named `db:purge` because pnpm intercepts `purge` as its own command — `pnpm purge --dry-run` printed `Unknown option` and never ran the script |
 | `pnpm drill:restore [--keep]` | backup restore drill: dump, restore into a scratch database, compare content fingerprints, prove a wrong keyring opens nothing. Needs Docker. See [RUNBOOK.md](RUNBOOK.md) §5 |
 | `pnpm load:test` | smoke load test against `:3200` (or `--origin`); GET only, writes nothing. See [RUNBOOK.md](RUNBOOK.md) §6 |

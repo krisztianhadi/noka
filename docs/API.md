@@ -44,8 +44,9 @@ the locale is cookie → `Accept-Language` → English.
 |---|---|---|---|
 | GET/POST | `/signup` | Account lifecycle; the first name is captured here (D27), because better-auth requires it. Carries the sponsor strip. | ✅ |
 | GET/POST | `/login` | Session cookie on success; one message for every failure. Carries the sponsor strip. | ✅ |
-| GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived. The mail side is wired (2026-10-05): better-auth mints the token and `sendResetPassword` hands it to the transport — Resend when configured, the log otherwise, so the link is clickable in the terminal. The pages themselves are the next step. | ⏳ pages (mail ready) |
-| ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
+| GET/POST | `/forgot`, `/reset` | The reset flow (2026-10-05). `/forgot` answers identically whether or not the address has an account; better-auth mints a single-use token and the transport delivers the link — Resend when configured, the server log otherwise. `/reset?token=…` takes the new password and signs every other session out. | ✅ |
+| ANY | `/api/auth/*` | better-auth: sessions, and the Google callback when a client is configured. | ✅ |
+| POST | `/auth/google` | Starts Google sign-in as a plain form POST (no client script on the auth pages): better-auth builds the provider URL and its OAuth state cookie rides along on the redirect. Absent from the UI unless both Google variables are set. | ✅ |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
 | GET | `/dashboard` | The whole owner plane on one page: contacts, notes, the card plate, and the card's activity disclosure. | ✅ |
 | POST | `/dashboard/start` | First run: writes the contact and then the note, one screen and one request. The first contact is what creates the card. | ✅ |

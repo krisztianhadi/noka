@@ -15,6 +15,18 @@ import { accounts, sessions, users, verifications } from '@/db/auth-schema';
  * `usePlural` matches the table names in schema; the ids are uuids because the
  * app generates them here rather than letting better-auth mint strings.
  */
+/**
+ * The link in the reset mail.
+ *
+ * better-auth hands us its own URL, and it points at its REST path (`/reset-password/<token>`) —
+ * a route that does not exist in this application, because better-auth is mounted under
+ * `/api/auth`. So the token is used and the link is built here, where it can be tested: it must
+ * point at the page that has the form, and nothing else about it may change.
+ */
+export function passwordResetUrl(token: string): string {
+  return `${getConfig().PUBLIC_CARD_ORIGIN}/reset?token=${encodeURIComponent(token)}`;
+}
+
 export type Auth = ReturnType<typeof createAuth>;
 
 function createAuth() {
@@ -51,7 +63,7 @@ function createAuth() {
        * already known to whoever asked, and "your account" phrasing is a gift to anyone who
        * mistypes an address at a shared machine.
        */
-      sendResetPassword: async ({ user, url }) => {
+      sendResetPassword: async ({ user, token }) => {
         await emailTransport().send(
           {
             to: user.email,
@@ -59,7 +71,7 @@ function createAuth() {
             text: [
               'Someone asked to reset the password for this address on noka.',
               '',
-              `If it was you: ${url}`,
+              `If it was you: ${passwordResetUrl(token)}`,
               '',
               'The link works once and expires on its own. If it was not you, nothing happened:',
               'your password is unchanged, and you can ignore this message.',

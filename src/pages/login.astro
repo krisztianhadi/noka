@@ -4,8 +4,9 @@ import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
 import SponsorStrip from '@/components/SponsorStrip.astro';
 import { getAuth } from '@/lib/auth';
+import { getConfig } from '@/config';
 import { t } from '@/i18n/catalogue';
-import { noticeKey } from '@/lib/dashboard';
+import { errorKey as errorKeyFor, noticeKey } from '@/lib/dashboard';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
 
 const locale = Astro.locals.locale;
@@ -16,6 +17,11 @@ const label = (key: Parameters<typeof t>[1], values?: Record<string, string | nu
 let errorKey: Parameters<typeof t>[1] | null = null;
 // A password change redirects here, so the reason for the sign-out is on the page.
 const notice = noticeKey(Astro.url.searchParams.get('notice'));
+// A failed OAuth callback comes back as a query parameter, not a POST error.
+const oauthError = errorKeyFor(Astro.url.searchParams.get('error'));
+// Google sign-in exists only when this instance has a client for it (2026-10-05): an OAuth button
+// that cannot work is worse than no button.
+const googleSignIn = Boolean(getConfig().GOOGLE_CLIENT_ID);
 let email = '';
 
 if (Astro.request.method === 'POST') {
@@ -49,9 +55,9 @@ if (Astro.request.method === 'POST') {
     )
   }
   {
-    errorKey && (
+    (errorKey || oauthError) && (
       <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">
-        {label(errorKey)}
+        {label(errorKey ?? oauthError!)}
       </p>
     )
   }
@@ -67,10 +73,21 @@ if (Astro.request.method === 'POST') {
       <input id="password" class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none" name="password" type="password" required autocomplete="current-password" />
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex items-center justify-between gap-3">
+      <a class="text-sm text-fg-muted underline underline-offset-2" href="/forgot">{label('auth.forgot.link')}</a>
       <Button type="submit"><Icon name="login" size={16} /> {label('auth.login.submit')}</Button>
     </div>
   </form>
+
+  {
+    googleSignIn && (
+      <form method="post" action="/auth/google" class="mt-4">
+        <Button variant="secondary" type="submit" class="w-full">
+          <Icon name="globe" size={16} /> {label('auth.google')}
+        </Button>
+      </form>
+    )
+  }
 
   <p class="mt-4 text-sm text-fg-muted">
     {label('auth.login.need')} <a class="text-fg" href="/signup">{label('auth.signup.link')}</a>

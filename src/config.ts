@@ -8,6 +8,25 @@ import { z } from 'zod';
  * a runtime environment, and a module-level throw would break the build
  * instead of the request.
  */
+/**
+ * A boolean environment flag, strict on purpose: `ALLOW_REGISTRATION=flase` must stop the boot
+ * rather than quietly mean the default. `z.coerce.boolean()` would be worse than either — it reads
+ * the string `"false"` as true, which is how a privacy flag ends up inverted.
+ */
+function booleanFlag(fallback: boolean) {
+  return z
+    .string()
+    .optional()
+    .transform((value, ctx) => {
+      if (value === undefined || value.trim() === '') return fallback;
+      const normalised = value.trim().toLowerCase();
+      if (['1', 'true', 'yes', 'on'].includes(normalised)) return true;
+      if (['0', 'false', 'no', 'off'].includes(normalised)) return false;
+      ctx.addIssue({ code: 'custom', message: `"${value}" is not a boolean — use true/false, 1/0, yes/no or on/off` });
+      return z.NEVER;
+    });
+}
+
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   DATABASE_URL: z.string().min(1, 'is required'),
@@ -37,6 +56,25 @@ const schema = z.object({
   // Google sign-in (2026-10-05). Both or neither; the button only appears when they are set.
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  // Self-hosting (2026-10-05), mirroring ghosted: three shape flags and an identity override.
+  // Every default is the hosted instance's behaviour, so a deployment that sets nothing is
+  // unchanged by an upgrade.
+  /** Marks this instance as somebody's own copy: it changes the brand mark and the legal copy. */
+  SELF_HOSTED: booleanFlag(false),
+  /** `false` sends `/` to `/login`: a solo instance does not need a marketing page. */
+  SHOW_LANDING: booleanFlag(true),
+  /** `false` closes sign-up; the owner is then seeded at start from `NOKA_OWNER_EMAIL`. */
+  ALLOW_REGISTRATION: booleanFlag(true),
+  /** The account seeded when registration is closed. The password is generated unless given. */
+  NOKA_OWNER_EMAIL: z.string().optional(),
+  NOKA_OWNER_NAME: z.string().optional(),
+  NOKA_OWNER_PASSWORD: z.string().optional(),
+  /** Who operates this copy. Empty on a self-hosted instance: the footer then says so. */
+  OPERATOR_NAME: z.string().optional(),
+  OPERATOR_EMAIL: z.string().optional(),
+  OPERATOR_URL: z.string().optional(),
+  /** The word after the wordmark. `none` removes it; the default is DIY on a self-hosted copy. */
+  BRAND_TAG: z.string().optional(),
 }).superRefine((env, ctx) => {
   // A half-configured deployment must fail at boot, not when a stranger clicks "forgot password".
   if (env.EMAIL_TRANSPORT === 'resend') {
@@ -52,6 +90,15 @@ const schema = z.object({
       code: 'custom',
       path: ['GOOGLE_CLIENT_ID'],
       message: 'and GOOGLE_CLIENT_SECRET are both or neither — a client id without its secret cannot sign anyone in',
+    });
+  }
+  // Closing registration means the only way in is the seeded owner, so the address has to be here:
+  // an instance that boots with no account and no way to make one is a locked door.
+  if (env.ALLOW_REGISTRATION === false && !env.NOKA_OWNER_EMAIL) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['NOKA_OWNER_EMAIL'],
+      message: 'is required when ALLOW_REGISTRATION=false — otherwise the instance has no way in',
     });
   }
 });

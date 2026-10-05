@@ -1,0 +1,118 @@
+---
+import Button from '@/components/Button.astro';
+import Icon from '@/components/Icon.astro';
+import Plain from '@/layouts/Plain.astro';
+import { t } from '@/i18n/catalogue';
+import { getAuth } from '@/lib/auth';
+import { field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
+
+/**
+ * The other half of the reset (2026-10-05): the page the mailed link lands on.
+ *
+ * The token arrives in the query string and travels in the POST body, never in a redirect we
+ * construct from it — a link that survives in the URL bar after the reset is a link a shoulder or a
+ * browser history still has. The token is single-use and short-lived on better-auth's side; this
+ * page's job is to say what happened, plainly, in the owner's language.
+ */
+const locale = Astro.locals.locale;
+const label = (key: Parameters<typeof t>[1]) => t(locale, key);
+
+const token = Astro.url.searchParams.get('token') ?? '';
+// `?error=INVALID_TOKEN` is what better-auth appends to `redirectTo` when the link is stale or
+// already used; there is no other error shape on this page.
+const tokenRejected = Boolean(Astro.url.searchParams.get('error')) || token.length === 0;
+
+let error: 'mismatch' | 'too-short' | 'invalid' | null = tokenRejected ? 'invalid' : null;
+
+if (Astro.request.method === 'POST') {
+  if (!isSameOrigin(Astro.request)) return forbidden();
+  const form = await readForm(Astro.request);
+  if (!form) return forbidden();
+
+  const submittedToken = field(form, 'token');
+  const password = field(form, 'password');
+  const again = field(form, 'password_confirm');
+
+  if (submittedToken.length === 0) {
+    error = 'invalid';
+  } else if (password.length < 10) {
+    error = 'too-short';
+  } else if (password !== again) {
+    error = 'mismatch';
+  } else {
+    const response = await getAuth().api.resetPassword({
+      body: { newPassword: password, token: submittedToken },
+      asResponse: true,
+    });
+    // better-auth signs the account out of every session when a password is set this way, and it
+    // sets the cookie to prove it; the sign-in page explains why.
+    if (response.ok) return redirectWithCookies('/login?notice=password-changed', response);
+    error = 'invalid';
+  }
+}
+
+const messages = {
+  mismatch: 'error.password-mismatch',
+  'too-short': 'error.password-too-short',
+  invalid: 'auth.reset.invalid',
+} as const;
+---
+
+<Plain title={label('head.reset')} theme={Astro.locals.theme}>
+  <h1 class="text-xl font-semibold tracking-tight">{label('auth.reset.title')}</h1>
+
+  {
+    error && (
+      <p class="error mt-4 rounded-md border px-3 py-2 text-sm border-danger/40 bg-danger/10 text-danger" role="alert">
+        {label(messages[error])}
+      </p>
+    )
+  }
+
+  {
+    error === 'invalid' ? (
+      <div class="mt-6 space-y-3 rounded-lg border border-line bg-surface p-4 sm:p-5">
+        <p class="text-sm leading-6 text-fg-muted">{label('auth.reset.invalidHint')}</p>
+        <a class="text-sm text-fg underline underline-offset-2" href="/forgot">
+          {label('auth.reset.requestAgain')}
+        </a>
+      </div>
+    ) : (
+      <form method="post" class="mt-6 space-y-4 rounded-lg border border-line bg-surface p-4 sm:p-5">
+        <input type="hidden" name="token" value={token} />
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-fg" for="password">
+            {label('auth.reset.password')}
+          </label>
+          <input
+            id="password"
+            class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none"
+            name="password"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-fg" for="password_confirm">
+            {label('auth.reset.passwordAgain')}
+          </label>
+          <input
+            id="password_confirm"
+            class="h-10 w-full rounded-md border border-line-strong bg-surface px-3 text-sm text-fg outline-none"
+            name="password_confirm"
+            type="password"
+            required
+            minlength="10"
+            autocomplete="new-password"
+          />
+          <p class="mt-1.5 text-xs leading-5 text-fg-muted">{label('auth.reset.hint')}</p>
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit"><Icon name="key" size={16} /> {label('auth.reset.submit')}</Button>
+        </div>
+      </form>
+    )
+  }
+</Plain>
