@@ -1,6 +1,23 @@
 import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
 import tailwindcss from '@tailwindcss/vite';
+import { loadEnv } from 'vite';
+
+/**
+ * Astro's dev server reads `.env` into `import.meta.env`, and this project's server code
+ * reads `process.env` (`src/config.ts` validates it with zod). Without this, `pnpm dev`
+ * renders the marketing pages and answers 500 on `/dashboard` and every auth POST, while
+ * the built server — started with `--env-file-if-exists=.env` — works. Measured
+ * 2026-10-05, and confusing the first time: the pages that failed were the ones with no
+ * configuration to miss.
+ *
+ * Loading the file here makes `pnpm dev` behave like the built server. A real environment
+ * variable always wins, so CI, Railway and `pnpm start` are untouched.
+ */
+const fileEnv = loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), '');
+for (const [key, value] of Object.entries(fileEnv)) {
+  if (process.env[key] === undefined) process.env[key] = value;
+}
 
 // noka — next of kin access. Functionality first: no client framework, and no
 // scripts, fonts or third-party requests on the responder pages.

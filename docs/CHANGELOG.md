@@ -46,6 +46,33 @@ scan (D18, PLAN §18). That is now a component rather than a promise in a docume
   listening on :3200. It builds to `dist-e2e` and serves :3300, and never reuses one
   (ADR-029).
 
+### Fix — `pnpm dev` loads `.env`, so the dashboard works in dev
+
+Found while handing over Phase 8: `pnpm dev` served `/`, `/demo` and the policy pages
+and answered **500** on `/dashboard` and every auth POST, because Astro's dev server
+puts `.env` into `import.meta.env` while `src/config.ts` validates `process.env`.
+`astro.config.mjs` now loads the file into `process.env` at config time; a real
+environment variable still wins, so CI, Railway and `pnpm start` are unchanged.
+Verified: `/dashboard` answers 303 → `/login` instead of 500 with nothing exported.
+
+The same check turned up a second trap, now in `docs/SETUP.md`: `astro dev` writes its
+lock with the PID **inside the sandbox PID namespace**, so a killed dev server leaves
+`.astro/dev.json` pointing at a PID that exists again in the next namespace — the next
+start refuses with `Another astro dev server is already running`. `pnpm dev --force`
+replaces the stale lock.
+
+### Change — the studio renamed: No More Names Studio
+
+`Lost Signals Studio` / `lostsignals.studio` became `No More Names Studio` /
+`nomorenames.studio` (2026-10-01), and four places still carried the old name on a
+public page: the footer's link and text, the privacy page's operator clause, two lines
+of the imprint, and the e2e assertion that greps the footer — which is how this was
+found at all: the test named the old name, so the brand was covered even though nobody
+was looking for it.
+
+The contact address still reads `hey@lostsignals.studio`; a rename does not by itself
+move a mailbox, and a dead address on a legal page is worse than an old one.
+
 ## 2026-10-01
 
 ### Fix — every write path is transactional

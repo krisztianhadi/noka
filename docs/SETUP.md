@@ -52,8 +52,7 @@ for everything else are in [The sandbox environment](#the-sandbox-environment) b
 
 | Command | Notes |
 |---|---|
-| `pnpm dev` | :3200, bound on all interfaces for phone testing. **It does not load `.env`** — see below. |
-| `set -a; . ./.env; set +a; pnpm dev` | the dev server with the environment loaded: the dashboard and every other config-dependent route need it |
+| `pnpm dev` | :3200, bound on all interfaces for phone testing. Loads `.env` itself — see below. After a killed server, add `--force` |
 | `pnpm build` && `pnpm start` | production build → `dist/server/entry.mjs` |
 | `pnpm db:generate` | writes a new SQL migration into `drizzle/` (commit it) |
 | `pnpm db:migrate` | applies migrations; same script the container runs |
@@ -61,23 +60,30 @@ for everything else are in [The sandbox environment](#the-sandbox-environment) b
 | `pnpm test` | Vitest; loads `.env` itself, integration tests need Postgres up |
 | `pnpm test:e2e` | Playwright owns its server: it builds to `dist-e2e` and serves on **:3300**, never reusing one that is already running (ADR-029). Needs the browser path: `PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright pnpm test:e2e` |
 
-### `pnpm dev` serves the marketing pages and 500s on the dashboard
+### `pnpm dev` and `.env`
 
-Astro's dev server reads `.env` into `import.meta.env`, not into `process.env`, and
-`src/config.ts` validates `process.env` with zod. So `pnpm dev` renders `/`, `/demo`
-and the policy pages — none of which touch the configuration — and answers **500** on
-`/dashboard`, `/signup` and every auth POST with `Invalid environment — DATABASE_URL
-… received undefined`. Measured 2026-10-05.
+Astro's dev server reads `.env` into `import.meta.env`, and this project's server code
+reads `process.env` (`src/config.ts` validates it with zod). Until 2026-10-05 that meant
+`pnpm dev` served the marketing pages — the ones with no configuration to miss — and
+answered **500** on `/dashboard`, `/signup` and every auth POST with
+`Invalid environment — DATABASE_URL … received undefined`.
 
-Load the file into the shell first and it behaves:
+`astro.config.mjs` now loads the file into `process.env` at config time, so `pnpm dev`
+behaves like the built server. A real environment variable still wins, so CI, Railway
+and `pnpm start` are unaffected.
+
+### After a killed dev server: `pnpm dev --force`
+
+`astro dev` writes a lock to `.astro/dev.json` with its **PID inside the sandbox's own
+PID namespace**. Killing the job leaves that file behind, and the next `pnpm dev` finds
+the recorded PID alive in the new namespace and refuses with `Another astro dev server
+is already running`. It is a stale artifact, not a running server:
 
 ```sh
-set -a; . ./.env; set +a; HOST=0.0.0.0 pnpm dev
+pnpm dev --force          # replaces the stale lock
 ```
 
-The built server does not have this problem: `node --env-file-if-exists=.env` passes
-the same variables through `process.env`, which is why the e2e suite and the handover
-command below start the build rather than the dev server.
+The built server has no such lock.
 
 ## The sandbox environment
 

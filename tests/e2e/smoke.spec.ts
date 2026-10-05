@@ -58,7 +58,7 @@ test.describe('the footer belongs to the owner surfaces only', () => {
   test('every owner page carries it, and the card page never does', async ({ page, request }) => {
     for (const path of ['/', '/login', '/signup', '/privacy', '/terms', '/imprint']) {
       await page.goto(path);
-      await expect(page.locator('footer'), `${path} footer`).toContainText('Lost Signals Studio');
+      await expect(page.locator('footer'), `${path} footer`).toContainText('No More Names Studio');
       await expect(page.locator('footer a[href="/privacy"]')).toBeVisible();
     }
 
@@ -66,7 +66,7 @@ test.describe('the footer belongs to the owner surfaces only', () => {
     // nothing else — no maker, no legal nav, no link away from the card (ADR-026).
     const responder = await request.get(`/c/${SLUG}`);
     const html = await responder.text();
-    expect(html).not.toContain('Lost Signals');
+    expect(html).not.toContain('No More Names');
     expect(html).not.toContain('<footer');
   });
 });
