@@ -21,16 +21,40 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>2. Not an emergency service</h2>
+    <h2 class={heading}>2. Not an emergency service, and not a monitored one</h2>
     <p class="text-sm">
-      noka is not a substitute for emergency services, medical advice or a written emergency plan.
-      It is a more elegant way to keep a note in your wallet. Call your local emergency number
-      first; this card is for the people you would want reached afterwards.
+      noka is not a substitute for emergency services, medical advice or a written emergency plan,
+      and it is not a medical device. It is a more elegant way to keep a note in your wallet. Call
+      your local emergency number first; this card is for the people you would want reached
+      afterwards.
+    </p>
+    <p class="text-sm">
+      Nothing here is monitored. No one is watching for a scan, opening a card sends no alert, and a
+      card that is never found or never opened raises nothing at all. The owner can see that a card
+      was opened — that is the whole of it, and it is not a distress signal.
     </p>
   </section>
 
   <section class={section}>
-    <h2 class={heading}>3. Your account</h2>
+    <h2 class={heading}>3. The printed card</h2>
+    <ul class={list}>
+      <li>
+        The card is a convenience, not a safety device, and it is only as good as the paper it is
+        printed on and the place it is kept.
+      </li>
+      <li>
+        It shows whatever the account holds at the moment someone opens it, so editing a contact
+        changes every card already printed — no card needs reprinting for that.
+      </li>
+      <li>
+        It stops working the moment the card is replaced or the account is deleted. Nobody holding
+        the printed copy is told; replacing a card means destroying the old one.
+      </li>
+    </ul>
+  </section>
+
+  <section class={section}>
+    <h2 class={heading}>4. Your account</h2>
     <ul class={list}>
       <li>You are responsible for your password, and for keeping the printed card somewhere sensible.</li>
       <li>Anyone with the card and the PIN can read the contacts on it — that is the design, not a flaw.</li>
@@ -39,7 +63,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>4. Acceptable use</h2>
+    <h2 class={heading}>5. Acceptable use</h2>
     <p class="text-sm">
       Do not put data in a contact or note that you are not allowed to hold — someone else's
       medical details, for instance. Do not use the service to harass anyone. Do not attempt to
@@ -48,7 +72,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>5. Price</h2>
+    <h2 class={heading}>6. Price</h2>
     <p class="text-sm">
       It is free, and it stays free: there is no tier, no trial and no plan that turns the card off.
       The project is paid for by sponsors and whitelabel arrangements.
@@ -56,7 +80,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>6. Availability and liability</h2>
+    <h2 class={heading}>7. Availability and liability</h2>
     <p class="text-sm">
       The service is provided as it is, without warranty. It may be unavailable, and a card might
       fail to open at the worst possible moment. To the extent the law allows, the operator is not
@@ -66,7 +90,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>7. Source and licence</h2>
+    <h2 class={heading}>8. Source and licence</h2>
     <p class="text-sm">
       The code is MIT licensed: you may self-host, fork and change it, including commercially. The
       licence binds anyone who takes the code, including the operator.
@@ -74,7 +98,7 @@ const list = 'list-disc space-y-1 pl-5 text-sm';
   </section>
 
   <section class={section}>
-    <h2 class={heading}>8. Changes</h2>
+    <h2 class={heading}>9. Changes</h2>
     <p class="text-sm">
       These terms will change as the service does. Material changes will be noted in the
       repository's changelog, which is public.

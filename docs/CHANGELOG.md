@@ -110,6 +110,29 @@ with its own logger, which pino's redaction does not touch. Containment is a rul
 filter — no throw site may interpolate user data. Audited: the nine `throw new Error` sites
 carry key versions, schema versions, limits, a card id and config names.
 
+### Feature — the printed card has terms, and the error-tracking choice is written down
+
+PLAN §8 asked for two sentences that were not there, and §11 asked for a decision that was
+not made.
+
+- **Terms, §2 and §3.** "Nothing here is monitored" is now on the page: no one watches for a
+  scan, opening a card sends no alert, and a card that is never found raises nothing. A new
+  section covers the printed object itself — a convenience rather than a safety device, it
+  shows whatever the account holds when it is opened (so editing a contact updates cards
+  already printed, and no reprint is needed for that), and it stops working when the card is
+  replaced or the account is deleted, without telling whoever is holding the paper.
+- **The privacy page stopped overstating the purge.** It said the 30-day sweep was "a
+  scheduled job, not a promise". The code exists and is tested, but the schedule that calls
+  it does not — it is a launch-checklist item. The page now says exactly that, because a
+  privacy page that describes a job nobody runs is the kind of sentence this project's
+  whole argument is against.
+- **ADR-033: error tracking is the log, not a vendor.** No browser SDK (it would mean a
+  CSP hole on the one page that must load nothing), no server SDK (request context —
+  including the card URL — leaves the building), no new subprocessor, no bill. The cost is
+  stated in the ADR: nobody is paged, the 500 page is silent by design, and the log line is
+  the only trace. The first operator who is not also the developer is the trigger to revisit
+  it.
+
 ### Change — the studio renamed: No More Names Studio
 
 `Lost Signals Studio` / `lostsignals.studio` became `No More Names Studio` /

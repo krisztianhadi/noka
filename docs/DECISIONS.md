@@ -28,6 +28,8 @@ later reversed.
 | 018 | MIT — the licence, with the reasoning written down | locked |
 | 019 | Users are never charged; sponsors or whitelabel; never sold into closed source | locked |
 
+ADRs **020–033** are newer and sit below this table, above *Open decisions*; 001–019 follow it.
+
 ### ADR-020 — A card is live or it does not exist (supersedes parts of D9, D28)
 
 **Context.** He tested the first build and reported: the PIN "doesn't work" (it did — the
@@ -320,6 +322,44 @@ translated, in a way that is easy to extend and open to community contributions.
 **Consequences.** Adding a language is one file, one import and one registry line — documented in
 `docs/I18N.md` and reported by `pnpm i18n:report`. The suite enforces parity, placeholders and
 non-empty values, which is what makes an untrusted contribution safe to merge.
+
+## ADR-033 — Error tracking is the log, not a vendor
+
+**Context.** PLAN §11 (Phase 9) asks for one choice, made explicitly rather than left
+implicit: an error-tracking vendor, or logs only. The service holds emergency contact
+data, the responder plane is contractual about loading nothing external, and the operator
+pays for the project personally.
+
+**Decision.** **Logs only.** No SDK in the browser, no SDK on the server, no third-party
+endpoint. An unhandled error reaches stdout through Astro's own logging, and Railway keeps
+and searches it. pino (`getLogger()`) is for the structured lines this codebase writes
+itself — currently one, when an audit insert fails.
+
+**Why not a vendor.**
+
+1. A browser SDK contradicts the responder plane's whole argument: zero JavaScript, zero
+   external requests, and a CSP that says `default-src 'none'`. Adding one would mean a
+   CSP hole on the page where a stranger's contacts are rendered, so that a developer
+   could read a stack trace.
+2. A server SDK ships request context — IP addresses, URLs, headers, and whatever else
+   the library decides is helpful — to a third party. For this product the URL is the
+   sensitive string: a card slug in someone else's dashboard is a leak.
+3. It would add a subprocessor to the privacy page and a data-flow review to every
+   dependency bump, for a service with no users yet.
+4. The budget is one person's, and this is the cheapest of the options.
+
+**Consequences, stated plainly.** Nobody is paged when something breaks. The operator
+learns about a failure from `/healthz`, from the logs, or from a person. The 500 page is
+deliberately silent — no message, no stack, no identifier — so the log line is the only
+trace of what happened. That is accepted, not overlooked.
+
+**What would change this.** The first operator who is not also the developer. At that
+point "read the Railway logs" stops being a process and becomes a dependency on one
+person's attention, and a vendor (or a self-hosted error sink like GlitchTip, which keeps
+the data in-house) becomes the cheaper decision.
+
+**Related:** the redaction rules and the audited throw sites are in
+[THREAT-MODEL.md](THREAT-MODEL.md) §4; the silent 500 page is `src/pages/500.astro`.
 
 ## Open decisions
 
