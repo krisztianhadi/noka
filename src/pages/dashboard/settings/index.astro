@@ -52,6 +52,30 @@ const hintClass = 'mt-1.5 text-xs leading-5 text-fg-muted';
   <div class="mt-6 space-y-4">
     <section class={cardClass}>
       <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
+        <Icon name="edit" size={16} /> {label('settings.name.title')}
+      </h2>
+      <form method="post" action="/dashboard/settings/name" class="space-y-3">
+        <div>
+          <label class={labelClass} for="name">{label('settings.name.label')}</label>
+          <input
+            id="name"
+            class={fieldClass}
+            name="name"
+            type="text"
+            maxlength="80"
+            autocomplete="given-name"
+            value={owner.name}
+          />
+          <p class={hintClass}>{label('settings.name.hint')}</p>
+        </div>
+        <div class="flex justify-end">
+          <Button type="submit">{label('settings.name.submit')}</Button>
+        </div>
+      </form>
+    </section>
+
+    <section class={cardClass}>
+      <h2 class="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-fg-muted uppercase">
         <Icon name="mail" size={16} /> {label('settings.email.title')}
       </h2>
       <form method="post" action="/dashboard/settings/email" class="space-y-3">

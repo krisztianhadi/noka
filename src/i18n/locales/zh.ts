@@ -157,6 +157,10 @@ const zh: Record<MessageKey, string> = {
   'settings.email.hint': '用于登录，是唯一以明文存储的字段（ADR-004）。',
   'settings.email.password': '当前密码',
   'settings.email.submit': '更新电子邮箱',
+  'settings.name.title': '你的名字',
+  'settings.name.label': '名字',
+  'settings.name.hint': '打开卡片的人在联系人上方看到的名字。留空时页面只显示「紧急联系人」，不显示任何姓名。',
+  'settings.name.submit': '保存名字',
   'settings.password.title': '密码',
   'settings.password.current': '当前密码',
   'settings.password.new': '新密码',
@@ -225,6 +229,8 @@ const zh: Record<MessageKey, string> = {
   'notice.card-deleted':
     '卡片已删除。你的联系人和备注不受影响。可以随时制作新卡片。',
   'notice.email-changed': '电子邮箱已更新。',
+  'notice.name-changed': '名字已更新。',
+  'notice.name-unchanged': '名字未变更。',
   'notice.email-unchanged': '这已经是你当前的电子邮箱。',
   'notice.password-changed': '密码已更新，所有登录会话均已退出。请使用新密码重新登录。',
 

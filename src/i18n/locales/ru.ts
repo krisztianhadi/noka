@@ -157,6 +157,10 @@ const ru: Record<MessageKey, string> = {
   'settings.email.hint': 'Используется для входа и хранится единственным незашифрованным полем (ADR-004).',
   'settings.email.password': 'Ваш текущий пароль',
   'settings.email.submit': 'Обновить почту',
+  'settings.name.title': 'Ваше имя',
+  'settings.name.label': 'Имя',
+  'settings.name.hint': 'Имя, которое видит тот, кто открывает карту, над контактами. Оставьте пустым — страница покажет «Экстренные контакты» и никого не назовёт.',
+  'settings.name.submit': 'Сохранить имя',
   'settings.password.title': 'Пароль',
   'settings.password.current': 'Текущий пароль',
   'settings.password.new': 'Новый пароль',
@@ -225,6 +229,8 @@ const ru: Record<MessageKey, string> = {
   'notice.card-deleted':
     'Карта удалена. Контакты и заметки не затронуты. Новую карту можно сделать в любой момент.',
   'notice.email-changed': 'Почта обновлена.',
+  'notice.name-changed': 'Имя обновлено.',
+  'notice.name-unchanged': 'Имя не изменилось.',
   'notice.email-unchanged': 'Это уже ваша почта.',
   'notice.password-changed': 'Пароль обновлён, все сессии завершены. Войдите с новым паролем.',
 

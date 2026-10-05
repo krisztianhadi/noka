@@ -35,6 +35,9 @@ with zod and the process refuses to serve without them. `.env` is gitignored —
 | `IP_HASH_KEY` | HMAC key for IP / IP-prefix hashing. Not rotatable in v1 (D23). |
 | `LOG_LEVEL` | pino level; redaction of `payload`, `pin`, `phone`, `notes` is fixed, not configurable. |
 | `PORT` | Railway sets it; local scripts default to 3200. |
+| `EMAIL_TRANSPORT` | `log` (default) or `resend`. With no key set, mail goes to the log — the reset link is in the terminal, one click away. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Required only when `EMAIL_TRANSPORT=resend`; the app refuses to boot without both, rather than failing when a stranger clicks "forgot password". `EMAIL_FROM` must be on a domain Resend has verified. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Both or neither: set, the Google button appears on the auth pages; unset, nothing changes. Half a client refuses to boot. |
 | `ASTRO_TELEMETRY_DISABLED` | Set to 1. Astro's telemetry writes to `~/.config/astro`. |
 
 Generate a secret with `openssl rand -base64 32`.

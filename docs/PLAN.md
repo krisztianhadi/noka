@@ -515,7 +515,7 @@ Focused hours, solo. State as of **2026-10-01**:
 | 4 Contacts, notes, encryption | ✅ done |
 | 5 Public PIN flow, localised responder | ✅ done |
 | 6 Rate limiting and audit | ✅ done — attempts recorded, purge script with `--dry-run`, and the owner-facing activity feed on the dashboard (2026-10-05). Open: the Railway cron that calls the purge (launch checklist) |
-| 7 Print, preview, reprint | ✅ done 2026-10-01, except the no-PIN variant and the physical print/scan test (needs a printer and hands) |
+| 7 Print, preview, reprint | ✅ done 2026-10-01, except the physical print/scan test (needs a printer and hands). The no-PIN variant is **dropped** — see ADR-034 |
 | 8 Sponsor logos | ✅ done 2026-10-05 — config-driven, self-hosted, landing and auth pages only, with the e2e guard. The list is empty until there is a sponsor to name |
 | 9 Hardening and launch | 🟡 partial (2026-10-05): threat model, owner-plane CSP, `Permissions-Policy`, brand 404/500 pages, redaction test, printed-card terms, the error-tracking decision (ADR-033, logs only), the restore drill, the smoke load test and [RUNBOOK.md](RUNBOOK.md) are done; export and account deletion were already built. **Staging is deferred by the owner** ("no deploy yet, we are not done") and stays in the runbook's launch checklist with the rest |
 
@@ -611,9 +611,14 @@ one); a card is **53.98 × 85.60 mm** (ISO/IEC 7810 ID-1) and A4 is **210 × 297
 **ten cards fit** on A4, rotated a quarter turn and laid out 2 × 5. Portrait cards fit only nine
 (three across, three down) — rotation is what buys the tenth.
 
-**Left in this phase:** the no-PIN variant behind a blunt warning, deterministic PDF bytes (the
-JPEG preview is already deterministic; the PDFs carry a creation timestamp on purpose, so a print
-master says when it was made), and the physical print/scan test with three phones at 10–30 cm.
+**Left in this phase:** the physical print/scan test with three phones at 10–30 cm (it needs hands,
+not code), and deterministic PDF bytes — decided *against* rather than left undone: the JPEG preview
+is deterministic and the PDFs deliberately carry a creation timestamp, because a print master should
+say when it was made.
+
+**Dropped:** the no-PIN variant. It was one undefined line in this list from the first plan until
+2026-10-05, when he settled it: *"no, it's unsecure… the pin is not that big friction. so pin
+stays."* ADR-034 records the reasoning.
 The last one needs hands, not code.
 
 Exit: PDFs measure exactly 53.98 × 85.60 mm ✅; the A4 sheet has 10 correct positions ✅;

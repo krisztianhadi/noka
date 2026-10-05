@@ -157,6 +157,10 @@ const fr: Record<MessageKey, string> = {
   'settings.email.hint': 'Utilisé pour se connecter, et le seul champ stocké en texte clair (ADR-004).',
   'settings.email.password': 'Votre mot de passe actuel',
   'settings.email.submit': "Mettre à jour l'e-mail",
+  'settings.name.title': 'Votre nom',
+  'settings.name.label': 'Prénom',
+  'settings.name.hint': 'Le nom que voit la personne qui ouvre votre carte, au-dessus des contacts. Laissez-le vide : la page affiche « Contacts d’urgence » et ne nomme personne.',
+  'settings.name.submit': 'Enregistrer le nom',
   'settings.password.title': 'Mot de passe',
   'settings.password.current': 'Mot de passe actuel',
   'settings.password.new': 'Nouveau mot de passe',
@@ -225,6 +229,8 @@ const fr: Record<MessageKey, string> = {
   'notice.card-deleted':
     'Carte supprimée. Vos contacts et vos notes sont intacts. Une nouvelle carte peut être créée à tout moment.',
   'notice.email-changed': 'E-mail mis à jour.',
+  'notice.name-changed': 'Nom mis à jour.',
+  'notice.name-unchanged': 'Nom inchangé.',
   'notice.email-unchanged': "C'est déjà votre e-mail.",
   'notice.password-changed': 'Mot de passe mis à jour, et toutes les sessions ont été déconnectées. Connectez-vous avec le nouveau mot de passe.',
 

@@ -50,6 +50,7 @@ const NOTICES: Record<string, MessageKey> = {
   'card-renewed': 'notice.card-renewed',
   'card-deleted': 'notice.card-deleted',
   'email-changed': 'notice.email-changed',
+  'name-changed': 'notice.name-changed',
   'email-unchanged': 'notice.email-unchanged',
   'password-changed': 'notice.password-changed',
 };

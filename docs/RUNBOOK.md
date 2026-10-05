@@ -187,5 +187,5 @@ page that must stop being a promise.
 - [ ] **Load test** against the deployed instance, numbers recorded here.
 - [ ] **ADR-033 revisited** if anyone other than the developer operates it: logs-only stops
       being a process and becomes a dependency on one person's attention.
-- [ ] **Phase 7 leftovers**: the no-PIN card variant (a decision, not just code) and the
-      physical print-and-scan test with three phones at 10–30 cm.
+- [ ] **The physical print-and-scan test** with three phones at 10–30 cm. (The other Phase 7
+      leftover, the no-PIN card variant, is settled: dropped in ADR-034.)

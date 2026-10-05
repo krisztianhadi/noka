@@ -4,6 +4,35 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-10-05
 
+### Feature — the owner's own name is editable, and the mail and Google wiring is in place
+
+Three things he asked for on 2026-10-05, in the order he asked for them.
+
+- **The first name is editable.** It was captured at signup and could never be changed, which made a
+  typo permanent in the one place a stranger reads: the heading above the contacts on the card page.
+  `POST /dashboard/settings/name` sits above the email form in settings. No password is required —
+  it is not a recovery channel and not a credential — the ceiling is 80 characters, and **empty is
+  accepted**: the page then says "Emergency contacts" and names nobody, which is the same choice the
+  printed artwork already makes by carrying no name at all (D27). The e2e test covers all three
+  branches, including the two a browser cannot reach: the server-side refusal of an over-long name
+  (the input's `maxlength` hides it) and the empty value.
+- **Mail is wired for both worlds.** `src/lib/email/` is a transport with two implementations and a
+  pure resolution rule: `EMAIL_TRANSPORT` wins when set, otherwise a `RESEND_API_KEY` means Resend
+  and no key means the log stub. The stub is the default because both wrong defaults are silent
+  failures — a deployed instance resolving to `log` sends nothing and never complains, and a
+  development machine resolving to `resend` starts calling a paid API from the test suite. Resend is
+  a single POST, no SDK; the reset message carries the link and says nothing else about the account.
+- **Google sign-in is wired and waiting.** `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` switch on the
+  better-auth provider; unset, nothing about the auth pages changes. Half a client is a boot failure
+  rather than a button that bounces.
+- **A half-configured deployment now refuses to start**, with every problem listed at once
+  (`src/config.ts`): `EMAIL_TRANSPORT=resend` without a key or a sender, or a Google client id
+  without its secret. Eleven new unit tests cover both directions of the transport rule and all four
+  configuration refusals. `.env.example` documents each variable, and so does SETUP.
+
+**Still missing, and named rather than implied:** the `/forgot` and `/reset` *pages* (the mail side
+is done), and the Google button on the login and signup screens. Both land next.
+
 ### Change — v1 is the fixed five languages, and the landing stops promising a picker
 
 His call, 2026-10-05: *"currently we start with 5 languages that we have, later we will expand, but

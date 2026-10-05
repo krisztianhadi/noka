@@ -653,3 +653,62 @@ test.describe('card activity', () => {
     await expect(activity).toContainText('Nothing here notifies you');
   });
 });
+
+/**
+ * The owner's own name (2026-10-05). It was captured at signup and could never be changed, which
+ * makes a typo permanent in the one place a stranger reads: the heading above the contacts.
+ *
+ * Three contracts, and the last two are only reachable through the API — the input carries
+ * `maxlength`, so a browser cannot post an over-long name, and "no name at all" is a legitimate
+ * state (the page then names nobody, D27), which is not the same as a validation failure.
+ */
+test.describe('the owner’s own name', () => {
+  test('changes what a responder reads, can be taken away, and refuses an over-long one', async ({ page, browser }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', country: 'TH', phone: '812 345 678' });
+    const { slug, pin } = await readCard(page);
+
+    await page.goto('/dashboard/settings');
+    await page.fill('#name', 'Krisztián Hadi');
+    await page.getByRole('button', { name: 'Save name' }).click();
+    await expect(page.locator('.notice')).toContainText('Name updated');
+
+    // The owner plane greets with it…
+    await page.goto('/dashboard');
+    await expect(page.locator('header')).toContainText('Krisztián Hadi');
+
+    // …and so does the card page a stranger opens.
+    const firstGuest = await browser.newContext();
+    const guestPage = await firstGuest.newPage();
+    await guestPage.goto(`/c/${slug}`);
+    await guestPage.fill('#pin', pin);
+    await guestPage.getByRole('button', { name: 'Open' }).click();
+    await expect(guestPage.getByRole('heading')).toContainText('Krisztián Hadi');
+    await firstGuest.close();
+
+    // An over-long name is refused in the service, not only by the input's maxlength, and the
+    // refusal writes nothing.
+    const refused = await page.request.post('/dashboard/settings/name', {
+      form: { name: 'x'.repeat(200) },
+      headers: { Origin: new URL(page.url()).origin },
+      maxRedirects: 0,
+    });
+    expect(refused.status()).toBe(303);
+    expect(refused.headers()['location']).toContain('error=name-too-long');
+
+    // Empty is allowed: the page falls back to naming nobody.
+    await page.goto('/dashboard/settings');
+    await expect(page.locator('#name')).toHaveValue('Krisztián Hadi');
+    await page.fill('#name', '');
+    await page.getByRole('button', { name: 'Save name' }).click();
+    await expect(page.locator('.notice')).toContainText('Name updated');
+
+    const secondGuest = await browser.newContext();
+    const otherPage = await secondGuest.newPage();
+    await otherPage.goto(`/c/${slug}`);
+    await otherPage.fill('#pin', pin);
+    await otherPage.getByRole('button', { name: 'Open' }).click();
+    await expect(otherPage.getByRole('heading')).toHaveText('Emergency contacts');
+    await secondGuest.close();
+  });
+});

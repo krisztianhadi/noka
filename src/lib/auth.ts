@@ -4,11 +4,13 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { getConfig } from '@/config';
 import { argon2Hash, argon2Verify } from '@/lib/argon2';
 import { getDb } from '@/db/client';
+import { emailFrom, emailTransport } from '@/lib/email/transport';
 import { accounts, sessions, users, verifications } from '@/db/auth-schema';
 
 /**
- * Owner plane (D8, §3). Email + password today; Google OAuth and the
- * Resend-backed reset are added in Phase 2's second half.
+ * Owner plane (D8, §3). Email + password, plus Google sign-in and the password-reset mail
+ * whenever their environment variables are set (2026-10-05): the wiring is here, and the
+ * credentials are the only thing missing.
  *
  * `usePlural` matches the table names in schema; the ids are uuids because the
  * app generates them here rather than letting better-auth mint strings.
@@ -40,7 +42,42 @@ function createAuth() {
         hash: (password) => argon2Hash(password),
         verify: ({ hash: storedHash, password }) => argon2Verify(storedHash, password),
       },
+      /**
+       * The reset mail (2026-10-05). better-auth mints the single-use token and hands us the URL;
+       * the transport decides whether it goes anywhere — with no provider configured it lands in
+       * the log, where a developer clicks it, and a deployed instance sends it through Resend.
+       *
+       * The message says nothing about the account beyond the link. An address that receives it is
+       * already known to whoever asked, and "your account" phrasing is a gift to anyone who
+       * mistypes an address at a shared machine.
+       */
+      sendResetPassword: async ({ user, url }) => {
+        await emailTransport().send(
+          {
+            to: user.email,
+            subject: 'Reset your noka password',
+            text: [
+              'Someone asked to reset the password for this address on noka.',
+              '',
+              `If it was you: ${url}`,
+              '',
+              'The link works once and expires on its own. If it was not you, nothing happened:',
+              'your password is unchanged, and you can ignore this message.',
+            ].join('\n'),
+          },
+          emailFrom(),
+        );
+      },
     },
+    // Google sign-in appears the moment both variables are set and stays out of the way until
+    // then: an OAuth button that cannot work is worse than no button (2026-10-05).
+    ...(config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET
+      ? {
+          socialProviders: {
+            google: { clientId: config.GOOGLE_CLIENT_ID, clientSecret: config.GOOGLE_CLIENT_SECRET },
+          },
+        }
+      : {}),
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       updateAge: 60 * 60 * 24,
@@ -78,6 +115,24 @@ export async function changeOwnerEmail(userId: string, newEmail: string): Promis
   } catch {
     return 'taken';
   }
+}
+
+/** How long the owner's own name may be. Same ceiling as a contact's, for the same reason. */
+export const MAX_OWNER_NAME_LENGTH = 80;
+
+/**
+ * Change the owner's first name.
+ *
+ * This is the name a responder sees above the contacts on the card page (`view.headingFor`), and
+ * the dashboard greets the owner with it. Empty is a legitimate value, not an error: the page
+ * then says "Emergency contacts" and names nobody (D27) — a card lying in a wallet should not
+ * announce whose it is, which is also why the printed artwork carries no name at all.
+ */
+export async function changeOwnerName(userId: string, name: string): Promise<void> {
+  await getDb()
+    .update(users)
+    .set({ name: name.trim(), updatedAt: new Date() })
+    .where(eq(users.id, userId));
 }
 
 /**

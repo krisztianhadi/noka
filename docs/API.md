@@ -44,14 +44,15 @@ the locale is cookie → `Accept-Language` → English.
 |---|---|---|---|
 | GET/POST | `/signup` | Account lifecycle; the first name is captured here (D27), because better-auth requires it. Carries the sponsor strip. | ✅ |
 | GET/POST | `/login` | Session cookie on success; one message for every failure. Carries the sponsor strip. | ✅ |
-| GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
+| GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived. The mail side is wired (2026-10-05): better-auth mints the token and `sendResetPassword` hands it to the transport — Resend when configured, the log otherwise, so the link is clickable in the terminal. The pages themselves are the next step. | ⏳ pages (mail ready) |
 | ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
 | GET | `/dashboard` | The whole owner plane on one page: contacts, notes, the card plate, and the card's activity disclosure. | ✅ |
 | POST | `/dashboard/start` | First run: writes the contact and then the note, one screen and one request. The first contact is what creates the card. | ✅ |
 | POST | `/dashboard/theme` | Dark mode is a cookie, so the first paint is already right (ADR-024). | ✅ |
-| GET | `/dashboard/settings` | Account settings: email, password, export, delete. The first name is captured at signup and is not editable yet. | ✅ / ⏳ first name (2b) |
+| GET | `/dashboard/settings` | Account settings: **first name**, email, password, export, delete. | ✅ |
 | POST | `/dashboard/settings/email` | New address; **requires the current password**, because the email is the only recovery channel. | ✅ |
+| POST | `/dashboard/settings/name` | The owner's own first name. No password: it is not a credential. Empty is allowed and the card page then names nobody (D27); over 80 characters is refused. | ✅ |
 | POST | `/dashboard/settings/password` | Current password required; every other session ends. | ✅ |
 | GET | `/dashboard/settings/export` | Owner's own data as a JSON attachment (`no-store`): contacts decrypted, notes, card + PIN. Read in one repeatable-read transaction, so an export cannot name one card and carry another card's PIN. Portability, Art. 20. | ✅ |
 | POST | `/dashboard/settings/delete` | Erases the account and everything cascading from it, clears the session cookie, redirects to `/?deleted=1`. Erasure, Art. 17. | ✅ |

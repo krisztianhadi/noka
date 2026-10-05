@@ -27,6 +27,33 @@ const schema = z.object({
   IP_HASH_KEY: z.string().min(32, 'must be at least 32 characters'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   PORT: z.coerce.number().int().positive().default(3200),
+  // Mail (2026-10-05). Optional, and the default is honest: without a key, "sending" a message
+  // writes it to the log, where a developer can click the link — which is also the only shape a
+  // solo self-hosted instance needs, since nobody has to receive mail to sign in.
+  EMAIL_TRANSPORT: z.enum(['log', 'resend']).optional(),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  /** The From: header. Resend refuses a sender on a domain the account has not verified. */
+  EMAIL_FROM: z.string().min(3).optional(),
+  // Google sign-in (2026-10-05). Both or neither; the button only appears when they are set.
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+}).superRefine((env, ctx) => {
+  // A half-configured deployment must fail at boot, not when a stranger clicks "forgot password".
+  if (env.EMAIL_TRANSPORT === 'resend') {
+    if (!env.RESEND_API_KEY) {
+      ctx.addIssue({ code: 'custom', path: ['RESEND_API_KEY'], message: 'is required when EMAIL_TRANSPORT=resend' });
+    }
+    if (!env.EMAIL_FROM) {
+      ctx.addIssue({ code: 'custom', path: ['EMAIL_FROM'], message: 'is required when EMAIL_TRANSPORT=resend' });
+    }
+  }
+  if (Boolean(env.GOOGLE_CLIENT_ID) !== Boolean(env.GOOGLE_CLIENT_SECRET)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['GOOGLE_CLIENT_ID'],
+      message: 'and GOOGLE_CLIENT_SECRET are both or neither — a client id without its secret cannot sign anyone in',
+    });
+  }
 });
 
 export type Config = z.infer<typeof schema>;

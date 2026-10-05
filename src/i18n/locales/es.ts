@@ -157,6 +157,10 @@ const es: Record<MessageKey, string> = {
   'settings.email.hint': 'Se usa para iniciar sesión, y es el único campo que se guarda sin cifrar (ADR-004).',
   'settings.email.password': 'Tu contraseña actual',
   'settings.email.submit': 'Actualizar correo electrónico',
+  'settings.name.title': 'Tu nombre',
+  'settings.name.label': 'Nombre',
+  'settings.name.hint': 'El nombre que ve quien abre tu tarjeta, encima de los contactos. Si lo dejas vacío, la página dice «Contactos de emergencia» y no nombra a nadie.',
+  'settings.name.submit': 'Guardar nombre',
   'settings.password.title': 'Contraseña',
   'settings.password.current': 'Contraseña actual',
   'settings.password.new': 'Contraseña nueva',
@@ -225,6 +229,8 @@ const es: Record<MessageKey, string> = {
   'notice.card-deleted':
     'Tarjeta eliminada. Tus contactos y notas no se han visto afectados. Puedes crear una tarjeta nueva en cualquier momento.',
   'notice.email-changed': 'Correo electrónico actualizado.',
+  'notice.name-changed': 'Nombre actualizado.',
+  'notice.name-unchanged': 'El nombre no ha cambiado.',
   'notice.email-unchanged': 'Ese ya es tu correo electrónico.',
   'notice.password-changed': 'Contraseña actualizada, y se cerraron todas las sesiones. Inicia sesión con la nueva contraseña.',
 

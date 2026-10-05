@@ -20,8 +20,8 @@ logs only), a **restore drill that restores real data and proves a wrong keyring
 nothing**, a smoke load test, [RUNBOOK.md](RUNBOOK.md), and the card's **activity
 panel** on the dashboard — the last thing the owner could not see (PLAN §6). Still open:
 the Railway cron that runs the retention sweep, staging, and the launch checklist in the
-runbook. Left in Phase 7: the no-PIN variant and the physical print/scan test, which
-needs a printer. See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the
+runbook. Left in Phase 7: the physical print/scan test, which needs a printer — the
+no-PIN card variant was dropped (ADR-034). See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the
 exit criteria per phase.
 
 | Document | What it is |

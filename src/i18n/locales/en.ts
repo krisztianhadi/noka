@@ -160,6 +160,10 @@ const en = {
   'settings.email.hint': 'Used to sign in, and the one field stored in plain text (ADR-004).',
   'settings.email.password': 'Your current password',
   'settings.email.submit': 'Update email',
+  'settings.name.title': 'Your name',
+  'settings.name.label': 'First name',
+  'settings.name.hint': 'The name a responder sees above your contacts when they open the card. Leave it empty and the page says "Emergency contacts" and names nobody.',
+  'settings.name.submit': 'Save name',
   'settings.password.title': 'Password',
   'settings.password.current': 'Current password',
   'settings.password.new': 'New password',
@@ -228,6 +232,8 @@ const en = {
   'notice.card-deleted':
     'Card deleted. Your contacts and notes are untouched. A new card can be made any time.',
   'notice.email-changed': 'Email updated.',
+  'notice.name-changed': 'Name updated.',
+  'notice.name-unchanged': 'Name unchanged.',
   'notice.email-unchanged': 'That is already your email.',
   'notice.password-changed': 'Password updated, and every session was signed out. Sign in with the new password.',
 

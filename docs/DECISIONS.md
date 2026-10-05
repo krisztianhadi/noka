@@ -361,6 +361,34 @@ the data in-house) becomes the cheaper decision.
 **Related:** the redaction rules and the audited throw sites are in
 [THREAT-MODEL.md](THREAT-MODEL.md) §4; the silent 500 page is `src/pages/500.astro`.
 
+## ADR-034 — The PIN stays: no no-PIN card variant
+
+**Context.** PLAN's Phase 7 leftovers carried one undefined line from the first build contract:
+"the no-PIN variant behind a blunt warning". Nobody had specified it — no schema (`cards.pin_hash`
+is `NOT NULL`), no responder flow, no copy — and it appeared in every "what is left" list since,
+which is how a stray line starts looking like queued work. The obvious reading is a card whose QR
+opens the contacts with no PIN at all: zero friction for whoever finds it.
+
+**Decision.** **It is dropped, not deferred.** His words, 2026-10-05: *"no, it's unsecure… the pin
+is not that big friction. so pin stays."*
+
+**Why this is the right call, stated so it does not get relitigated.**
+
+1. The PIN is the entire security argument (§3): the slug is high-entropy but it is printed on the
+   same object as everything else, and a card can be photographed. Remove the PIN and a photograph
+   of a card — or a card found in a lost wallet — is the contact list, immediately, with no second
+   thing to know.
+2. The friction it removes is one glance at the card the finder is already holding. That is not the
+   barrier worth trading a security property for; the card prints the PIN *on itself*.
+3. A variant would fork the responder plane's single flow (rate limiting, the view cookie, the
+   audit kinds, the indistinguishable refusal all assume a PIN), so it would cost more than the
+   feature it replaces.
+
+**Consequences.** `pin_hash` stays `NOT NULL`, the responder plane keeps one flow, and PLAN §11's
+Phase 7 row and the runbook's launch checklist no longer carry the item. If real users ever ask for
+a friction-free card, this ADR is the place to reopen it — with the threat-model delta written
+down first, not after.
+
 ## Open decisions
 
 These are deliberately not decided yet; each blocks a specific phase.
