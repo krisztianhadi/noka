@@ -47,7 +47,7 @@ the locale is cookie → `Accept-Language` → English.
 | GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
 | ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
-| GET | `/dashboard` | The whole owner plane on one page: contacts, notes, then the card plate. | ✅ |
+| GET | `/dashboard` | The whole owner plane on one page: contacts, notes, the card plate, and the card's activity disclosure. | ✅ |
 | POST | `/dashboard/start` | First run: writes the contact and then the note, one screen and one request. The first contact is what creates the card. | ✅ |
 | POST | `/dashboard/theme` | Dark mode is a cookie, so the first paint is already right (ADR-024). | ✅ |
 | GET | `/dashboard/settings` | Account settings: email, password, export, delete. The first name is captured at signup and is not editable yet. | ✅ / ⏳ first name (2b) |
@@ -67,7 +67,7 @@ the locale is cookie → `Accept-Language` → English.
 | POST | `/dashboard/contacts/{id}/delete` | Refused while a card exists and this is the last contact; count and delete share one transaction. | ✅ |
 | POST | `/dashboard/notes` | Free text, stored encrypted, blank clears the row. | ✅ |
 | POST | `/dashboard/notes/delete` | Clears the note; the card page then shows contacts only. | ✅ |
-| GET | `/dashboard/activity` | Aggregated scan/failure log. Attempts are recorded (`scan_attempts`); the owner-facing feed is not built. | ⏳ (deferred) |
+| — | card activity | Not a route: a collapsed disclosure on `/dashboard` (the owner plane is one page, ADR-022) showing the card's unlocks, failed attempts, distinct networks and the last few attempts, inside the 30-day retention window. Unknown-slug attempts (`card_id = NULL`) belong to nobody and are excluded. Networks are shown as a six-character pseudonym, never an address (D26). | ✅ |
 
 ## Non-HTTP surfaces
 

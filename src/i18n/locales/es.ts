@@ -59,6 +59,15 @@ const es: Record<MessageKey, string> = {
   'owner.lightMode': 'Modo claro',
   'owner.signOut': 'Cerrar sesión',
 
+  'owner.activity.title': 'Actividad de la tarjeta',
+  'owner.activity.counts': 'Abierta {unlocks} · Fallidos {failures} · Redes {networks}',
+  'owner.activity.opened': 'Abierta',
+  'owner.activity.failed': 'Intento fallido',
+  'owner.activity.network': 'red {tag}',
+  'owner.activity.empty': 'Todavía nadie ha abierto esta tarjeta.',
+  'owner.activity.notAnAlert': 'Nada de esto te avisa: una tarjeta que nunca se encuentra no genera nada.',
+  'owner.activity.retention': 'Solo se guardan los últimos 30 días. Una red es un seudónimo, no una dirección.',
+
   'owner.contacts.title': 'Contactos de emergencia',
   'owner.contacts.services': 'Servicios',
   'owner.contacts.spoken': 'Habla',

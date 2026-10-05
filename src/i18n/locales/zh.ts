@@ -59,6 +59,15 @@ const zh: Record<MessageKey, string> = {
   'owner.lightMode': '浅色模式',
   'owner.signOut': '退出登录',
 
+  'owner.activity.title': '卡片活动',
+  'owner.activity.counts': '已打开 {unlocks} · 失败 {failures} · 网络 {networks}',
+  'owner.activity.opened': '已打开',
+  'owner.activity.failed': '尝试失败',
+  'owner.activity.network': '网络 {tag}',
+  'owner.activity.empty': '还没有人打开过这张卡片。',
+  'owner.activity.notAnAlert': '这里没有任何通知：从未被发现的卡片不会发出任何提醒。',
+  'owner.activity.retention': '仅保留最近 30 天的记录。网络是代号，不是地址。',
+
   'owner.contacts.title': '紧急联系人',
   'owner.contacts.services': '联系方式',
   'owner.contacts.spoken': '会说的语言',

@@ -59,6 +59,15 @@ const ru: Record<MessageKey, string> = {
   'owner.lightMode': 'Светлая тема',
   'owner.signOut': 'Выйти',
 
+  'owner.activity.title': 'Активность карты',
+  'owner.activity.counts': 'Открытий {unlocks} · Неудач {failures} · Сетей {networks}',
+  'owner.activity.opened': 'Открыта',
+  'owner.activity.failed': 'Неудачная попытка',
+  'owner.activity.network': 'сеть {tag}',
+  'owner.activity.empty': 'Эту карту пока никто не открывал.',
+  'owner.activity.notAnAlert': 'Здесь ничто вас не уведомляет: карта, которую не нашли, ничего не запускает.',
+  'owner.activity.retention': 'Хранятся только последние 30 дней. Сеть — это псевдоним, а не адрес.',
+
   'owner.contacts.title': 'Экстренные контакты',
   'owner.contacts.services': 'Способы связи',
   'owner.contacts.spoken': 'Говорит на',

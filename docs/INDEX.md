@@ -17,11 +17,12 @@ Phase 9 so far: [THREAT-MODEL.md](THREAT-MODEL.md), a CSP on the owner plane (it
 none), `Permissions-Policy` everywhere, brand 404 and 500 pages, a redaction test that
 reads the bytes pino writes, printed-card terms, the error-tracking decision (ADR-033,
 logs only), a **restore drill that restores real data and proves a wrong keyring opens
-nothing**, a smoke load test, and [RUNBOOK.md](RUNBOOK.md). Still open: the Railway
-cron that runs the retention sweep, staging, and the launch checklist in the runbook.
-Left in Phase 7: the no-PIN variant and the physical print/scan test, which needs a
-printer. See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit
-criteria per phase.
+nothing**, a smoke load test, [RUNBOOK.md](RUNBOOK.md), and the card's **activity
+panel** on the dashboard — the last thing the owner could not see (PLAN §6). Still open:
+the Railway cron that runs the retention sweep, staging, and the launch checklist in the
+runbook. Left in Phase 7: the no-PIN variant and the physical print/scan test, which
+needs a printer. See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the
+exit criteria per phase.
 
 | Document | What it is |
 |---|---|

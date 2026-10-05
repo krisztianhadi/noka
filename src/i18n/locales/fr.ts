@@ -59,6 +59,15 @@ const fr: Record<MessageKey, string> = {
   'owner.lightMode': 'Mode clair',
   'owner.signOut': 'Se déconnecter',
 
+  'owner.activity.title': 'Activité de la carte',
+  'owner.activity.counts': 'Ouverte {unlocks} · Échecs {failures} · Réseaux {networks}',
+  'owner.activity.opened': 'Ouverte',
+  'owner.activity.failed': 'Tentative échouée',
+  'owner.activity.network': 'réseau {tag}',
+  'owner.activity.empty': 'Personne n’a encore ouvert cette carte.',
+  'owner.activity.notAnAlert': 'Rien ici ne vous alerte : une carte jamais trouvée ne déclenche rien.',
+  'owner.activity.retention': 'Seuls les 30 derniers jours sont conservés. Un réseau est un pseudonyme, pas une adresse.',
+
   'owner.contacts.title': "Contacts d'urgence",
   'owner.contacts.services': 'Services',
   'owner.contacts.spoken': 'Parle',

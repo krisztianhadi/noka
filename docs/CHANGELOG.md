@@ -133,6 +133,35 @@ not made.
   the only trace. The first operator who is not also the developer is the trigger to revisit
   it.
 
+### Feature — the owner can finally see what happened to their card
+
+`scan_attempts` has been written on every PIN attempt since Phase 5 and read by nobody: the
+limiter keeps its own counter, and the rows existed only to be deleted after 30 days. The one
+question the owner could not answer — *has anyone actually opened this card?* — is now on the
+dashboard (PLAN §6).
+
+- A collapsed disclosure under the card: **Opened 3 · Failed 12 · Networks 4**, then the last
+  eight attempts with a localized relative time ("3 hours ago" via `Intl.RelativeTimeFormat`,
+  not a hand-rolled table — the plural mistake this project already made once), each tagged
+  with a six-character **network pseudonym**. Two attempts from one network look the same;
+  nothing here is an address.
+- It says what it is not, on the panel: *nothing here notifies you: a card that is never found
+  raises nothing.* The rows are the audit trail, not an alarm, and the terms page already makes
+  that promise — this is the screen that could quietly contradict it.
+- Three rules live in `src/lib/activity.ts` and each has a test that would catch it going
+  wrong: attempts are attributed through the owner's cards (a scan of an unknown slug writes
+  `card_id = NULL` and belongs to nobody), the window is the same 30 days as retention (so the
+  number cannot drop because a row aged out), and a second account's attempts never enter the
+  first account's numbers.
+- It is a disclosure rather than a fourth section, because ADR-022 keeps the owner plane on one
+  page and orders it contacts → notes → card; `/dashboard/activity` is therefore not a route,
+  and [API.md](API.md) says so.
+
+Tests: `tests/integration/activity.test.ts` (six cases, including the unattributable row, the
+retention boundary and cross-account isolation) and an end-to-end walk in
+`tests/e2e/dashboard.spec.ts` that puts a stranger's wrong-then-right PIN through the real card
+and then reads the owner's panel.
+
 ### Docs — ARCHITECTURE.md caught up, and staging is deferred on purpose
 
 - `docs/ARCHITECTURE.md` was the last file still describing a smaller product: it listed

@@ -611,3 +611,45 @@ test.describe('the account menu', () => {
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 });
+
+/**
+ * The reading side of the audit table (PLAN §6): the rows have been written since Phase 5 and
+ * the owner could never see them. This walks the only path that produces them — a stranger
+ * with the card — and then checks what the owner is told.
+ */
+test.describe('card activity', () => {
+  test('reports an unlock, a failure and the networks behind them', async ({ browser, page }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', country: 'TH', phone: '812 345 678' });
+    const { slug, pin } = await readCard(page);
+
+    // Nothing has happened yet, and the page says that rather than showing zeroes.
+    await expect(page.locator('#activity summary')).toContainText('No one has opened this card yet');
+
+    // A stranger's phone: a wrong PIN, then the right one.
+    const strangerContext = await browser.newContext();
+    const stranger = await strangerContext.newPage();
+    await stranger.goto(`/c/${slug}`);
+    await stranger.fill('#pin', '000000');
+    await stranger.getByRole('button', { name: 'Open' }).click();
+    await expect(stranger.locator('.error')).toBeVisible();
+    await stranger.fill('#pin', pin);
+    await stranger.getByRole('button', { name: 'Open' }).click();
+    await expect(stranger).toHaveURL(new RegExp(`/c/${slug}/view$`));
+    await strangerContext.close();
+
+    await page.goto('/dashboard');
+    const activity = page.locator('#activity');
+    await expect(activity.locator('summary')).toContainText('Opened 1');
+    await expect(activity.locator('summary')).toContainText('Failed 1');
+    // Both attempts came from this machine, so the owner is told "one network", not "two
+    // attempts" — the number that answers "is that one person or several?".
+    await expect(activity.locator('summary')).toContainText('Networks 1');
+
+    await activity.locator('summary').click();
+    await expect(activity.locator('li')).toHaveCount(2);
+    await expect(activity.locator('li').first()).toContainText('Opened');
+    await expect(activity.locator('li').first()).toContainText('network ');
+    await expect(activity).toContainText('Nothing here notifies you');
+  });
+});

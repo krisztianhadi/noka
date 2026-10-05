@@ -62,6 +62,15 @@ const en = {
   'owner.lightMode': 'Light mode',
   'owner.signOut': 'Sign out',
 
+  'owner.activity.title': 'Card activity',
+  'owner.activity.counts': 'Opened {unlocks} · Failed {failures} · Networks {networks}',
+  'owner.activity.opened': 'Opened',
+  'owner.activity.failed': 'Failed attempt',
+  'owner.activity.network': 'network {tag}',
+  'owner.activity.empty': 'No one has opened this card yet.',
+  'owner.activity.notAnAlert': 'Nothing here notifies you: a card that is never found raises nothing.',
+  'owner.activity.retention': 'Only the last 30 days are kept. A network is a pseudonym, not an address.',
+
   'owner.contacts.title': 'Emergency contacts',
   'owner.contacts.services': 'Services',
   'owner.contacts.spoken': 'Spoken',
