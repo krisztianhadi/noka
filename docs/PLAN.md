@@ -1,10 +1,11 @@
 # noka — technical specification and build plan (v1)
 
-Status: pre-code. Moved to this workspace 2026-09-29; the git repo exists
-(`main`, no commits yet) and holds only `docs/`. Source: the technical spec
-([ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md), now a historical document — this file
-supersedes it) plus the clarifications given 2026-09-29. This file is the build
-contract.
+Status: **the build contract, still live**; Phases 0–7 are built (2026-10-01).
+This file was written before the first commit and is kept as written — the
+per-phase headings below carry the current state, and
+[CHANGELOG.md](CHANGELOG.md) is the record of what landed. Source: the technical
+spec ([ORIGINAL_BRIEF.md](ORIGINAL_BRIEF.md), now a historical document — this
+file supersedes it) plus the clarifications given 2026-09-29.
 
 At Phase 1 it splits per the project-docs method: decisions and threat model →
 `docs/ARCHITECTURE.md`, §15 → `docs/API.md`, §16 → `docs/SETUP.md`, §11 →
@@ -501,7 +502,20 @@ with nothing to count (D18), so a sponsor change is not a migration.
 
 ## 11. Phases
 
-Focused hours, solo.
+Focused hours, solo. State as of **2026-10-01**:
+
+| Phase | State |
+|---|---|
+| 0 Spikes | ✅ done 2026-09-29 (D11 dropped — ADR-004) |
+| 1 Scaffold, pipeline, docs | ✅ done 2026-09-29 |
+| 2 Owner auth | ✅ done except `/forgot` and `/reset` (they need the Resend sending domain) and an editable first name |
+| 3 Cards | ✅ done |
+| 4 Contacts, notes, encryption | ✅ done |
+| 5 Public PIN flow, localised responder | ✅ done |
+| 6 Rate limiting and audit | ✅ code done and tested — attempts recorded, purge script with `--dry-run`. Open: the owner-facing `/dashboard/activity` feed, and the Railway cron that calls the purge |
+| 7 Print, preview, reprint | ✅ done 2026-10-01, except the no-PIN variant and the physical print/scan test (needs a printer and hands) |
+| 8 Sponsor logos | ⬜ not started |
+| 9 Hardening and launch | 🟡 partial: policy pages, export and account deletion are built; threat model, restore drill, runbook and the error-tracking choice are open |
 
 ### Phase 0 — Spikes (3–4 h)
 1. Local Postgres 16 on **port 5433** (`noka-db`); 5432 belongs to `ghosted-db` — do not touch it.

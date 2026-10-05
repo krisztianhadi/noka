@@ -2,6 +2,261 @@
 
 Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
+## 2026-10-01
+
+### Fix — every write path is transactional
+
+The two external reviews agreed on the defect class: each write path was a
+read-then-write, and a second tab or a double click walked into the gap. Five
+fixes, and every regression test was run against the pre-fix code first.
+
+- Last-contact deletion counts and deletes in one transaction under a per-owner
+  advisory lock. The race test runs it across twelve owners, because with one
+  owner the old code passes.
+- Card creation is `insert … on conflict do nothing` against the partial unique
+  index, then reads the winner back. Two clicks used to pass the existence check
+  together; one then hit the index and 500ed after two Argon2 hashes.
+- Contact ordering is `max(sort_order) + 1` inside the insert statement, under the
+  same lock. Racing adds used to claim one position, and the insert no longer
+  decrypts every contact to count them.
+- The PIN audit row and its counter commit together, and a failed audit is logged
+  rather than thrown — the audit must never stand between a person in the street
+  and the phone numbers. Fault-injected for real, with a card id that violates the
+  foreign key.
+- Export reads the account, card, contacts, note and scan history in one
+  repeatable-read transaction. Services take an optional executor so a caller can
+  pass its own transaction in.
+
+### Fix — the limits live in the service, not the HTML
+
+`maxlength` existed only in the markup, so a direct POST stored whatever it
+liked: arbitrarily long names, an unbounded note, or a twenty-first contact —
+encrypted, with the emergency page paying for it on every scan.
+
+- `MAX_NAME_LENGTH` 80, `MAX_NOTES_LENGTH` 2000, `MAX_CONTACTS` 20, checked inside
+  the same transaction and under the same per-owner lock as the insert, so two
+  adds cannot both be the twentieth. Each refusal has its own sentence in five
+  locales, and the boundary value still saves.
+- At the cap the dashboard shows one sentence where the add form was, instead of a
+  form that will be refused.
+- A note with no spaces in it no longer widens the responder page:
+  `overflow-wrap: anywhere` there, `break-words` on the dashboard's rendered note.
+
+### Fix — the email change needs the password, and Origin-less POSTs are not refused
+
+- Changing the account email now requires the current password, compared with the
+  same Argon2id path the password form uses. The email is the only recovery channel
+  an account has, so a stolen session could previously redirect it permanently. The
+  e2e test asserts a wrong password leaves the address exactly as it was.
+- `isSameOrigin` falls back to `Referer` when `Origin` is missing, so a plain form
+  post through a proxy no longer gets a 403 on every dashboard POST. Both headers
+  missing is still a refusal.
+
+### Fix — counted text follows the language's own plural rules
+
+The dashboard picked between one and many by hand, which cannot express Russian:
+1 контакт, 3 контакта, 5 контактов. It was wrong for most numbers, and wrong in the
+way a native speaker notices immediately. `src/lib/plural.ts` selects the category
+with `Intl.PluralRules`, and the catalogue carries
+`owner.contacts.count.{one,few,many,other}` in all five locales — a language uses
+only some of them, and the type requires parity. French's zero-as-singular comes
+free.
+
+### Fix — the phone field cannot hold a number the server would refuse
+
+E.164 caps a number at 15 digits including the country calling code, so the
+national part gets 15 minus the dial code's length.
+
+- The mask caps per country, and changing the country re-caps what is already
+  typed; a pasted number that starts with `+` carries its own code and keeps all 15.
+- The static `maxlength` of 18 counted spaces and the plus, so it quietly ate pasted
+  digits: an international number was truncated at 13 digits. The true maximum is 20
+  characters.
+- The hint says what to do and why there is a limit, instead of explaining jargon.
+
+### Fix — the card link works from wherever it is read
+
+`.env` carried `PUBLIC_CARD_ORIGIN=http://localhost:3200`, and the dashboard link
+said `localhost` — an address that resolves on the machine that served it and
+nowhere else.
+
+- The dashboard link is relative (`/c/{slug}`), so it cannot be wrong from any
+  address. The address shown beside it, and the URL baked into the JPEG and the
+  print PDFs, come from `src/lib/card-origin.ts`: a configured origin wins whenever
+  a phone can reach it, and a loopback configuration is treated as the development
+  default it is, so the request's own host is used instead (`X-Forwarded-*`
+  included).
+- Five unit tests: a reachable configured origin is kept, a loopback one is
+  replaced by the request host, the proxy headers win, a trailing slash is stripped,
+  and an unparsable configuration is kept rather than silently rewritten.
+
+### Fix — the empty card keeps its place, and says what to do
+
+- The card block is present on every dashboard: a real card, or a dashed
+  placeholder with the same footprint saying "Your card appears here". That removed
+  the condition three states used to hide behind, and keeps the note's context when
+  the last contact is deleted.
+- The placeholder's message is direction-free — "A card needs at least one contact.
+  Add one to make it." — because the form is above on a phone and to the left on a
+  desktop, so "above" was wrong in one of the two layouts.
+- The download block is "Download and print", not "Print": the button downloads a
+  file and the printing happens elsewhere. All three PDFs open in a new tab with
+  `rel=noopener`, because opening one in the current tab takes the owner off the
+  dashboard and with it the PIN and the link they were about to copy by hand.
+
+### Test — three review findings closed by measurement
+
+- `tests/unit/card-artwork.test.ts` rasterises the card once per language and once
+  with all five, reads the ink bounding box out of the pixels, and asserts clear
+  paper inside every edge. The control matters as much as the assertion: an
+  oversized phrase must fail the same property, or a measurement that always
+  returned the full canvas would look like a passing test.
+- Six exports race four rotations, then two more run once the card has settled. A
+  file whose PIN belongs to the card that exists now must also name that card,
+  which is the mixing case. Rotation updates the row's slug rather than inserting a
+  new row, so an older generation cannot be looked up afterwards.
+- The longest name the form allows with no space in it, and a note that is one
+  400-character URL, are measured as `scrollWidth − innerWidth` on both planes; the
+  responder's name is asserted to still be present in full, so a fix that clipped
+  it into one character could not pass.
+
+### Docs — the local server's death is expected, and three files caught up
+
+- `docs/SETUP.md` says why the server on :3200 dies with a harness restart: the
+  sandbox runs `--die-with-parent` in its own PID namespace, so nothing started
+  inside it can outlive the harness — `nohup` and `setsid` included. The check is a
+  one-liner: look at :3200, restart the built server, curl loopback and LAN.
+- `docs/API.md`, `docs/INDEX.md` and `docs/PLAN.md` were refreshed to match the code
+  that day; the status column had drifted on the print routes, the policy pages and
+  `scripts/purge.mjs`, and `docs/PLAN.md` still opened with "pre-code".
+
+## 2026-09-30
+
+### Feature — the print masters: the card, one on A4, ten on A4
+
+He asked for three files, and that is what the dashboard offers: the card at exactly
+53.98 × 85.60 mm for a print shop, one card on A4 for a home printer, and ten on A4
+for a stack.
+
+- The artwork is the same SVG as the preview, rasterised at 600 dpi, embedded once
+  per document and drawn as many times as the layout needs — ten draws of one image
+  is why the sheet is 1.06 MB and not ten times that.
+- Ten cards fit on A4, not the nine a portrait grid gives: rotated a quarter turn,
+  85.6 mm divides into 210 mm twice and 54 mm divides into 297 mm five times. 2 × 5
+  with an 8 mm margin and a 2 mm gap; at 4 mm the fifth row falls off the page and
+  the sheet loses a card. Corner cut marks in grey sit just outside each card.
+- Measured against the standards themselves: ISO 216 for A4 (595.28 × 841.89 pt) and
+  ISO/IEC 7810 ID-1 for the card (153.01 × 242.65 pt), ten positions inside the
+  printable area, and one embedded image per document. `pdf-lib` moved from
+  devDependencies to dependencies — it is production code now.
+- Left in the phase: the no-PIN variant behind a blunt warning, deterministic PDF
+  bytes (the JPEG preview is deterministic; the PDFs carry a creation timestamp on
+  purpose), and the physical print/scan test with three phones at 10–30 cm, which
+  needs hands rather than code.
+
+### Feature — `/demo` runs the flow, not a picture of the end of it
+
+A demo that shows the contact list answers the wrong question; the question is what
+happens when you scan the card.
+
+- `GET /demo` is the PIN page as a real card shows it, with the demo PIN already
+  typed in and a banner saying what it is. `POST /demo/enter` compares a constant and
+  sets an hour-long cookie — it deliberately does not reuse the responder code,
+  because a demo path that touched the real table would be a liability for nothing.
+  `GET /demo/view` renders invented people through the responder layout and
+  stylesheet; `POST /demo/exit` is the way out.
+- The sample card was re-rendered with its PIN printed as 123 456 and its QR pointing
+  at `/demo`, and the landing links to it under the card.
+- Tested end to end (PIN → contacts → exit), `/demo/view` is asserted unreachable
+  without the PIN, and the demo joined the axe sweep.
+
+### Design — landing: two copy reviews, then six notes from his review
+
+- Rewritten from two independent copy reviews, then the visual pass: no hero trust
+  strip, no "Sample card" pill, mustard as the page's one loud action (ink on the
+  post-it panel, because mustard on mustard pointed at nothing), icons per limit and
+  per step, a visible card edge in light mode (`border-line-strong` plus a new
+  `shadow-card` token — the old border sat 2% away from the page background and
+  disappeared), and "what noka does not do" as a full-width ink band with the dot
+  texture instead of a white card.
+- Copy corrections that mattered: noka generates a printable card, it does not print
+  one; and nothing is advertised that is not built.
+- Rounding and calm: the "does not do" plate is rounded like the privacy strip, the
+  cards no longer lift on hover, the closing post-it sits straight, and the three
+  steps went back to the previous design — big mono numerals, icon beside the title,
+  a rule threaded between the numbers. Anchor links glide only for readers who have
+  not asked their system for less motion.
+
+### Design — dashboard and card, from a model that cannot see
+
+GPT-5.6 Sol ran over both surfaces against a measured brief of every element
+(computed size, weight, color, box, margin, padding, radius, border, shadow), since
+it cannot read a screenshot.
+
+- Its headline finding was an implementation bug of mine: the card page declared the
+  phone number at 2.5rem but it computed 30.42px on a 390px phone, so the contact's
+  **name** (40px) outranked the number a stranger actually needs. The number now
+  leads at 40px and the name drops to 32px — which required leaving the monospace
+  face, because at 40px mono needs 360px for a full international number and the
+  phone has 318.
+- Rhythm tightened structurally rather than by shrinking touch targets (contact
+  padding 32 → 24px, meta gap 8 → 4px, actions 24 → 16px), and every channel row
+  keeps 52px. A contact who cannot hear now shows the constraint before the number,
+  with their text action as the solid one.
+- Dashboard: contacts and notes are the left column, the card a 22rem sticky status
+  plate on the right. The plate is the one ink surface on the owner plane — which is
+  also what stopped it reading as one more settings card — and axe caught
+  `#5b6270` on `#14161a` at 2.95:1 the moment it went dark.
+- The added column squeezed the phone field to 126px inside a 720px shell; the
+  dashboard shell is `max-w-5xl` now (a `wider` prop, never available to form pages),
+  the split waits for `xl`, and the number field is 382px.
+
+### Feature — the note behaves like a contact, and the first save makes the card
+
+- Three review notes, all one idea: stop explaining steps that do not need to exist.
+  Saving the first contact creates the card — a card with nobody behind it is not a
+  state the product has, so the second press was a step to explain rather than a step
+  to take. `POST /dashboard/start` writes the contact and then the note, because the
+  owner typed one screen and a half-saved first run was not an option.
+- The note renders with the same kebab the contacts get (Edit note, Delete note), and
+  its form lives in the page behind Edit, never in the menu panel. The contact fields
+  moved to `ContactFields.astro`, so there is one source of truth for the fields and
+  two wrappers around it.
+- The open sheet's submit follows the form's own `checkValidity()`, so an empty
+  first-run form cannot be submitted, and the note-only form is exempt because its
+  rule is about having changed something rather than about being complete.
+- Two bugs found by doing it: the "Save is dead until something changed" rule had
+  disabled the *first-run* save button, so a new owner could never save anything; and
+  the note existed twice on a first run, in two forms with the same field id.
+
+### Fix, copy, brand, responder polish
+
+- **The phone field could hold a number the server refuses** — it was found here, by
+  him typing a number longer than E.164 allows and getting the refusal back; the fix
+  is in the 2026-10-01 entry.
+- **Copy:** the landing's encryption talk is plainer, the limits are statements, and
+  the page says it runs no JavaScript.
+- **Brand:** the real noka logotype on both planes and on the card, a favicon cut from
+  its `n`, and the card's own polish — a bigger heading, a smaller PIN, even white
+  space on all four sides.
+- **Responder polish:** one type scale with the phone number leading, one heading with
+  the name, one channel per row, flags for spoken languages, the hearing mark on the
+  alert, the muted-speaker emoji for "text only", and 📞 / 💬 drawn as decoration. The
+  sign-in button had been wearing the sign-out icon.
+
+### Docs — day two reflection and the measured cost
+
+- `docs/blog/2026-09-30-five-millimetres.md` — the day written up for strangers: the
+  design review from a model that cannot see, axe as a design reviewer, the layout
+  change that squeezed a phone field to 126px, the E.164 limit that let him past it,
+  and the division that fits ten cards on A4 instead of nine.
+- `docs/blog/DEVLOG.md` — the same day as a working note, with the two stale-server
+  mistakes named as a pattern rather than an accident.
+- `docs/COSTS.md` — day two's balance delta **$3.96**, project total **$5.69**,
+  measured by sampling the provider's balance rather than by applying a rate table to
+  token counts. The design and review runs stay unpriced: they are on an account that
+  serves other work.
+
 ## 2026-09-29
 
 ### Feature — cost per feature, across projects, and what to do with the numbers

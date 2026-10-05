@@ -5,20 +5,25 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phase 5** — the product works end to end locally. Sign up, build a
-card, add contacts, switch it on, then open the card URL and enter the PIN: the
-responder page is localised, renders in one request and runs no JavaScript. Rate
-limiting on the PIN endpoint (Phase 6) is the next security-relevant step; see
-[CHANGELOG.md](CHANGELOG.md).
+Status: **Phases 0–7 built** (2026-10-01) — the product works end to end locally.
+Sign up, add the first contact, and the card exists: open its URL, enter the PIN,
+and the responder page renders in one request, localised, with no JavaScript. The
+PIN endpoint is rate-limited and audited, the print masters are downloadable (the
+card at ISO ID-1, one on A4, ten on A4), and `/demo` runs the scan flow with
+invented people. Not built yet: **Phase 8** (sponsor logos) and **Phase 9**
+(hardening and launch — threat model, export and delete UI polish, backup/restore
+drill, runbook). Left in Phase 7: the no-PIN variant and the physical print/scan
+test, which needs a printer. See [CHANGELOG.md](CHANGELOG.md), and
+[PLAN.md](PLAN.md) §11 for the exit criteria per phase.
 
 | Document | What it is |
 |---|---|
-| [PLAN.md](PLAN.md) | The build contract — decisions D1–D31, threat model, schema, phases, endpoint contract, environment. **Start here.** |
+| [PLAN.md](PLAN.md) | The build contract — decisions D1–D32, threat model, schema, phases, endpoint contract, environment. **Start here.** |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
-- [Adding a language](I18N.md) — the three-file recipe for a new locale, and the rules the build enforces.
+| [I18N.md](I18N.md) | Adding a language: the three-file recipe for a new locale, and the rules the build enforces. |
 | [SETUP.md](SETUP.md) | Services, ports, environment, credentials, sandbox quirks, breach procedure. |
-| [DECISIONS.md](DECISIONS.md) | The ADRs: 19 numbered decisions, the one this project reversed, and the open ones. |
+| [DECISIONS.md](DECISIONS.md) | The ADRs: 32 numbered decisions, the one this project reversed, and the open ones. |
 | [CHANGELOG.md](CHANGELOG.md) | Reverse-chronological, dated, tagged Feature / Fix / Break. |
 | [COSTS.md](COSTS.md) | What the build costs: per-feature attribution, peak/off-peak timing, real USD ledger. |
 | [blog/DEVLOG.md](blog/DEVLOG.md) | The development log — raw material for posts, append-only. |
