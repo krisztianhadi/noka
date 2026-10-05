@@ -517,7 +517,7 @@ Focused hours, solo. State as of **2026-10-01**:
 | 6 Rate limiting and audit | ✅ code done and tested — attempts recorded, purge script with `--dry-run`. Open: the owner-facing `/dashboard/activity` feed, and the Railway cron that calls the purge |
 | 7 Print, preview, reprint | ✅ done 2026-10-01, except the no-PIN variant and the physical print/scan test (needs a printer and hands) |
 | 8 Sponsor logos | ✅ done 2026-10-05 — config-driven, self-hosted, landing and auth pages only, with the e2e guard. The list is empty until there is a sponsor to name |
-| 9 Hardening and launch | 🟡 partial (2026-10-05): threat model, owner-plane CSP, `Permissions-Policy`, brand 404/500 pages, redaction test, printed-card terms, the error-tracking decision (ADR-033, logs only), the restore drill, the smoke load test and [RUNBOOK.md](RUNBOOK.md) are done; export and account deletion were already built. Open: the Railway cron for the retention sweep, staging, and the launch checklist |
+| 9 Hardening and launch | 🟡 partial (2026-10-05): threat model, owner-plane CSP, `Permissions-Policy`, brand 404/500 pages, redaction test, printed-card terms, the error-tracking decision (ADR-033, logs only), the restore drill, the smoke load test and [RUNBOOK.md](RUNBOOK.md) are done; export and account deletion were already built. **Staging is deferred by the owner** ("no deploy yet, we are not done") and stays in the runbook's launch checklist with the rest |
 
 ### Phase 0 — Spikes (3–4 h)
 1. Local Postgres 16 on **port 5433** (`noka-db`); 5432 belongs to `ghosted-db` — do not touch it.

@@ -12,12 +12,14 @@ browser ──▶ Astro SSR (src/pages, src/middleware.ts)
               ├─ guest plane   /c/{slug}         QR slug + 6-digit PIN
               │                 src/lib/pin.ts, src/lib/slug.ts, src/lib/crypto.ts
               │
-              └─ owner plane   /dashboard        better-auth session (Phase 2)
+              └─ owner plane   /dashboard        better-auth session
                                 src/db/*, Drizzle + postgres.js
                                           │
                                           ▼
-                                   PostgreSQL 16
-                                   cards · contacts · card_notes · scan_attempts
+                                   PostgreSQL 16 (noka-db, :5433)
+   users · sessions · accounts · verifications        (better-auth owns these)
+   cards · contacts · owner_notes · scan_attempts     (ours)
+   rate_limits                                        (the PIN limiter's store, D12)
 ```
 
 - **No client framework.** Every page is server-rendered HTML. The responder
@@ -52,25 +54,39 @@ replaces the slug *and* the PIN, which kills anything already printed.
 1. The owner types a name, a relation from the fixed vocabulary, a phone number,
    the channels this number is reachable on (call, text, WhatsApp, Signal, Telegram,
    Viber — call by default) and the contact's spoken languages.
-2. The values are validated, packed into the schema-3 JSON payload
+2. The values are validated, packed into the schema-4 JSON payload
    (`src/lib/contact-payload.ts`) and encrypted with AES-256-GCM
    (`src/lib/crypto.ts`) into `contacts.payload_encrypted`, with the key version
-   in `contacts.key_version`. Schema-2 rows still read, upgraded in memory with
-   `call` as the default channel.
+   in `contacts.key_version`. Schema 4 moved "text message" out of the channel list and into
+   `text_only` — a fact about the person, not about a service. Schema-2 and schema-3 rows
+   still read, upgraded in memory (`call` as the default channel).
 3. A responder enters the PIN. The server verifies it against `pin_hash`,
    fetches the owner's contacts in a single query, decrypts in memory, renders
    with per-channel buttons or an "available on" line, and discards.
 
-Nothing decrypted is cached, logged or sent to error tracking; pino redaction
-(`src/lib/logger.ts`) is the backstop.
+Nothing decrypted is cached or logged; pino redaction (`src/lib/logger.ts`) is the
+backstop, and there is no error-tracking vendor to send it to (ADR-033).
+
+## Where the other moving parts live
+
+| Concern | Where | Note |
+|---|---|---|
+| PIN attempts, backoff, `Retry-After` | `src/lib/limiter.ts`, `rate_limits` | one shared counter in Postgres — no Redis (D12); capped backoff, never a permanent lock |
+| Scan audit and its 30-day sweep | `src/lib/retention.ts`, `scripts/purge.mjs` | `pnpm db:purge`; the Railway cron that should call it is not wired yet ([RUNBOOK.md](RUNBOOK.md) §4) |
+| Print masters | `src/lib/card-pdf.ts`, `src/lib/card-artwork.ts`, `src/pages/dashboard/card/pdf.ts` | the artwork is rasterised at 600 dpi once per document and drawn per position; ten cards on A4, rotated (§11 Phase 7) |
+| Copy in five languages | `src/i18n/catalogue.ts`, `src/i18n/locales/*.ts` | one file per language, parity enforced by a test; `pnpm i18n:report` |
+| Sponsors | `src/config/sponsors.ts`, `src/components/SponsorStrip.astro` | landing and auth pages only; `usableSponsors()` refuses non-same-origin logos (D18) |
+| Headers per plane | `src/middleware.ts` | responder `default-src 'none'`; owner plane `default-src 'self'`; [THREAT-MODEL.md](THREAT-MODEL.md) §3 |
+| Operator scripts | `scripts/` | `db:purge`, `drill:restore`, `load:test`, `usage-report` — [RUNBOOK.md](RUNBOOK.md) |
 
 ## The card image
 
 `src/lib/card-artwork.ts` draws the card as SVG — header, QR (`qrcode`), PIN, language line —
-at ID-1 proportions and 300 dpi, then rasterises it with `sharp` for
-`/dashboard/card/card.jpg`. It is generated per request and never cached, because it shows
-the current PIN. The deterministic, exact-size PDF pipeline (Phase 7) replaces this preview;
-the geometry constants are already shared.
+at ID-1 proportions, and `sharp` rasterises it for `/dashboard/card/card.jpg`. That JPEG is
+the on-screen preview and is still generated per request and never cached, because it shows
+the current PIN. The print path is separate and exact (`card-pdf.ts`): the same artwork at
+600 dpi, laid out as the card at ISO ID-1, one on A4, or ten on A4 — the geometry constants
+are shared between the two.
 
 ## Encrypted blob format
 
@@ -85,8 +101,11 @@ is a hard error, never a partial render.
 ## Decisions
 
 Every decision, with its reasoning and its cost, is in
-[DECISIONS.md](DECISIONS.md) — 17 numbered ADRs, including the one that reversed
-a decision in PLAN. This file stays about how the pieces fit.
+[DECISIONS.md](DECISIONS.md) — 33 numbered ADRs, including the one that reversed
+a decision in PLAN (ADR-004) and the one that decides how failures are noticed
+(ADR-033: logs only, no vendor). What must not leak, and which test fails if it does,
+is in [THREAT-MODEL.md](THREAT-MODEL.md). How to run and recover the thing is in
+[RUNBOOK.md](RUNBOOK.md). This file stays about how the pieces fit.
 
 ## What is deliberately absent
 

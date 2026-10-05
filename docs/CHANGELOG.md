@@ -133,6 +133,22 @@ not made.
   the only trace. The first operator who is not also the developer is the trigger to revisit
   it.
 
+### Docs — ARCHITECTURE.md caught up, and staging is deferred on purpose
+
+- `docs/ARCHITECTURE.md` was the last file still describing a smaller product: it listed
+  `card_notes` (the table is `owner_notes`), omitted `users`, `sessions`, `accounts`,
+  `verifications` and `rate_limits`, called the contact payload schema 3 when it is 4, said
+  "17 numbered ADRs" when there are 33, and claimed the PDF pipeline *replaces* the JPEG
+  preview — it does not, the JPEG is still the on-screen preview and the print path is a
+  separate, exact rendering of the same artwork. A "where the other moving parts live" table
+  now covers the limiter store, the retention sweep, the print pipeline, the catalogue,
+  sponsors and the per-plane headers, and the file points at
+  [THREAT-MODEL.md](THREAT-MODEL.md) and [RUNBOOK.md](RUNBOOK.md) for what it does not cover.
+- **Staging is deferred by the owner** (2026-10-05, in answer to a direct question): "no
+  deploy yet, we are not done." Nothing is deployed anywhere, so there is no production for a
+  staging environment to sit apart from — the runbook's launch checklist keeps the item and
+  records the reason, so it reads as a decision rather than an omission.
+
 ### Fix — the cron script was broken twice over, and nobody would have noticed
 
 Found while building the restore drill, and worth the whole drill on its own: the retention

@@ -179,6 +179,10 @@ page that must stop being a promise.
       than a local one (§5).
 - [ ] **Staging environment** with its own database and `PUBLIC_CARD_ORIGIN`, deployed from a
       branch, so a change reaches a stranger-facing host before the real one.
+      **Deferred by the owner on 2026-10-05: "no deploy yet, we are not done."** Nothing is
+      deployed anywhere today, so there is no production to keep a staging environment
+      separate from; the checklist keeps it because it has to happen before the first real
+      card exists, not because it was forgotten.
 - [ ] **Rate-limit constants** reviewed against §6 before a real card exists.
 - [ ] **Load test** against the deployed instance, numbers recorded here.
 - [ ] **ADR-033 revisited** if anyone other than the developer operates it: logs-only stops
