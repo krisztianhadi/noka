@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { externalResources, signUp, trackExternalRequests, unexpectedNavigations } from './helpers';
+import { addContact, externalResources, readCard, signUp, trackExternalRequests, unexpectedNavigations } from './helpers';
 
 /**
  * Phase 1 smoke suite. The assertions that matter here are the ones PLAN §12
@@ -196,5 +196,59 @@ test.describe('sponsor policy', () => {
       await page.goto(path);
       expect(external, path).toEqual([]);
     }
+  });
+});
+
+/**
+ * The privacy page names the cookies that exist and promises that no advertising or analytics
+ * cookie does. That is a claim anyone can check in their browser, which is exactly why it
+ * should be checked by a machine first: the failure mode is a dependency quietly setting its
+ * own cookie, and the page describing four cookies while the browser holds five.
+ *
+ * The walk touches every path that sets one — sign up, unlock a card, open the demo, toggle
+ * the theme, switch the language — and then asserts the whole cookie jar is accounted for.
+ */
+test.describe('the cookies the privacy page promises', () => {
+  test('nothing sets a cookie that is not on the list', async ({ page, context }) => {
+    await signUp(page);
+    await addContact(page, { name: 'Maria Silva', phone: '812 345 678' });
+    const { slug, pin } = await readCard(page);
+
+    // The view cookie: a stranger opening the card.
+    await page.goto(`/c/${slug}`);
+    await page.fill('#pin', pin);
+    await page.getByRole('button', { name: 'Open' }).click();
+    await expect(page).toHaveURL(new RegExp(`/c/${slug}/view$`));
+
+    // The demo cookie.
+    await page.goto('/demo');
+    await page.getByRole('button', { name: 'Open' }).click();
+    await expect(page).toHaveURL(/\/demo\/view$/);
+
+    // The theme cookie, through the account menu.
+    await page.goto('/dashboard');
+    await page.getByLabel('Menu').click();
+    await page.getByRole('button', { name: /mode$/ }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', /dark|light/);
+
+    // The language cookie, last: switching the language changes the copy after this point.
+    await page.locator('footer details.languages > summary').click();
+    await page.locator('footer form[action="/language"] button[value="es"]').click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+
+    const names = (await context.cookies()).map((cookie) => cookie.name).sort();
+
+    // Four from the page's own list, one shared by the owner plane and the card, plus
+    // better-auth's session pair. Anything else is a cookie nobody chose to set.
+    const accounted = /^(better-auth\..+|noka_demo|noka_lang|noka_theme|noka_view)$/;
+    expect(names.filter((name) => !accounted.test(name))).toEqual([]);
+
+    // …and the ones the page names really are there, so the assertion above cannot pass by
+    // walking a flow that set nothing at all.
+    expect(names).toContain('noka_view');
+    expect(names).toContain('noka_demo');
+    expect(names).toContain('noka_theme');
+    expect(names).toContain('noka_lang');
+    expect(names.some((name) => name.startsWith('better-auth.'))).toBe(true);
   });
 });

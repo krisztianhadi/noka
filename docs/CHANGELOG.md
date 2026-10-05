@@ -133,6 +133,26 @@ not made.
   the only trace. The first operator who is not also the developer is the trigger to revisit
   it.
 
+### Fix — the privacy page described four cookies, and the browser held five
+
+An audit of the privacy page against the code, claim by claim, because a privacy page is a
+promise and this project's argument is that it keeps them.
+
+- **The page was off by one.** `/demo` sets `noka_demo` — an hour, scoped to `/demo`, so the
+  sample flow cannot be walked twice by accident — and the cookies bullet named only the
+  session, card, language and theme cookies. It names all five now.
+- **A test holds the line**, because the failure mode is a dependency quietly setting its own
+  cookie: `tests/e2e/smoke.spec.ts` walks every path that sets one (sign up, unlock a card,
+  open the demo, toggle the theme, switch the language) and then asserts the entire cookie jar
+  is accounted for — the four `noka_*` names plus better-auth's session pair, nothing else —
+  and that the named ones really appeared, so it cannot pass by setting nothing. An injected
+  `_ga` cookie fails it with `"_ga"` in the diff; that was checked by injecting one.
+- **The claims already covered were re-verified rather than assumed:** "never the raw address"
+  is asserted in `tests/integration/responder.test.ts` (the stored `ip_prefix_hash` is neither
+  null nor the address), the export and erasure promises in `tests/integration/account.test.ts`
+  (down to the audit rows and the live sessions) and in the dashboard e2e, and the
+  script-free/third-party-free card page in the responder and smoke suites.
+
 ### Feature — the owner can finally see what happened to their card
 
 `scan_attempts` has been written on every PIN attempt since Phase 5 and read by nobody: the
