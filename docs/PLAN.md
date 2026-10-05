@@ -106,7 +106,7 @@ wrong or missing and are corrected in this document:
 | D12 | Rate-limit state in **Postgres** via `rate-limiter-flexible`; no Redis in v1. | recommended |
 | D13 | Slug = 16 random bytes as **uppercase Crockford base32**, keeping the QR in alphanumeric mode and on a lower version. | recommended |
 | D14 | Guest view cookie: **absolute 15 min**, no sliding renewal, plus an explicit "Hide" POST link (zero JS). | locked |
-| D15 | Print language set stored **per card** (`languages text[]`), default EN/ES/FR/ZH/RU. The picker UI is a planned later feature; the schema and the print template accept a variable set from day one. | locked |
+| D15 | Print language set stored **per card** (`languages text[]`), default EN/ES/FR/ZH/RU. **v1 ships the fixed five with no picker** (decision 2026-10-05): a picker earns its place when a sixth language exists, and the schema and the print template already accept a variable set, so nothing needs redesigning then. | locked (picker deferred) |
 | D16 | **Reprint is deterministic**: same slug, same PIN, same layout, same language set. A reprint is byte-comparable to the original for the same card revision. Enforced by test, not by hope — see D29. | locked |
 | D17 | **Spoken languages per contact** (`spoken_languages: string[]`, BCP 47 codes) inside the encrypted payload, rendered on the responder view in the responder's own UI language. | locked |
 | D18 | **Sponsors = static self-hosted logos on the landing and auth pages only.** No pricing, payments, invoices, impressions or tracking in v1; never on `/c/*` or `/dashboard`. | locked |
@@ -637,11 +637,19 @@ Exit: restore drill decrypts real data; staging green; policies live; the ADR se
 complete enough that `docs/ARCHITECTURE.md` explains every choice this file makes.
 
 ### Later (planned, not v1)
-Owner-selectable print languages at card generation (D15 — the column is already
-there); laser-engraving vector export; additional card designs; the re-encryption
-pass for a rotated contact key (D23); a Thai card variant (§14.5); **sponsor
-outreach, pricing, payments and any measurement** — deferred wholesale with the rest
-of monetization.
+
+**Decision, 2026-10-05: v1 ships with the fixed five languages and no picker.**
+Choosing a subset of the same five is not a feature anyone asked for, and it costs
+print surface for nothing. The picker (D15) becomes worth building the day a sixth
+language exists — the schema and the print template already accept a variable set, so
+nothing has to be redesigned when that day comes.
+
+Also deferred: laser-engraving vector export; additional card designs; the
+re-encryption pass for a rotated contact key (D23); a sixth card language (the
+"Thai variant" this list used to name — it needs a catalogue's worth of strings and a
+third print subset, not just a picker); and **sponsors, pricing, payments and any
+measurement**, which stay untouched until there are users to sponsor: the order he
+set is launch → users → sponsor hunting.
 
 **Total ≈ 40–52 focused hours.** Demoable end-to-end card at the end of Phase 5,
 roughly 26–32 h in.
@@ -692,8 +700,9 @@ laser-engraving export; the contact-key re-encryption pass.
    Arabic) adds a third subset *and* a catalogue's worth of strings; the
    spoken-language vocabulary is separate and carries no such cost.
 5. **Region check:** RU instead of TH means the card carries no Thai, which is worth
-   a deliberate thought given where he lives. Languages are per card (D15), so a
-   Thai variant can coexist the moment the picker exists.
+   a deliberate thought given where he lives — settled 2026-10-05: v1 keeps the five
+   and there is no picker, so a Thai card waits for a Thai catalogue and a third print
+   subset. Languages stay per card (D15), so it can coexist when it lands.
 6. **Naming is settled: the product is `noka`** — *next of kin access*. Written
    lowercase, package and repo `noka`, matching the workspace directory. The earlier
    working title **Nokard is archived** and must not reappear in code, copy, the

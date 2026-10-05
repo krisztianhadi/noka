@@ -4,6 +4,33 @@ Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
 ## 2026-10-05
 
+### Change — v1 is the fixed five languages, and the landing stops promising a picker
+
+His call, 2026-10-05: *"currently we start with 5 languages that we have, later we will expand, but
+for now as mvp it's five langs. Till we don't have more it doesn't make sense to build the feature
+for it."*
+
+- **The landing was advertising a feature that does not exist.** Four places promised "you choose
+  which languages are printed on your card" — a feature card, the three-step list, the FAQ and the
+  *What this is* paragraph. The card has always carried all five; there is no picker. All four now
+  say what happens: the card carries all five languages, and the page opens in whichever the
+  visitor's phone is set to. That is the same rule as the studio's other copy — do not advertise
+  what is not running.
+- **The decision is written into the plan**, where the deferral used to be a dangling promise:
+  D15 keeps the per-card column and the variable-set template (nothing needs redesigning later)
+  and marks the picker deferred; the *Later* list says plainly that v1 ships the fixed five, and
+  that a picker earns its place when a sixth language exists.
+- **Two phantom items went with it.** The *Later* list named "a Thai card variant (§14.5)" — a
+  section that does not exist, in a file with no §14.5 — and a "no-PIN variant" that appears once
+  in Phase 7's leftovers and is defined nowhere. Both are now stated for what they are: a sixth
+  card language needs a catalogue and a third print subset (not a variant, and not v1); the picks
+  are recorded rather than left as folklore.
+- **Terms §6 stopped promising a funding model that does not exist.** It said the project "is paid
+  for by sponsors and whitelabel arrangements"; there are no sponsors and no whitelabel deals. It
+  now says what is true and stays true: sponsors, when there are any, are static logos on the
+  landing and sign-in pages, never on a card page, with no pixel and no counter. His order is
+  launch → users → sponsor hunting, and the copy no longer runs ahead of it.
+
 ### Docs — the README says what state this is in, because the repository is public now
 
 The repository went public on 2026-10-05, which changes what the first screen has to do: a
