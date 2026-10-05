@@ -25,7 +25,11 @@ interface Props {
 const { title, theme = null, wide = false, wider = false } = Astro.props;
 // The <html lang> comes from the resolved locale, not from the page: a Spanish page marked
 // `lang="en"` makes screen readers read Spanish with English pronunciation rules.
-const info = LANGUAGE_INFO[Astro.locals.locale];
+//
+// The fallback is for `/500`, which Astro renders when a route *or the middleware* threw:
+// the language may never have been resolved, and a layout that crashes inside the error
+// page turns a 500 into a blank screen.
+const info = LANGUAGE_INFO[Astro.locals.locale ?? 'en'];
 const lang = info.htmlLang;
 const dataTheme = theme ?? undefined;
 ---

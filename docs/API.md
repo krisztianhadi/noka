@@ -13,6 +13,8 @@ Status: ✅ built · ⏳ planned (phase in brackets). Checked against the code
 | GET | `/privacy` \| `/terms` \| `/imprint` | Policy pages, linked from every footer. Indexable, no data access; the printed-card terms live here. | ✅ |
 | GET | `/robots.txt` | `Disallow: /c/`, `Disallow: /dashboard/`. | ✅ |
 | GET | `/healthz` | JSON healthcheck; 503 when the database is unreachable. | ✅ |
+| — | `/404`, `/500` | Error pages in the owner-plane shell, localised, with the way home. The 500 page shows no message, stack or identifier — the error goes to the server log instead. A 404 is only for a route that does not exist: `/c/{unknown}` still renders the PIN form. | ✅ |
+| — | headers | Every plane: `X-Content-Type-Options`, HSTS, `Permissions-Policy`. Non-responder pages: `default-src 'self'` CSP (inline scripts allowed by Astro's bundling), `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`. See [THREAT-MODEL.md](THREAT-MODEL.md) §3. | ✅ |
 | POST | `/language` | Owner-plane language: sets the locale cookie, 303 back to the `next` path. A `next` value that is a full URL is refused — that is how a language switcher becomes an open redirect. | ✅ |
 | GET | `/demo`, `/demo/view` | The scan flow with invented people and fictional numbers, rendered by the responder layout and stylesheet. | ✅ |
 | POST | `/demo/enter`, `/demo/exit` | The demo PIN compares a constant and sets an hour-long cookie; exit clears it. Deliberately does not touch the cards table. | ✅ |

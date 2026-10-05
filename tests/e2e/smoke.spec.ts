@@ -86,6 +86,18 @@ test.describe('operational endpoints', () => {
     expect(body).toContain('Disallow: /c/');
     expect(body).toContain('Disallow: /dashboard/');
   });
+
+  test('a route that does not exist is a 404, and a card that does not exist is not', async ({ request }) => {
+    const missing = await request.get('/this-route-does-not-exist');
+    expect(missing.status()).toBe(404);
+    expect(await missing.text()).toContain('Page not found');
+
+    // The responder plane must never answer 404: the status is an existence oracle the
+    // page itself is careful not to be. The content comparison lives in the responder
+    // suite; this is the half that a new error page could quietly break.
+    const unknownCard = await request.get(`/c/${SLUG}`);
+    expect(unknownCard.status()).toBe(200);
+  });
 });
 
 test.describe('responder plane', () => {
@@ -99,6 +111,7 @@ test.describe('responder plane', () => {
     expect(headers['x-robots-tag']).toContain('noindex');
     expect(headers['vary']).toContain('Accept-Language');
     expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['permissions-policy']).toContain('camera=()');
 
     const html = await response.text();
     expect(html).not.toMatch(/<script/i);
@@ -107,6 +120,50 @@ test.describe('responder plane', () => {
     // may go (§5).
     expect(externalResources(html)).toEqual([]);
     expect(unexpectedNavigations(html)).toEqual([]);
+  });
+});
+
+/**
+ * The owner plane's hardening, added by the Phase 9 header review: PLAN §5 only ever
+ * specified the responder plane's headers, and the surface that renders owner-written
+ * text had no policy at all.
+ */
+test.describe('owner plane headers', () => {
+  test('carries a policy that allows nothing from another origin', async ({ request }) => {
+    for (const path of ['/', '/login', '/signup', '/privacy', '/terms', '/imprint']) {
+      const headers = (await request.get(path)).headers();
+      const csp = headers['content-security-policy'] ?? '';
+
+      expect(csp, `${path} csp`).toContain("default-src 'self'");
+      expect(csp, `${path} csp`).toContain("form-action 'self'");
+      expect(csp, `${path} csp`).toContain("object-src 'none'");
+      expect(csp, `${path} csp`).toContain("frame-ancestors 'none'");
+      expect(csp, `${path} csp`).toContain("base-uri 'none'");
+      // A wildcard or a scheme-wide source would undo the point of the header.
+      expect(csp, `${path} csp`).not.toContain('*');
+      expect(csp, `${path} csp`).not.toContain('http:');
+      expect(csp, `${path} csp`).not.toContain('https:');
+      expect(headers['permissions-policy'], `${path} permissions`).toContain('camera=()');
+      expect(headers['x-frame-options'], `${path} frame`).toBe('DENY');
+      expect(headers['x-content-type-options'], `${path} nosniff`).toBe('nosniff');
+    }
+  });
+
+  test('the policy does not break the pages it governs', async ({ page }) => {
+    // The failure mode of a CSP is quiet: the page renders, one behaviour dies. Console
+    // errors are where the browser says which directive refused what.
+    const refusals: string[] = [];
+    page.on('console', (message) => {
+      if (/content security policy/i.test(message.text())) refusals.push(message.text());
+    });
+    page.on('pageerror', (error) => refusals.push(String(error)));
+
+    await page.goto('/');
+    await page.locator('footer').scrollIntoViewIfNeeded();
+    await signUp(page);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    expect(refusals).toEqual([]);
   });
 });
 

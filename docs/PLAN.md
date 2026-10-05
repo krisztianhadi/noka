@@ -277,7 +277,9 @@ can read the contacts. That is the product.
 | `Cache-Control` | `no-store, no-cache, must-revalidate` + `Pragma: no-cache` | a lost or shared phone must not show contacts from the back/forward cache after expiry |
 | `Referrer-Policy` | `no-referrer` | `wa.me` would otherwise receive the card URL in `Referer` |
 | `X-Robots-Tag` | `noindex, nofollow, noarchive` | never indexed; plus `robots.txt: Disallow: /c/` |
-| CSP | `default-src 'none'; style-src 'unsafe-inline'; img-src data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'` | the page needs no scripts, fonts or images; `tel:`/`wa.me` are links, not fetches |
+| CSP on `/c/*` | `default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; form-action 'self'; base-uri 'none'; frame-ancestors 'none'` | the page needs no scripts, fonts or images; `tel:`/`wa.me` are links, not fetches |
+| CSP on the owner plane | `default-src 'self'` with `script-src 'self' 'unsafe-inline'`, `form-action 'self'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, no wildcard | added 2026-10-05 (Phase 9): the surface that renders owner-written text had no policy. `script-src` allows inline because Astro inlines small scripts; what it buys is "no other origin may be loaded, framed, connected to or posted to" |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()` | added 2026-10-05: nothing here asks for a device, and a dependency must not start |
 | `X-Content-Type-Options` | `nosniff` | baseline |
 | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | baseline |
 | Third-party requests | **zero** — no CDN, no font service, no analytics, no pixel, no external image | every one of them is a leak channel and a round trip |

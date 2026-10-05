@@ -5,22 +5,26 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phases 0–8 built** (2026-10-05) — the product works end to end locally.
-Sign up, add the first contact, and the card exists: open its URL, enter the PIN,
-and the responder page renders in one request, localised, with no JavaScript. The
-PIN endpoint is rate-limited and audited, the print masters are downloadable (the
-card at ISO ID-1, one on A4, ten on A4), `/demo` runs the scan flow with invented
-people, and the sponsor strip is wired on the landing and auth pages — empty until
-there is a sponsor to name, and structurally unable to reach `/c/*` or `/dashboard`.
-**Phase 9** (hardening and launch) is next: threat model, the error-tracking
-decision, staging, backup and restore drill, smoke load test, runbook. Left in
-Phase 7: the no-PIN variant and the physical print/scan test, which needs a printer.
-See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit criteria
-per phase.
+Status: **Phase 9 in progress** (2026-10-05). Phases 0–8 are built: sign up, add the
+first contact, and the card exists — open its URL, enter the PIN, and the responder
+page renders in one request, localised, with no JavaScript. The PIN endpoint is
+rate-limited and audited, the print masters are downloadable (the card at ISO ID-1,
+one on A4, ten on A4), `/demo` runs the scan flow with invented people, and the
+sponsor strip is wired on the landing and auth pages — empty until there is a
+sponsor to name, and structurally unable to reach `/c/*` or `/dashboard`.
+
+Phase 9 so far: [THREAT-MODEL.md](THREAT-MODEL.md), a CSP on the owner plane (it had
+none), `Permissions-Policy` everywhere, brand 404 and 500 pages, and a redaction test
+that reads the bytes pino writes. Still open: the error-tracking decision, the
+restore drill, the smoke load test, the runbook and staging. Left in Phase 7: the
+no-PIN variant and the physical print/scan test, which needs a printer. See
+[CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit criteria per
+phase.
 
 | Document | What it is |
 |---|---|
 | [PLAN.md](PLAN.md) | The build contract — decisions D1–D32, threat model, schema, phases, endpoint contract, environment. **Start here.** |
+| [THREAT-MODEL.md](THREAT-MODEL.md) | What is worth protecting, who the adversary is, the control per plane, the accepted weaknesses, and how each claim is checked. |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the pieces fit: the shape, the data flow of a contact, the encrypted blob format. |
 | [API.md](API.md) | Endpoint contract with a built/planned status per route. |
 | [I18N.md](I18N.md) | Adding a language: the three-file recipe for a new locale, and the rules the build enforces. |

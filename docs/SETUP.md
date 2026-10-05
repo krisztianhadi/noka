@@ -52,7 +52,7 @@ for everything else are in [The sandbox environment](#the-sandbox-environment) b
 
 | Command | Notes |
 |---|---|
-| `pnpm dev` | :3200, bound on all interfaces for phone testing. Loads `.env` itself — see below. After a killed server, add `--force` |
+| `pnpm dev` | :3200, bound on all interfaces for phone testing. Loads `.env` itself — see below. After a killed server, delete `.astro/dev.json` |
 | `pnpm build` && `pnpm start` | production build → `dist/server/entry.mjs` |
 | `pnpm db:generate` | writes a new SQL migration into `drizzle/` (commit it) |
 | `pnpm db:migrate` | applies migrations; same script the container runs |
@@ -72,7 +72,7 @@ answered **500** on `/dashboard`, `/signup` and every auth POST with
 behaves like the built server. A real environment variable still wins, so CI, Railway
 and `pnpm start` are unaffected.
 
-### After a killed dev server: `pnpm dev --force`
+### After a killed dev server: delete the lock, do not `--force`
 
 `astro dev` writes a lock to `.astro/dev.json` with its **PID inside the sandbox's own
 PID namespace**. Killing the job leaves that file behind, and the next `pnpm dev` finds
@@ -80,10 +80,14 @@ the recorded PID alive in the new namespace and refuses with `Another astro dev 
 is already running`. It is a stale artifact, not a running server:
 
 ```sh
-pnpm dev --force          # replaces the stale lock
+rm -f .astro/dev.json && pnpm dev
 ```
 
-The built server has no such lock.
+**Do not reach for `--force` here.** Astro's own advice is `astro dev --force`, and it
+kills the PID it recorded — which in a fresh namespace can be the very process group
+`--force` is running in. Measured 2026-10-05: the command died immediately with exit 143
+(SIGTERM) and no server started. Deleting the file is deterministic and has no such
+failure mode. The built server has no lock at all.
 
 ## The sandbox environment
 

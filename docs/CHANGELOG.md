@@ -61,6 +61,55 @@ lock with the PID **inside the sandbox PID namespace**, so a killed dev server l
 start refuses with `Another astro dev server is already running`. `pnpm dev --force`
 replaces the stale lock.
 
+### Feature — the threat model, written against the built system
+
+`docs/THREAT-MODEL.md` is PLAN §3/§17 reconciled with the code: what is worth protecting
+and where it lives, seven adversaries ranked by likelihood, the control list per plane
+with the file that implements it, the accepted weaknesses (including the two this review
+added — the platform operator is inside the trust boundary, because the keyring is an
+environment variable on the same host as the ciphertext), and a table that names the test
+which fails if each claim stops being true. PLAN §5's header contract was two rows out of
+date and now matches what the middleware sends.
+
+### Fix — the owner plane had no CSP, and no page for a 404 or a 500
+
+PLAN §5 specified the responder plane's headers and nothing else, so the surface that
+renders owner-written text and runs the project's only client script had no policy at all.
+
+- `src/middleware.ts` now sets a CSP on every non-responder response: `default-src 'self'`
+  with `form-action 'self'`, `object-src 'none'`, `base-uri 'none'`,
+  `frame-ancestors 'none'` and no wildcard or scheme-wide source. `script-src` has to allow
+  inline scripts — Astro inlines the small ones, the landing's reveal-on-scroll ships
+  inside the HTML — so the honest claim is "no other origin may be loaded, framed,
+  connected to, styled from or posted to", not "no inline script may run". The responder
+  plane keeps `default-src 'none'` and no scripts at all.
+- `Permissions-Policy` on every plane: `camera=(), microphone=(), geolocation=(),
+  payment=(), usb=(), interest-cohort=()`.
+- `/404` and `/500` now have pages in the product's own voice, in all five locales, with
+  the way home. The 500 page shows no message, no stack and no identifier on purpose: a
+  person reading it can act on none of those, and an error string is where a payload ends
+  up in a screenshot. The real error goes to the server log. Verified by throwing a
+  deliberate error that carried a phone number: the page showed the copy, the log showed
+  the message, and the phone number was in neither.
+- `Plain.astro` falls back to English for `<html lang>`, because `/500` is the one page
+  that may render before the middleware has resolved a language — a layout that crashes
+  inside the error page turns a 500 into a blank screen.
+
+### Test — the log redaction is asserted on the bytes pino writes
+
+`tests/unit/logger.test.ts` builds the real logger through a new `createLogger(destination)`
+factory, logs a realistic object — a decrypted contact inside `payload`, a bare `phone`, a
+`pin`, a `notes`, a `password` — and asserts the values are absent from the output while
+the card id and the message survive. Proven to have teeth: deleting `'phone'` from the
+redaction list fails it on the phone number. The positive half matters as much as the
+negative, because a logger that redacted everything would also pass "no phone in the
+output" and be useless.
+
+What that test cannot cover, now written down instead: Astro logs an unhandled route error
+with its own logger, which pino's redaction does not touch. Containment is a rule, not a
+filter — no throw site may interpolate user data. Audited: the nine `throw new Error` sites
+carry key versions, schema versions, limits, a card id and config names.
+
 ### Change — the studio renamed: No More Names Studio
 
 `Lost Signals Studio` / `lostsignals.studio` became `No More Names Studio` /

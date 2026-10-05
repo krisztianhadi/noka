@@ -14,6 +14,10 @@ import { readTheme, THEME_COOKIE } from '@/lib/theme';
 const BASELINE: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  // Nothing in this product asks for a camera, a microphone, a location, a payment
+  // sheet or a USB device. One header says so for every page, so a dependency cannot
+  // start asking without someone noticing the response changed.
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
 };
 
 const RESPONDER_CSP = [
@@ -21,6 +25,34 @@ const RESPONDER_CSP = [
   "style-src 'unsafe-inline'",
   "img-src 'self' data:",
   "form-action 'self'",
+  "base-uri 'none'",
+  "frame-ancestors 'none'",
+].join('; ');
+
+/**
+ * The owner plane's CSP — a hardening addition from the Phase 9 header review (PLAN §5
+ * only ever specified the responder plane's).
+ *
+ * `script-src` has to allow inline scripts, because Astro inlines the small ones: the
+ * landing page's reveal-on-scroll ships verbatim inside the HTML. A nonce would need
+ * plumbing through the bundler and would break the first time a page inlined something
+ * new, so this is the strictest shape that ships as-is. What it buys is the half that
+ * matters here — no origin but this one may be loaded, framed, connected to, styled
+ * from or posted to — which closes the exfiltration and third-party channels even
+ * though a future inline script would still run.
+ *
+ * The responder plane is stricter and stays that way: `default-src 'none'`, no scripts
+ * at all, asserted per response in the e2e suite.
+ */
+const OWNER_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
   "base-uri 'none'",
   "frame-ancestors 'none'",
 ].join('; ');
@@ -62,6 +94,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
     headers.set('Vary', 'Accept-Language, Cookie');
   } else {
+    headers.set('Content-Security-Policy', OWNER_CSP);
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     headers.set('X-Frame-Options', 'DENY');
     if (path.startsWith('/dashboard')) headers.set('Cache-Control', 'no-store');
