@@ -133,6 +133,31 @@ not made.
   the only trace. The first operator who is not also the developer is the trigger to revisit
   it.
 
+### Fix — `--balance` recorded the sample and left the file stale
+
+Same class as the retention script, found by using the command the file documents:
+`node scripts/usage-report.mjs --balance "note"` recorded the sample in
+`docs/costs/ledger.json` and printed the delta, but left `docs/COSTS.md` showing the old
+totals — while both the header comment and the *Refreshing this file* section describe it as
+"sample the balance, then `--write`". It writes the file now; verified by running it, seeing the
+row and the updated block, and then removing the verification row again.
+
+**And the ledger finally says what its numbers are.** The sample was overdue: **$16.40**, down
+**$12.57** since the ledger opened. But the last row's change ($6.88) spans five days in which
+other projects used the same API key, and the provider does not say which project a deduction
+came from — while this project's own estimate for the whole Phase 8–9 pass is about **$0.76**.
+`docs/COSTS.md` now states that a balance delta is the account's until proven otherwise, names
+that row as the example, and points at the project-scoped estimate for noka's own number. A
+delta mistaken for a project cost is exactly the mistake this record exists to prevent.
+
+### Docs — the day-four devlog entry
+
+`docs/blog/DEVLOG.md` carries 2026-10-05 as a working note: the four stale documents, Phase 8's
+empty sponsor list, the two scripts that could never run, the restore drill and its two
+pre-pass failures, the load-test numbers, the owner-plane CSP and the Astro-logging finding
+underneath it, the activity panel, the privacy page that was off by one cookie, and the cost
+paragraph above. Not a post — the raw material for one, if he asks.
+
 ### Fix — the privacy page described four cookies, and the browser held five
 
 An audit of the privacy page against the code, claim by claim, because a privacy page is a

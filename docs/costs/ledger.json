@@ -16,5 +16,11 @@
     "total": 23.28,
     "currency": "USD",
     "note": "day two: landing, dashboard and card design passes, PDF generator"
+  },
+  {
+    "at": 1791182674453,
+    "total": 16.4,
+    "currency": "USD",
+    "note": "Phase 8–9: sponsors, hardening, restore drill, load test, activity panel"
   }
 ]

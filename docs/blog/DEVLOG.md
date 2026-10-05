@@ -717,3 +717,77 @@ serves other work too, so they stay *unpriced* here rather than priced with some
 **Where it stands.** 161 unit and integration tests, 50 browser tests, green. The print masters
 exist; the phase-7 leftovers are the no-PIN card variant and the physical print/scan test, which
 needs hands and a printer rather than more code.
+
+## 2026-10-05 (day four) — Sponsors, hardening, and two jobs that could not run
+
+**The ask.** Docs first, then Phase 8, then Phase 9. Staging later — "no deploy yet, we are not
+done."
+
+**Docs that had stopped being true.** The changelog had no entry for 2026-09-30 or 10-01, the two
+biggest days in the project. `PLAN.md` still opened with "pre-code" and no commits. `INDEX.md` said
+Phase 5 when Phase 7 had shipped, and counted 19 ADRs when there are 33. `API.md` marked the print
+routes, the policy pages and the retention script as *planned* although all three existed, listed
+`/dashboard/export` beside the settings route that implements it, still claimed the owner plane was
+English-only after D13 was superseded, and was missing nine routes that had shipped. Every surviving
+claim was checked against the code before it went back in.
+
+**Phase 8, built so it cannot go wrong quietly.** The sponsor strip is a component and the policy is
+a function: `usableSponsors()` refuses a logo that is not a file on this origin, a link that is not
+`https:` or same-site, an entry with no name, and a size that cannot hold the layout still. It ships
+**empty** — the strip renders nothing at all — because inventing a sponsor on a public page is not a
+placeholder, it is a lie. Proved the render path with a temporary entry, took the screenshot, then
+emptied the config again.
+
+**Two scripts that had never run.** Not "were flaky" — could not run. (1) The scripts import the
+app's source through `scripts/alias-loader.mjs`, which accepted the first path `access()` could
+reach; `access()` succeeds on a directory, so `@/config` resolved to the new `src/config/` folder
+instead of `src/config.ts` and plain node died with `ERR_UNSUPPORTED_DIR_IMPORT`. My own Phase 8
+directory caused it. (2) `pnpm purge` was never our script: pnpm has a `purge` command of its own,
+so the documented invocation printed `Unknown option: 'dry-run' … pnpm help clean` and the retention
+sweep — the job that deletes hashed scan attempts after 30 days, the one privacy promise about data
+being thrown away — never ran. Both are fixed, and `tests/integration/cli.test.ts` now runs the real
+command through pnpm so the wiring is covered too, not just the function inside it.
+
+**The drill that proves a backup.** `pnpm drill:restore` decrypts and fingerprints every contact,
+dumps the database, restores it into a scratch database, fingerprints the restored rows and
+compares, then reads them with a wrong keyring and asserts they all refuse. On the development
+database: 3,943 contacts, a 2.9 MB dump, identical `a62a18a0…` on both sides, 3,943 refusals with a
+wrong key. It failed twice before it passed — a wrong column name, then the loader bug above — which
+is the whole reason to keep it. A drill that cannot fail is a ceremony.
+
+**What a burst costs.** `pnpm load:test`: the responder page at 1,302 rps, p50 14 ms, p95 27 ms,
+5.7 kB, 13,024 requests and no failure; the landing at 1,159 rps but 74.8 kB a page. Localhost with a
+warm cache, so read the shape, not the peak.
+
+**Hardening, and the two things it found.** The owner plane had **no CSP** — PLAN §5 specified the
+responder plane's headers and never mentioned the surface that renders owner-written text and runs
+the project's only client script. It has one now, plus `Permissions-Policy` everywhere, brand 404 and
+500 pages, and a redaction test that reads the bytes pino writes. The finding underneath: Astro logs
+an unhandled error with its own logger, so pino's redaction never touches it — containment is a rule
+("no throw site interpolates user data", audited), not a filter.
+
+**The card's activity panel.** `scan_attempts` had been written on every PIN attempt since Phase 5
+and read by nobody. The question the owner actually has — has anyone opened this card? — is now on
+the dashboard: opened / failed / networks, the last eight attempts with a localized relative time, a
+six-character network pseudonym, and the sentence that matters: *nothing here notifies you*. The
+failed attempts are the interesting ones, and the panel is the first place they have ever been
+visible.
+
+**A privacy page off by one.** Auditing its claims against the code: `/demo` sets a fifth cookie
+(`noka_demo`, an hour, scoped to `/demo`) that the page did not mention. A test now walks every path
+that sets a cookie and asserts the whole jar is accounted for; injecting a `_ga` cookie fails it,
+which is how I know it is not just describing the current state.
+
+**Cost, and the honest number.** Balance sampled: **$16.40**, down **$12.57** across the project.
+But the last row's $6.88 covers five days in which other projects used the same API key, and this
+project's own estimate for the whole Phase 8–9 pass is about **$0.76** — so the row reads "the
+account spent $6.88", not "noka cost $6.88". That caveat is now in the file, because a balance delta
+being mistaken for a project number is exactly the mistake this record exists to prevent. Also fixed:
+`--balance` recorded the sample in the ledger JSON and left `docs/COSTS.md` stale, while the file's
+instructions said it refreshed it.
+
+**Where it stands.** 205 unit and integration tests, 59 browser tests, tsc clean, axe clean. Phases
+0–8 built; Phase 9 done except staging, which he deferred, and the launch checklist that names what
+is still a promise. Nine commits local and unpushed: he tests first. The leftovers that need a
+printer or a decision rather than more code: the no-PIN card variant, the engraving SVG, the
+physical print/scan test.

@@ -210,7 +210,7 @@ const BLOCK_LABELS = [
   'Phase 3 — the card: PIN, rotation, activation',
   'Phase 4 — contacts, notes, spoken languages',
   'Phase 5 — the responder page',
-  'Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n',
+  'Day two, then Phase 8–9: sponsors, owner-plane CSP and error pages, the restore drill, the load test, the runbook, the activity panel',
 ];
 
 /** Split one session's usage rows at its round boundaries. */
@@ -359,23 +359,26 @@ function replaceBlock(text, start, end, body) {
 
 const list = sessions();
 const { table, totals, foreignUsd, foreignRuns } = usageTable(list);
-const ledger = readLedger();
-const ledgerView = ledgerTable(ledger);
+const ledger = process.argv.includes('--balance') ? [] : readLedger();
+let ledgerView = ledgerTable(ledger);
 
 if (process.argv.includes('--balance')) {
   const note = process.argv.slice(2).find((arg) => !arg.startsWith('--'));
   const current = await balance();
-  const rows = [...ledger, { at: Date.now(), total: current.total, currency: current.currency, note }];
+  const rows = [...readLedger(), { at: Date.now(), total: current.total, currency: current.currency, note }];
   mkdirSync(dirname(LEDGER_FILE), { recursive: true });
   writeFileSync(LEDGER_FILE, JSON.stringify(rows, null, 2) + '\n');
   console.log(`Recorded balance: ${current.currency} ${current.total.toFixed(2)} → ${LEDGER_FILE}`);
-  const updated = ledgerTable(rows);
-  if (updated.spent !== null) {
-    console.log(`Spent across ${updated.span}: $${updated.spent.toFixed(2)} (provider-calculated)`);
+  // Re-read, so the sample is in the table this run prints *and* writes. It used to be
+  // recorded in the JSON only, which made `--balance "note"` — the command this file's own
+  // instructions describe as "sample the balance, then --write" — leave COSTS.md stale.
+  ledgerView = ledgerTable(rows);
+  if (ledgerView.spent !== null) {
+    console.log(`Spent across ${ledgerView.span}: $${ledgerView.spent.toFixed(2)} (provider-calculated)`);
   }
 }
 
-if (process.argv.includes('--write')) {
+if (process.argv.includes('--write') || process.argv.includes('--balance')) {
   let text = readFileSync(COSTS_FILE, 'utf8');
   const usageBody = [
     table,

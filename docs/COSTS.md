@@ -26,7 +26,7 @@ the figures below are read rather than remembered:
 <!-- usage:start -->
 | Session (UTC) | Local (+07) | Route | Turns | Cache-miss in | Cache-hit in | Output | Peak | Off-peak | Est. USD |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026-09-29 08:20Z → 16:43Z (c9b83d6c) | 2026-09-29 15:20+07 | deepseek-flash | 1925 | 5,183,787 | 744,915,712 | 1,339,605 | $2.1820 | $2.7251 | $4.9071 |
+| 2026-09-29 08:20Z → 07:53Z (c9b83d6c) | 2026-09-29 15:20+07 | deepseek-flash | 2082 | 5,363,142 | 809,205,120 | 1,420,895 | $2.6916 | $2.7388 | $5.4304 |
 | 2026-09-29 08:30Z → 08:31Z (fa4ae818) | 2026-09-29 15:30+07 | deepseek-flash | 4 | 31,361 | 49,792 | 4,493 | $0.0151 | $0.0000 | $0.0151 |
 | 2026-09-29 08:38Z → 08:38Z (5824641c) | 2026-09-29 15:38+07 | deepseek-flash | 2 | 14,740 | 14,208 | 5,334 | $0.0109 | $0.0000 | $0.0109 |
 | 2026-09-29 09:16Z → 09:16Z (be9fe88c) | 2026-09-29 16:16+07 | deepseek-flash | 2 | 15,568 | 13,824 | 596 | $0.0055 | $0.0000 | $0.0055 |
@@ -60,9 +60,12 @@ the figures below are read rather than remembered:
 | 2026-09-30 05:07Z → 05:08Z (101492d2) | 2026-09-30 12:07+07 | gpt-5.6-sol | 4 | 12 | 40,797 | 3,452 | — | — | not priced (≈$0.0022 on DeepSeek) |
 | 2026-09-30 05:07Z → 05:10Z (7bd0dfd4) | 2026-09-30 12:07+07 | claude-sonnet-5 | 9 | 18 | 257,297 | 16,213 | — | — | not priced (≈$0.0105 on DeepSeek) |
 | 2026-09-30 12:46Z → 12:47Z (0295e2c2) | 2026-09-30 19:46+07 | gpt-5.6-sol | 5 | 15 | 103,714 | 2,210 | — | — | not priced (≈$0.0016 on DeepSeek) |
-| **Total (DeepSeek only)** | | | **1,992** | **5,748,947** | **745,692,032** | **1,417,806** | **$2.2314** | **$2.8344** | **$5.0658** |
+| 2026-10-01 07:13Z → 07:13Z (87951b9e) | 2026-10-01 14:13+07 | deepseek-flash | 3 | 15,737 | 30,208 | 1,226 | $0.0064 | $0.0000 | $0.0064 |
+| 2026-10-01 07:23Z → 07:23Z (6105e3b9) | 2026-10-01 14:23+07 | deepseek-flash | 3 | 30,860 | 34,048 | 4,892 | $0.0153 | $0.0000 | $0.0153 |
+| 2026-10-05 06:00Z → 06:44Z (bb32d51f) | 2026-10-05 13:00+07 | deepseek-flash | 377 | 225,959 | 79,532,928 | 204,217 | $0.7900 | $0.0000 | $0.7900 |
+| **Total (DeepSeek only)** | | | **2,532** | **6,200,858** | **889,578,624** | **1,709,431** | **$3.5527** | **$2.8481** | **$6.4009** |
 
-_Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-09-30 by `node scripts/usage-report.mjs --write`._
+_Estimated from the published deepseek-flash rates, peak and off-peak; generated 2026-10-05 by `node scripts/usage-report.mjs --write`._
 
 _10 session(s) ran on another provider (they show `other` in the Route column). Their token counts are real and included; **their USD is not priced here**, because this table's rates belong to DeepSeek. On DeepSeek rates those runs would have been ≈$0.0531 — which is not what they cost. Price them from the other provider's own dashboard or its `/credits` endpoint._
 <!-- usage:end -->
@@ -88,10 +91,10 @@ rates. The error is on the safe side.
 | 08:52–08:55Z (15:52+07) | Phase 3 — the card: PIN, rotation, activation | 17 | 5,036,787 | $0.0553 | 1% |
 | 08:55–08:59Z (15:55+07) | Phase 4 — contacts, notes, spoken languages | 26 | 8,514,014 | $0.0910 | 2% |
 | 08:59–09:08Z (15:59+07) | Phase 5 — the responder page | 62 | 23,765,324 | $0.2134 | 4% |
-| 09:08–16:43Z (16:08+07) | Spikes closed + day two: footer, legal pages, self-service export/deletion, retention purge, full i18n | 1660 | 687,582,153 | $4.0847 | 83% |
-| **Total** | | **1,925** | **751,439,104** | **$4.9071** | |
+| 09:08–07:53Z (16:08+07) | Day two, then Phase 8–9: sponsors, owner-plane CSP and error pages, the restore drill, the load test, the runbook, the activity panel | 1817 | 752,132,206 | $4.6080 | 85% |
+| **Total** | | **2,082** | **815,989,157** | **$5.4304** | |
 
-_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.1587 more._
+_Attributed by goal-round boundaries in the main session (c9b83d6c); the short side sessions add $0.9705 more._
 <!-- blocks:end -->
 
 Read that table the way it was meant: **the card cost 4 cents to build and the
@@ -214,8 +217,9 @@ file, the same script and the same rules, with its own ledger.
 | 2026-09-29 10:15Z | $28.97 | — | ledger opened — work up to here is estimated, not measured |
 | 2026-09-29 15:35Z | $27.24 | −$1.7300 | footer, self-service data, full i18n |
 | 2026-09-30 16:43Z | $23.28 | −$3.9600 | day two: landing, dashboard and card design passes, PDF generator |
+| 2026-10-05 06:44Z | $16.40 | −$6.8800 | Phase 8–9: sponsors, hardening, restore drill, load test, activity panel |
 
-**Actually spent across 2026-09-29 10:15Z → 2026-09-30 16:43Z: $5.69** — this is the provider's own arithmetic.
+**Actually spent across 2026-09-29 10:15Z → 2026-10-05 06:44Z: $12.57** — this is the provider's own arithmetic.
 <!-- ledger:end -->
 
 The ledger is sampled before and after a block of work —
@@ -223,6 +227,17 @@ The ledger is sampled before and after a block of work —
 balance endpoint but no per-day spend endpoint. The difference between two samples
 is what was actually deducted, which beats any estimate built from token counts
 and a rate table.
+
+**A balance delta is the account's, not this project's.** The same API key pays for
+whatever else runs on this machine in that window, and the provider does not say which
+project a deduction came from. So a row's change is noka's spend only when nothing else
+used the key in that window — read the *Contract, docs* and *Phase* rows in the table above
+for what it actually was. The `2026-10-05` row is the clearest example: **$6.88 was
+deducted across those days while this project's own estimate for the whole Phase 8–9
+pass is roughly $0.76**, so most of that delta belongs to other work on the same key (the
+torrent and well-be-in-touch sessions of 2026-10-01 to 10-05). The honest reading of the
+last row is "the account spent $6.88", not "noka cost $6.88" — and the project-scoped
+number is the estimate, which says so out loud.
 
 The baseline sample is dated today, so everything above it was **not yet measured**
 when the ledger opened: those rows are estimates and will stay estimates.
@@ -235,6 +250,10 @@ node scripts/usage-report.mjs                              # print everything
 node scripts/usage-report.mjs --write                      # refresh the three blocks
 node scripts/usage-report.mjs --balance "end of phase 6"   # sample the balance, then --write
 ```
+
+`--balance` writes the file as well as the ledger JSON. It did not until 2026-10-05: the
+sample landed in `docs/costs/ledger.json` and `docs/COSTS.md` stayed stale, which is how a
+documented command quietly becomes a command that does most of its job.
 
 ## What this file is not
 
