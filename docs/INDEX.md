@@ -5,16 +5,18 @@
 emergency contacts on a server-rendered page that works on a bad mobile
 connection. (The earlier working title **Nokard is archived**.)
 
-Status: **Phases 0–7 built** (2026-10-01) — the product works end to end locally.
+Status: **Phases 0–8 built** (2026-10-05) — the product works end to end locally.
 Sign up, add the first contact, and the card exists: open its URL, enter the PIN,
 and the responder page renders in one request, localised, with no JavaScript. The
 PIN endpoint is rate-limited and audited, the print masters are downloadable (the
-card at ISO ID-1, one on A4, ten on A4), and `/demo` runs the scan flow with
-invented people. Not built yet: **Phase 8** (sponsor logos) and **Phase 9**
-(hardening and launch — threat model, export and delete UI polish, backup/restore
-drill, runbook). Left in Phase 7: the no-PIN variant and the physical print/scan
-test, which needs a printer. See [CHANGELOG.md](CHANGELOG.md), and
-[PLAN.md](PLAN.md) §11 for the exit criteria per phase.
+card at ISO ID-1, one on A4, ten on A4), `/demo` runs the scan flow with invented
+people, and the sponsor strip is wired on the landing and auth pages — empty until
+there is a sponsor to name, and structurally unable to reach `/c/*` or `/dashboard`.
+**Phase 9** (hardening and launch) is next: threat model, the error-tracking
+decision, staging, backup and restore drill, smoke load test, runbook. Left in
+Phase 7: the no-PIN variant and the physical print/scan test, which needs a printer.
+See [CHANGELOG.md](CHANGELOG.md), and [PLAN.md](PLAN.md) §11 for the exit criteria
+per phase.
 
 | Document | What it is |
 |---|---|

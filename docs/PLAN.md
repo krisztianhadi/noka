@@ -514,7 +514,7 @@ Focused hours, solo. State as of **2026-10-01**:
 | 5 Public PIN flow, localised responder | ✅ done |
 | 6 Rate limiting and audit | ✅ code done and tested — attempts recorded, purge script with `--dry-run`. Open: the owner-facing `/dashboard/activity` feed, and the Railway cron that calls the purge |
 | 7 Print, preview, reprint | ✅ done 2026-10-01, except the no-PIN variant and the physical print/scan test (needs a printer and hands) |
-| 8 Sponsor logos | ⬜ not started |
+| 8 Sponsor logos | ✅ done 2026-10-05 — config-driven, self-hosted, landing and auth pages only, with the e2e guard. The list is empty until there is a sponsor to name |
 | 9 Hardening and launch | 🟡 partial: policy pages, export and account deletion are built; threat model, restore drill, runbook and the error-tracking choice are open |
 
 ### Phase 0 — Spikes (3–4 h)

@@ -45,26 +45,52 @@ the originals. The database holds none of them — that is the point of ADR-003.
 ## Credentials and the sandbox
 
 This workspace is sandboxed: only paths under `/home/k/Code/noka` are writable.
-Four consequences, all handled by committed config:
-
-- `.npmrc` puts the pnpm store and cache in `.tmp/` inside the workspace.
-- `PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright` keeps the test browser local:
-  `pnpm exec playwright install chromium` installs it there, not in `~/.cache`.
-- `ASTRO_TELEMETRY_DISABLED=1`, because `astro` cannot write `~/.config/astro`.
-- `XDG_DATA_HOME`, `XDG_CACHE_HOME` and `XDG_STATE_HOME` point at `.tmp/` for
-  pnpm runs, since `~/.cache` is read-only here.
+`.npmrc` handles pnpm (store and cache under `.tmp/`); the variables a command needs
+for everything else are in [The sandbox environment](#the-sandbox-environment) below.
 
 ## Commands
 
 | Command | Notes |
 |---|---|
-| `pnpm dev` | :3200, bound on all interfaces for phone testing |
+| `pnpm dev` | :3200, bound on all interfaces for phone testing. **It does not load `.env`** — see below. |
+| `set -a; . ./.env; set +a; pnpm dev` | the dev server with the environment loaded: the dashboard and every other config-dependent route need it |
 | `pnpm build` && `pnpm start` | production build → `dist/server/entry.mjs` |
 | `pnpm db:generate` | writes a new SQL migration into `drizzle/` (commit it) |
 | `pnpm db:migrate` | applies migrations; same script the container runs |
 | `pnpm typecheck` | `astro check`, tests included |
-| `pnpm test` | Vitest; loads `.env`, integration tests need Postgres up |
-| `pnpm test:e2e` | Playwright against the **built** server (dev injects HMR scripts). It reuses a server already listening on :3200 — restart yours first, or the suite tests your old build. |
+| `pnpm test` | Vitest; loads `.env` itself, integration tests need Postgres up |
+| `pnpm test:e2e` | Playwright owns its server: it builds to `dist-e2e` and serves on **:3300**, never reusing one that is already running (ADR-029). Needs the browser path: `PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright pnpm test:e2e` |
+
+### `pnpm dev` serves the marketing pages and 500s on the dashboard
+
+Astro's dev server reads `.env` into `import.meta.env`, not into `process.env`, and
+`src/config.ts` validates `process.env` with zod. So `pnpm dev` renders `/`, `/demo`
+and the policy pages — none of which touch the configuration — and answers **500** on
+`/dashboard`, `/signup` and every auth POST with `Invalid environment — DATABASE_URL
+… received undefined`. Measured 2026-10-05.
+
+Load the file into the shell first and it behaves:
+
+```sh
+set -a; . ./.env; set +a; HOST=0.0.0.0 pnpm dev
+```
+
+The built server does not have this problem: `node --env-file-if-exists=.env` passes
+the same variables through `process.env`, which is why the e2e suite and the handover
+command below start the build rather than the dev server.
+
+## The sandbox environment
+
+This workspace is sandboxed: only paths under `/home/k/Code/noka` are writable. The
+env prefix a command needs depends on what it writes:
+
+| What | Why |
+|---|---|
+| `.npmrc` (`store-dir`, `cache-dir` under `.tmp/`) | pnpm; committed, so no prefix needed |
+| `ASTRO_TELEMETRY_DISABLED=1` + `XDG_CONFIG_HOME=.tmp/xdg-config` | `astro` otherwise tries to write `~/.config/astro` and fails before it starts |
+| `PLAYWRIGHT_BROWSERS_PATH=.tmp/ms-playwright` | the test browser lives in the workspace (`pnpm exec playwright install chromium`); without it Playwright looks in `~/.cache/ms-playwright`, which does not exist here |
+| `XDG_DATA_HOME`, `XDG_STATE_HOME` under `.tmp/` | only needed for pnpm runs that write state. **Do not point `XDG_CACHE_HOME` at `.tmp/` without also setting the browser path**: Playwright derives its browser directory from it, and the suite then fails in 6 ms per test with `Executable doesn't exist at .tmp/xdg-cache/ms-playwright/…` |
+
 
 ## The local server does not survive a harness restart
 

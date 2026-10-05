@@ -255,6 +255,7 @@ const fr: Record<MessageKey, string> = {
   'settings.password.confirm': 'Changer votre mot de passe vous déconnecte de tous les appareils, celui-ci compris. Vous vous reconnecterez avec le nouveau mot de passe.',
   'settings.password.confirmTitle': 'Changer votre mot de passe ?',
   'settings.password.confirmOk': 'Changer et déconnecter',
+  'sponsor.label': 'Avec le soutien de',
 };
 
 export default fr;

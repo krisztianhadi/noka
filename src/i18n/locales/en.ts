@@ -258,6 +258,7 @@ const en = {
   'settings.password.confirm': 'Changing your password signs you out of every device, this one included. You will sign in again with the new password.',
   'settings.password.confirmTitle': 'Change your password?',
   'settings.password.confirmOk': 'Change and sign out',
+  'sponsor.label': 'Sponsored by',
 } as const;
 
 export default en;

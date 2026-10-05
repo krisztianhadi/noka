@@ -255,6 +255,7 @@ const ru: Record<MessageKey, string> = {
   'settings.password.confirm': 'Смена пароля завершит сеанс на всех устройствах, включая это. Войдите снова с новым паролем.',
   'settings.password.confirmTitle': 'Изменить пароль?',
   'settings.password.confirmOk': 'Изменить и выйти',
+  'sponsor.label': 'При поддержке',
 };
 
 export default ru;

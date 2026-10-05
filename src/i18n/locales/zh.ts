@@ -255,6 +255,7 @@ const zh: Record<MessageKey, string> = {
   'settings.password.confirm': '修改密码会退出所有设备上的登录，包括这台设备。你需要用新密码重新登录。',
   'settings.password.confirmTitle': '修改密码？',
   'settings.password.confirmOk': '修改并退出登录',
+  'sponsor.label': '赞助方',
 };
 
 export default zh;

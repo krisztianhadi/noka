@@ -2,6 +2,7 @@
 import Button from '@/components/Button.astro';
 import Icon from '@/components/Icon.astro';
 import Plain from '@/layouts/Plain.astro';
+import SponsorStrip from '@/components/SponsorStrip.astro';
 import { getAuth } from '@/lib/auth';
 import { t } from '@/i18n/catalogue';
 import { errorMessage, field, forbidden, isSameOrigin, readForm, redirectWithCookies } from '@/lib/http';
@@ -90,4 +91,6 @@ if (Astro.request.method === 'POST') {
   <p class="mt-4 text-sm text-fg-muted">
     {label('auth.signup.have')} <a class="text-fg" href="/login">{label('auth.login.link')}</a>
   </p>
+
+  <SponsorStrip />
 </Plain>

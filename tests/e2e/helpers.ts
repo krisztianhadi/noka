@@ -6,6 +6,19 @@ import { expect, type Page } from '@playwright/test';
  */
 export const PASSWORD = 'correct-horse-battery';
 
+/**
+ * Watch a page and collect every request that leaves this origin. The array fills as the
+ * page loads, so read it after the navigation has settled.
+ */
+export function trackExternalRequests(page: Page): string[] {
+  const external: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') external.push(request.url());
+  });
+  return external;
+}
+
 export async function signUp(page: Page): Promise<string> {
   const email = `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@noka.test`;
   await page.goto('/signup');

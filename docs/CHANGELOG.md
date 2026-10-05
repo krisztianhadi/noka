@@ -2,6 +2,50 @@
 
 Newest first. Dated, tagged **Feature** / **Fix** / **Break**.
 
+## 2026-10-05
+
+### Feature — the sponsor strip, and the policy that keeps it off the emergency page
+
+A sponsor buys a mark on a page, not a row in a database and not a view of anyone's
+scan (D18, PLAN §18). That is now a component rather than a promise in a document.
+
+- `src/config/sponsors.ts` holds the list; `src/components/SponsorStrip.astro` renders
+  it on the landing page, `/login` and `/signup`. Nowhere else: not on `/c/*`, not on
+  `/dashboard`.
+- The published policy is enforced in code, not in review. `usableSponsors()` refuses a
+  logo that is not a path under `/sponsors/` on this origin, refuses a link that is not
+  `https:` or a same-site path (`javascript:`, `data:`, `http:`, protocol-relative and
+  bare hostnames all drop), and refuses an entry with no name or a size that cannot hold
+  the layout still. A refused entry never reaches the HTML, and one bad entry does not
+  take a good one down with it.
+- Every mark is a file in this repository — no third-party request, nothing counted,
+  no script. Each `<img>` carries `width` and `height` so the strip cannot move while it
+  loads, and each link is `rel="sponsored noopener"` in a new tab. One `sponsor.label`
+  string, in all five locales.
+- The list is **empty**, on purpose: nothing is invented here. A strip with no sponsors
+  renders nothing at all, and the render path was verified with a temporary entry before
+  the config was emptied again.
+- Tests. `tests/unit/sponsors.test.ts` covers the policy at the boundary that can break
+  it, including the paste that would put a logo on someone else's CDN and a `javascript:`
+  link. Three e2e cases hold the other half: no sponsor markup on the responder plane,
+  none on the dashboard, and the landing and auth pages still fetch nothing off-origin.
+
+### Docs — the dev server's environment, and the sandbox prefix that ate the e2e run
+
+- `docs/SETUP.md` now says what `pnpm dev` actually does: Astro's dev server reads
+  `.env` into `import.meta.env`, not into `process.env`, so the marketing pages render
+  and `/dashboard` answers 500 with `Invalid environment — DATABASE_URL … undefined`.
+  The working command (`set -a; . ./.env; set +a; pnpm dev`) is in the table, and so is
+  the reason the built server does not have the problem.
+- The same file claimed the sandbox variables were "handled by committed config". They
+  are not: `.npmrc` is, the rest are a prefix. The table now names the prefix per
+  command, and warns that pointing `XDG_CACHE_HOME` at `.tmp/` moves Playwright's
+  browser directory with it — which failed 54 tests in 6 ms each and looked like a code
+  regression rather than a missing browser.
+- The e2e row was stale in a second way: it said the suite reuses a server already
+  listening on :3200. It builds to `dist-e2e` and serves :3300, and never reuses one
+  (ADR-029).
+
 ## 2026-10-01
 
 ### Fix — every write path is transactional

@@ -255,6 +255,7 @@ const es: Record<MessageKey, string> = {
   'settings.password.confirm': 'Cambiar la contraseña cierra la sesión en todos los dispositivos, incluido este. Volverás a iniciar sesión con la nueva contraseña.',
   'settings.password.confirmTitle': '¿Cambiar tu contraseña?',
   'settings.password.confirmOk': 'Cambiar y cerrar sesión',
+  'sponsor.label': 'Con el patrocinio de',
 };
 
 export default es;

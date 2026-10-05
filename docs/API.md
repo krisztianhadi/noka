@@ -8,7 +8,8 @@ Status: ✅ built · ⏳ planned (phase in brackets). Checked against the code
 
 | Method | Path | Behaviour | Status |
 |---|---|---|---|
-| GET | `/` | Landing: what the card is, signup/login entry, sponsor strip when Phase 8 lands (D18). Copy is English only for now, inline rather than in the catalogue — the wording waits on a read, and translating a draft is work thrown away if a headline changes. | ✅ |
+| GET | `/` | Landing: what the card is, signup/login entry, the sponsor strip (D18). Copy is English only for now, inline rather than in the catalogue — the wording waits on a read, and translating a draft is work thrown away if a headline changes. | ✅ |
+| — | sponsor marks | Rendered by `SponsorStrip.astro` on the landing page and the auth pages only, from `src/config/sponsors.ts` (empty until there is a sponsor to name). Self-hosted SVGs under `/sponsors/`; `usableSponsors()` drops anything that is not a same-origin logo and a safe `https:` or same-site link. | ✅ |
 | GET | `/privacy` \| `/terms` \| `/imprint` | Policy pages, linked from every footer. Indexable, no data access; the printed-card terms live here. | ✅ |
 | GET | `/robots.txt` | `Disallow: /c/`, `Disallow: /dashboard/`. | ✅ |
 | GET | `/healthz` | JSON healthcheck; 503 when the database is unreachable. | ✅ |
@@ -39,8 +40,8 @@ the locale is cookie → `Accept-Language` → English.
 
 | Method | Path | Behaviour | Status |
 |---|---|---|---|
-| GET/POST | `/signup` | Account lifecycle; the first name is captured here (D27), because better-auth requires it. | ✅ |
-| GET/POST | `/login` | Session cookie on success; one message for every failure. | ✅ |
+| GET/POST | `/signup` | Account lifecycle; the first name is captured here (D27), because better-auth requires it. Carries the sponsor strip. | ✅ |
+| GET/POST | `/login` | Session cookie on success; one message for every failure. Carries the sponsor strip. | ✅ |
 | GET/POST | `/forgot`, `/reset` | Reset tokens, single-use and short-lived, sent through Resend. | ⏳ (2b — needs the sending domain) |
 | ANY | `/api/auth/*` | better-auth (Google callback, session). | ✅ (email+password) |
 | POST | `/logout` | Server-side session revocation; POST only, origin-checked. | ✅ |
@@ -84,5 +85,6 @@ the locale is cookie → `Accept-Language` → English.
   plaintext.
 - **Unknown slugs and wrong PINs are indistinguishable**, in content and timing
   (layer 0 of §6: identical form, decoy argon2 verify, padded response floor).
-- **Nothing sponsor-shaped is reachable from `/c/*` or `/dashboard`.** Phase 8
-  adds the test; until then the landing is the only surface a sponsor may touch.
+- **Nothing sponsor-shaped is reachable from `/c/*` or `/dashboard`.** Enforced by
+  `usableSponsors()` (same-origin logos, `https:` or same-site links, nothing counted)
+  and asserted by three e2e cases and `tests/unit/sponsors.test.ts`.

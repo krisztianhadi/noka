@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { externalResources, unexpectedNavigations } from './helpers';
+import { externalResources, signUp, trackExternalRequests, unexpectedNavigations } from './helpers';
 
 /**
  * Phase 1 smoke suite. The assertions that matter here are the ones PLAN §12
@@ -11,11 +11,7 @@ const SLUG = 'A'.repeat(26);
 
 test.describe('landing', () => {
   test('renders the product name and loads no third-party request', async ({ page }) => {
-    const external: string[] = [];
-    page.on('request', (request) => {
-      const url = new URL(request.url());
-      if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') external.push(request.url());
-    });
+    const external = trackExternalRequests(page);
 
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
@@ -111,5 +107,37 @@ test.describe('responder plane', () => {
     // may go (§5).
     expect(externalResources(html)).toEqual([]);
     expect(unexpectedNavigations(html)).toEqual([]);
+  });
+});
+
+/**
+ * D18 / PLAN §18. A sponsor buys a mark on the landing and auth pages: never `/c/*`,
+ * never `/dashboard`, never a third-party request, never a counter. The strip renders
+ * nothing while `src/config/sponsors.ts` is empty, so these guard the shape of the rule
+ * rather than the presence of a logo — which is what has to hold the day one is added.
+ */
+test.describe('sponsor policy', () => {
+  test('never reaches the responder plane', async ({ request }) => {
+    for (const path of [`/c/${SLUG}`, '/demo']) {
+      const html = await (await request.get(path)).text();
+      expect(html, path).not.toContain('/sponsors/');
+      expect(html, path).not.toContain('rel="sponsored');
+    }
+  });
+
+  test('never reaches the dashboard', async ({ page }) => {
+    await signUp(page);
+    const html = await page.content();
+    expect(html).not.toContain('/sponsors/');
+    expect(html).not.toContain('rel="sponsored');
+  });
+
+  test('the pages that may carry one fetch nothing off-origin', async ({ page }) => {
+    // The landing page's own version of this lives in the landing suite above.
+    for (const path of ['/login', '/signup']) {
+      const external = trackExternalRequests(page);
+      await page.goto(path);
+      expect(external, path).toEqual([]);
+    }
   });
 });

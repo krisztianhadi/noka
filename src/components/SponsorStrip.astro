@@ -1,0 +1,64 @@
+---
+import { t } from '@/i18n/catalogue';
+import { SPONSORS, usableSponsors } from '@/config/sponsors';
+
+/**
+ * The sponsor strip: static, self-hosted marks on the landing page and the auth pages
+ * (D18, PLAN §18).
+ *
+ * It is a component rather than markup pasted into two pages for one reason: the policy
+ * is enforced in `usableSponsors`, and both callers get that enforcement without having
+ * to remember it. Anything the policy refuses never reaches the HTML.
+ *
+ * Renders nothing when there is nothing to show — no empty plate, no placeholder, no
+ * "your logo here". That state is the default, and it is the honest one.
+ *
+ * Never place this on `/c/*` or `/dashboard`: a stranger in an emergency and an owner
+ * looking at their own card are both somewhere a sponsor has no business being. The e2e
+ * suite asserts that.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+const list = usableSponsors(SPONSORS);
+const locale = Astro.locals.locale;
+---
+
+{
+  list.length > 0 && (
+    <section
+      class:list={['mt-10 rounded-lg border border-line bg-surface px-4 py-5', className]}
+      aria-label={t(locale, 'sponsor.label')}
+    >
+      <p class="font-mono text-[0.65rem] tracking-[0.18em] text-fg-muted uppercase">
+        {t(locale, 'sponsor.label')}
+      </p>
+      <ul class="mt-3 flex flex-wrap items-center gap-x-6 gap-y-4">
+        {list.map((sponsor) => (
+          <li>
+            <a
+              class="inline-flex items-center rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+              href={sponsor.href}
+              target="_blank"
+              rel="sponsored noopener"
+            >
+              {/* Both dimensions are on the element, so the strip cannot move while the
+                  logo loads — a sponsor must not cost the page its layout stability. */}
+              <img
+                src={sponsor.logo}
+                alt={sponsor.name}
+                width={sponsor.width}
+                height={sponsor.height}
+                loading="lazy"
+                decoding="async"
+                class="h-6 w-auto"
+              />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
